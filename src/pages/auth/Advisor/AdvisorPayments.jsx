@@ -12,7 +12,7 @@ const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 // -------------------- CSRF Helper (CRITICALLY REVISED) --------------------
 class SecureAPI {
-  static BACKEND_URL = "https://advisor-seller-backend-7to2psxx7-farrukhjaved381s-projects.vercel.app";
+  static BACKEND_URL = "https://advisor-seller-backend-f8nuw2ulj-farrukhjaved381s-projects.vercel.app";
   static #csrfToken = null; // In-memory cache for the CSRF token
 
   static async getCSRFToken() {
