@@ -233,9 +233,29 @@ const SellerForm = () => {
   const [showLoader, setShowLoader] = useState(false);
   const [emailVerified, setEmailVerified] = useState(null);
 
-  // Fetch profile from backend
-  const [profileData, setProfileData] = useState(null);
+  // Initialize profile from localStorage (iterable)
+  const getProfileData = () => {
+    const storedUser = localStorage.getItem("user");
+    if (!storedUser) return {};
+    try {
+      const parsedUser = JSON.parse(storedUser);
+      // List of form fields to autofill from user object
+      const autofillFields = ["fullName", "email", "companyName", "phone", "website", "industry", "geography", "minRevenue", "maxRevenue", "currency", "description"];
+      const profile = {};
+      autofillFields.forEach(key => {
+        if (parsedUser[key] !== undefined) profile[key] = parsedUser[key];
+        // Special mapping for fullName from name
+        if (key === "fullName" && parsedUser.name) profile.fullName = parsedUser.name;
+        if (key === "email" && parsedUser.email) profile.email = parsedUser.email;
+      });
+      return profile;
+    } catch (err) {
+      console.error("Error parsing user from localStorage:", err);
+      return {};
+    }
+  };
 
+  const [profile] = useState(getProfileData());
 
 
   // ✅ Show popup then loader then main form
@@ -252,46 +272,73 @@ const SellerForm = () => {
   const [emailError, setEmailError] = useState(null);
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const token = localStorage.getItem("access_token");
-        if (!token) return;
+    const verifyEmailAndFetchProfile = async () => {
+      const params = new URLSearchParams(location.search);
+      const token = params.get("token");
 
-        const res = await axios.get(
-          "https://advisor-seller-backend.vercel.app/api/sellers/profile",
-          { headers: { Authorization: `Bearer ${token}` } }
+      if (!token) return;
+
+      try {
+        // Step 1: Verify Email using GET + query string
+        const verifyRes = await axios.get(
+          `https://advisor-seller-backend.vercel.app/api/auth/verify-email?token=${token}`,
+          { validateStatus: () => true }
         );
 
-        if (res.status === 200) {
-          setProfileData(res.data);
-        } else {
-          console.error("Failed to fetch seller profile", res.data);
+        if (verifyRes.status === 200 && verifyRes.data.success) {
+          toast.success(verifyRes.data.message || "Email verified successfully ✅");
+          setEmailVerified(true);
+
+          // Fetch profile
+          const profileRes = await axios.get(
+            "https://advisor-seller-backend.vercel.app/api/auth/profile",
+            { headers: { Authorization: `Bearer ${token}` }, validateStatus: () => true }
+          );
+
+          if (profileRes.status === 200) {
+            const user = profileRes.data;
+            localStorage.setItem("user", JSON.stringify(user));
+
+            // Navigate based on role
+            if (user.role === "seller") {
+              navigate("/verify-email");          // ✅ updated route
+            } else {
+              navigate("/adviser-payment");      // ✅ updated route
+            }
+          } else {
+            toast.error("Failed to fetch profile ❌");
+          }
+        }
+        else {
+          toast.error(verifyRes.data?.message || "Email verification failed ❌");
+          setEmailVerified(false);
         }
       } catch (err) {
-        console.error("Error fetching seller profile", err);
+        console.error("Verification/Profile error:", err);
+        toast.error("Something went wrong while verifying email or fetching profile ❌");
+        setEmailVerified(false);
       }
     };
 
-    fetchProfile();
-  }, []);
+    verifyEmailAndFetchProfile();
+  }, [location.search]);
 
 
 
 
-
+  // ------------------- Formik Initial Values -------------------
   const initialValues = {
-    fullName: profileData?.fullName || "",
-    email: profileData?.email || "",
-    companyName: profileData?.companyName || "",
-    phone: profileData?.phone || "",
-    website: profileData?.website || "",
-    industry: profileData?.industry || "",
-    geography: profileData?.geography || "",
-    annualRevenue: profileData?.annualRevenue || "",
-    currency: profileData?.currency || "USD",
-    description: profileData?.description || "",
+    fullName: profile.fullName || "",
+    email: profile.email || "",
+    companyName: "",
+    phone: "",
+    website: "",
+    industry: "",
+    geography: "",
+    annualRevenue: "",
+    currency: "USD",
+    description: "",
   };
-
 
 
   // ------------------- Submit Handler -------------------
@@ -336,15 +383,6 @@ const SellerForm = () => {
       setSubmitting(false);
     }
   };
-
-  if (!profileData) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-primary/10 px-4 relative">

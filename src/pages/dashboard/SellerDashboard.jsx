@@ -205,13 +205,15 @@ const SellerDashboard = () => {
     const handleLogout = async () => {
         try {
             const token = localStorage.getItem("access_token");
-            await axios.post("https://advisor-seller-backend.vercel.app/api/auth/logout", {}, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
+            await axios.post(
+                "https://advisor-seller-backend.vercel.app/api/auth/logout",
+                {},
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
         } catch (err) {
-            // Optionally show error, but always redirect
+            // optionally handle errors
         } finally {
-            // Clear all session cookies
+            // Clear cookies
             if (typeof document !== 'undefined') {
                 const cookies = document.cookie.split(";");
                 for (let cookie of cookies) {
@@ -220,9 +222,17 @@ const SellerDashboard = () => {
                     document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
                 }
             }
-            window.location.href = "/seller-login";
+
+            // Show toast first
+            toast.success("Logged out successfully");
+
+            // Redirect after 1–2 seconds
+            setTimeout(() => {
+                window.location.href = "/seller-login";
+            }, 2000); // 2 seconds
         }
     };
+
     const [seller, setSeller] = useState(null);
     const [activeTab, setActiveTab] = useState("pending");
     const [loading, setLoading] = useState(false);
@@ -625,6 +635,7 @@ const SellerDashboard = () => {
                         {profileDropdownOpen && (
                             <div className="absolute right-0 mt-2 w-64 bg-white border rounded-xl shadow-lg p-4 z-50">
                                 <div className="flex flex-col gap-3">
+                                    {/* Name */}
                                     <div>
                                         <label className="text-sm text-gray-500">Name</label>
                                         <input
@@ -634,6 +645,8 @@ const SellerDashboard = () => {
                                             className="w-full px-3 py-2 border rounded-lg bg-gray-100 cursor-not-allowed"
                                         />
                                     </div>
+
+                                    {/* Email */}
                                     <div>
                                         <label className="text-sm text-gray-500">Email</label>
                                         <input
@@ -643,27 +656,64 @@ const SellerDashboard = () => {
                                             className="w-full px-3 py-2 border rounded-lg bg-gray-100 cursor-not-allowed"
                                         />
                                     </div>
+
+
+                                    /* Reset Password Button */
                                     <div>
-                                        <label className="text-sm text-gray-500">Password</label>
-                                        <div className="relative">
-                                            <input
-                                                type={showPassword ? "text" : "password"}
-                                                value={userProfile.password}
-                                                readOnly
-                                                className="w-full px-3 py-2 border rounded-lg bg-gray-100 cursor-not-allowed"
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowPassword(prev => !prev)}
-                                                className="absolute right-2 top-2 text-gray-500"
+                                        <button
+                                            type="button"
+                                            onClick={async () => {
+                                                try {
+                                                    const res = await axios.post(
+                                                        "https://advisor-seller-backend.vercel.app/api/auth/forgot-password",
+                                                        { email: userProfile.email },
+                                                        { validateStatus: () => true }
+                                                    );
+
+                                                    if (res.status === 200 || res.status === 201) {
+                                                        // Show success toast with controlled duration
+                                                        toast.success(res.data?.message || "Check your email to reset your password", {
+                                                            duration: 2000,
+                                                            id: "reset-password-success"
+                                                        });
+
+                                                        // Wait for toast to display fully before redirect
+                                                        setTimeout(() => {
+                                                            window.location.href = "/seller-login";
+                                                        }, 2000);
+                                                    } else {
+                                                        // Show error toast but DON'T redirect
+                                                        toast.error(res.data?.message || "Failed to send reset link. Please try again.");
+                                                    }
+                                                } catch (err) {
+                                                    console.error(err);
+                                                    // Show network error toast but DON'T redirect
+                                                    toast.error("Network error. Please try again later.");
+                                                }
+                                            }}
+                                            className="w-full mt-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/80 transition flex items-center justify-center gap-2"
+                                        >
+                                            <span>Reset Password</span>
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                className="h-5 w-5"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                stroke="currentColor"
                                             >
-                                                {showPassword ? "Hide" : "Show"}
-                                            </button>
-                                        </div>
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M12 4v16m8-8H4"
+                                                />
+                                            </svg>
+                                        </button>
                                     </div>
                                 </div>
                             </div>
                         )}
+
                     </div>
 
                 </header>

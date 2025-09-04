@@ -9,7 +9,6 @@ import { useNavigate } from 'react-router-dom';
 const Auth = () => {
     // On page load: clear localStorage and set default tokens/user
     useEffect(() => {
-        localStorage.clear();
         // Set default (empty) values for tokens and user data
         localStorage.setItem('access_token', '');
         localStorage.setItem('refresh_token', '');
@@ -90,6 +89,38 @@ const Auth = () => {
                 if (res.status === 200 || res.status === 201) {
                     // ✅ Login succeeded
                     toast.success("Login successful ✅");
+
+                    // Store access_token from login response (assuming it's in res.data.access_token)
+                    const accessToken = res.data.access_token;
+                    localStorage.setItem('access_token', accessToken);
+
+                    // Optionally store refresh_token and user if present in response
+                    if (res.data.refresh_token) {
+                        localStorage.setItem('refresh_token', res.data.refresh_token);
+                    }
+                    if (res.data.user) {
+                        localStorage.setItem('user', JSON.stringify(res.data.user));
+                    }
+
+                    // Call GET /api/auth/csrf-token with access-token in body
+                    const csrfRes = await axios.get(
+                        "https://advisor-seller-backend.vercel.app/api/auth/csrf-token",
+                        {
+                            data: { "access-token": accessToken },
+                            withCredentials: true,
+                            validateStatus: () => true
+                        }
+                    );
+
+                    if (csrfRes.status === 200 || csrfRes.status === 201) {
+                        // Store CSRF token (assuming it's in csrfRes.data.csrf_token)
+                       localStorage.setItem('x-csrf-token', csrfRes.data.csrfToken);
+                    } else {
+                        toast.error(csrfRes.data?.message || "Failed to fetch CSRF token");
+                    }
+                    console.log("Login Bearer token is ", localStorage.getItem('access_token'));
+                    console.log("Login CSRF token:", localStorage.getItem('x-csrf-token'));
+
                     navigate("/advisor-payments");
                 } else if (res.status === 401) {
                     toast.error("Incorrect email or password ❌");
@@ -104,8 +135,6 @@ const Auth = () => {
             }
         }
     };
-
-
 
     return (
         <div className="w-screen min-h-screen bg-white flex flex-col overflow-x-hidden">
@@ -182,8 +211,6 @@ const Auth = () => {
                         >
                             Forgot Password?
                         </span>
-
-
 
                         {/* Submit Button */}
                         <button
