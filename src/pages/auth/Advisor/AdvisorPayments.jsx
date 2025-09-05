@@ -138,7 +138,7 @@ const AdvisorPaymentForm = () => {
         const data = await response.json();
         if (response.ok) {
           toast.success("Free trial activated! 🎉 Redirecting to create your profile...");
-          // Redirect to profile creation
+          // Direct redirect to advisor-form
           setTimeout(() => {
             window.location.href = '/advisor-form';
           }, 2000);
@@ -251,7 +251,7 @@ const AdvisorPaymentForm = () => {
 
         toast.success("Payment confirmed! 🎉 Redirecting to create your profile...");
         resetForm();
-        // Redirect user to create advisor profile
+        // Direct redirect to advisor-form
         setTimeout(() => {
           window.location.href = '/advisor-form';
         }, 2000);

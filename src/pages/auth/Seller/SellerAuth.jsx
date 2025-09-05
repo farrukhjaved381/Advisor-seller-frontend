@@ -7,13 +7,17 @@ import { toast, Toaster } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
 const Auth = () => {
-    // On page load: clear localStorage and set default tokens/user
+    // On page load: set default values only if they don't exist
     useEffect(() => {
-        localStorage.clear();
-        // Set default (empty) values for tokens and user data
-        localStorage.setItem('access_token', '');
-        localStorage.setItem('refresh_token', '');
-        localStorage.setItem('user', JSON.stringify({}));
+        if (!localStorage.getItem('access_token')) {
+            localStorage.setItem('access_token', '');
+        }
+        if (!localStorage.getItem('refresh_token')) {
+            localStorage.setItem('refresh_token', '');
+        }
+        if (!localStorage.getItem('user')) {
+            localStorage.setItem('user', JSON.stringify({}));
+        }
     }, []);
     const [email, setEmail] = useState('');
     const [emailError, setEmailError] = useState('');
@@ -122,7 +126,7 @@ const Auth = () => {
             <Header />
             <div className="flex-grow w-full flex items-stretch">
                 <div id="left" className="w-[45%] bg-white h-screen">
-                    <img src="src/assets/login.png" alt="login-img" className="object-contain" />
+                    <img src="/login.png" alt="login-img" className="object-contain" />
                 </div>
                 <div id="right" className="w-[75%] flex justify-center items-center h-screen">
                     <form

@@ -344,10 +344,12 @@ const SellerForm = () => {
   // ------------------- Submit Handler -------------------
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
     try {
+      // Get token from localStorage
       const token = localStorage.getItem("access_token");
+      
       if (!token) {
-        toast.error("Unauthorized! Please log in again.");
-        navigate("/login");
+        toast.error("Please login first to create profile.");
+        navigate("/seller-login");
         return;
       }
 
@@ -369,12 +371,13 @@ const SellerForm = () => {
         { headers: { Authorization: `Bearer ${token}` }, validateStatus: () => true }
       );
 
-      if (res.status === 201) {
-        toast.success("Seller profile created successfully ✅");
+      if (res.status === 201 || res.status === 200) {
+        toast.success("Seller profile created successfully! Redirecting to dashboard...");
         resetForm();
-        navigate("/seller-dashboard");
+        // Direct redirect to seller dashboard
+        window.location.href = '/seller-dashboard';
       } else {
-        toast.error(res.data?.message || "Failed to create profile ❌");
+        toast.error(res.data?.message || "Failed to create profile. Please try again.");
       }
     } catch (err) {
       console.error("Error submitting seller form:", err);

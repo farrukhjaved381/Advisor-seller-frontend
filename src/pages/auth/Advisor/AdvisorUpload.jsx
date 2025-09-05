@@ -101,10 +101,11 @@ const AdvisorUpload = () => {
                 return;
             }
 
-            // 3. Final profile submit using cookies + CSRF only
-            const csrfToken = localStorage.getItem("x-csrf-token");
+            // 3. Final profile submit using JWT authentication
+            const token = localStorage.getItem("access_token");
             const payload = {
                 ...profileData,
+                logoUrl,
                 testimonials: filteredTestimonials,
             };
 
@@ -114,16 +115,20 @@ const AdvisorUpload = () => {
                 {
                     headers: {
                         "Content-Type": "application/json",
-                        "x-csrf-token": csrfToken,
+                        "Authorization": `Bearer ${token}`,
                     },
-                    withCredentials: true, // ✅ send cookies automatically
                 }
             );
 
-            toast.success("Advisor profile created successfully!");
+            toast.success("Advisor profile created successfully! Redirecting to dashboard...");
             resetForm();
             setLogoFile(null);
             sessionStorage.removeItem("advisor-profile");
+            
+            // Redirect to dashboard after success
+            setTimeout(() => {
+                window.location.href = '/advisor-dashboard';
+            }, 2000);
         } catch (error) {
             console.error(error);
             toast.error("Error submitting form. Please try again.");
