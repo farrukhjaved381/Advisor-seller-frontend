@@ -9,9 +9,7 @@ import { FaUser, FaGlobe, FaMapMarkerAlt, FaGift } from "react-icons/fa";
 
 // -------------------- Stripe --------------------
 console.log('Stripe Publishable Key:', import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY, {
-  apiVersion: '2025-08-27.basil',
-}).catch(err => {
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY).catch(err => {
   console.error('Failed to load Stripe:', err);
   return null;
 });
@@ -90,7 +88,7 @@ const AdvisorPaymentForm = () => {
   const stripe = useStripe();
   const elements = useElements();
 
-  const [amount, setAmount] = useState(5000); // Amount in cents
+  const [amount, setAmount] = useState(500000); // Amount in cents ($5000)
   const [couponApplied, setCouponApplied] = useState(false);
 
   // You might want to get the user's email from a global auth context
