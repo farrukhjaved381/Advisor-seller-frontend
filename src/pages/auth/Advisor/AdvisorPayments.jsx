@@ -8,7 +8,13 @@ import { Elements, CardElement, useStripe, useElements } from "@stripe/react-str
 import { FaUser, FaGlobe, FaMapMarkerAlt, FaGift } from "react-icons/fa";
 
 // -------------------- Stripe --------------------
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+console.log('Stripe Publishable Key:', import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY, {
+  apiVersion: '2025-08-27.basil',
+}).catch(err => {
+  console.error('Failed to load Stripe:', err);
+  return null;
+});
 
 // -------------------- CSRF Helper (CRITICALLY REVISED) --------------------
 class SecureAPI {
@@ -277,8 +283,37 @@ const AdvisorPaymentForm = () => {
           <ErrorMessage name="postalCode" component="p" className="text-red-500 text-sm" />
 
           {/* Card Element */}
-          <div className="border rounded-lg px-3 py-2">
-            <CardElement options={{ hidePostalCode: true }} />
+          <div className="border rounded-lg px-3 py-2 min-h-[50px]">
+            {stripe ? (
+              <CardElement 
+                options={{ 
+                  hidePostalCode: true,
+                  style: {
+                    base: {
+                      fontSize: '16px',
+                      color: '#424770',
+                      fontFamily: 'Arial, sans-serif',
+                      '::placeholder': {
+                        color: '#aab7c4',
+                      },
+                    },
+                    invalid: {
+                      color: '#9e2146',
+                    },
+                  },
+                }} 
+                onReady={() => console.log('CardElement ready')}
+                onChange={(event) => {
+                  if (event.error) {
+                    console.error('CardElement error:', event.error);
+                  }
+                }}
+              />
+            ) : (
+              <div className="flex items-center justify-center h-[40px]">
+                <p className="text-gray-500 text-sm">Loading payment form...</p>
+              </div>
+            )}
           </div>
 
           {/* Coupon */}
@@ -332,30 +367,46 @@ const AdvisorPaymentForm = () => {
 
 // -------------------- Wrapper Component (Revised) --------------------
 const AdvisorPayments = () => {
-  // useEffect to ensure CSRF token is fetched initially for the current session.
-  // This is crucial for authentication and CSRF to be in sync.
+  const [stripeError, setStripeError] = useState(null);
+
   useEffect(() => {
-    const fetchCsrfTokenForSession = async () => {
+    const initializeApp = async () => {
       try {
+        // Test Stripe loading
+        const stripe = await stripePromise;
+        if (!stripe) {
+          setStripeError('Failed to load Stripe. Please refresh the page.');
+          return;
+        }
+        console.log('Stripe loaded successfully');
+        
+        // Initialize CSRF token
         await SecureAPI.getCSRFToken();
       } catch (err) {
-        console.error("Failed to initialize CSRF token on mount:", err);
-        // Display an error or redirect to login if CSRF token cannot be fetched
-        // This indicates a potential problem with the current user's session
-        toast.error("Could not securely initialize payment form. Please log in again.");
-        // Example: setTimeout(() => window.location.href = '/login', 3000);
+        console.error("Failed to initialize:", err);
+        setStripeError('Failed to initialize payment system. Please refresh the page.');
       }
     };
 
-    fetchCsrfTokenForSession();
+    initializeApp();
+  }, []);
 
-    // IMPORTANT: Integrate SecureAPI.clearCsrfToken() and SecureAPI.getCSRFToken()
-    // with your global login/logout/session management context.
-    // E.g., if you have an AuthContext that handles login/logout:
-    // AuthContext.onLogin(() => { SecureAPI.clearCsrfToken(); SecureAPI.getCSRFToken(); });
-    // AuthContext.onLogout(() => { SecureAPI.clearCsrfToken(); });
-
-  }, []); // Empty dependency array means this runs once on mount, like a global init
+  if (stripeError) {
+    return (
+      <div className="w-full min-h-screen flex justify-center items-center bg-gray-100 p-6">
+        <div className="w-full max-w-lg bg-white shadow-lg rounded-xl p-8 text-center">
+          <h1 className="text-2xl font-bold mb-6 text-red-600">Payment System Error</h1>
+          <p className="text-gray-600 mb-4">{stripeError}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+          >
+            Refresh Page
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Elements stripe={stripePromise}>

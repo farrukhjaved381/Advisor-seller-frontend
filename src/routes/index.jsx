@@ -31,6 +31,7 @@ const AppRoutes = () => {
             <Route path="/advisor-login" element={<AdvisorSignin />} />
             <Route path="/advisor-register" element={<AdvisorRegister />} />
             <Route path="/adviser-payment" element={<AdvisorPayments />} />
+            <Route path="/advisor-payments" element={<AdvisorPayments />} />
             <Route path="/advisor-form" element={<AdvisorForm />} />
             <Route path="/advisor-dashboard" element={<AdvisorDashboard />} />
             <Route path="/reset-password" element={<ResetPassword />} />
