@@ -19,56 +19,81 @@ class SecureAPI {
   static BACKEND_URL = "https://advisor-seller-backend.vercel.app";
   static #csrfToken = null; // In-memory cache for the CSRF token
 
+  static getCsrfTokenFromCookie() {
+    console.log('All cookies:', document.cookie);
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+      const [name, value] = cookie.trim().split('=');
+      console.log('Cookie found:', name, '=', value);
+      if (name === 'csrf-token') {
+        return decodeURIComponent(value);
+      }
+    }
+    console.log('csrf-token cookie not found');
+    return null;
+  }
+
   static async getCSRFToken() {
+    // First try to get CSRF token from cookie (set during login)
+    const cookieCsrfToken = this.getCsrfTokenFromCookie();
+    if (cookieCsrfToken) {
+      SecureAPI.#csrfToken = cookieCsrfToken;
+      console.log("Using CSRF token from cookie:", SecureAPI.#csrfToken);
+      return SecureAPI.#csrfToken;
+    }
+
+    // Fallback to localStorage
+    const storedCsrfToken = localStorage.getItem('x-csrf-token');
+    if (storedCsrfToken) {
+      SecureAPI.#csrfToken = storedCsrfToken;
+      console.log("Using CSRF token from storage:", SecureAPI.#csrfToken);
+      return SecureAPI.#csrfToken;
+    }
+
     if (SecureAPI.#csrfToken) {
       console.log("Using cached CSRF token from memory:", SecureAPI.#csrfToken);
       return SecureAPI.#csrfToken;
     }
 
-    try {
-      const response = await fetch(`${this.BACKEND_URL}/api/auth/csrf-token`, {
-        credentials: "include", // This sends the HttpOnly session cookie
-      });
-      if (!response.ok) {
-        // Log more details from the backend if possible
-        const errorText = await response.text();
-        throw new Error(`Failed to fetch CSRF token: ${response.status} ${errorText}`);
-      }
-      const data = await response.json();
-      if (data.csrfToken) {
-        SecureAPI.#csrfToken = data.csrfToken; // Store in in-memory cache
-        console.log("CSRF token fetched and stored in memory:", SecureAPI.#csrfToken);
-        return SecureAPI.#csrfToken;
-      }
-      throw new Error("CSRF token not found in response data");
-    } catch (error) {
-      console.error("Error fetching CSRF token:", error);
-      toast.error("Security Error: Could not load. Please check your login status.");
-      // Potentially redirect to login here if there's a strong assumption of auth
-      throw error; // Re-throw to propagate the error
-    }
+    throw new Error("No CSRF token available. Please login again.");
   }
 
   // New method to clear the CSRF token cache
   static clearCsrfToken() {
     SecureAPI.#csrfToken = null;
+    sessionStorage.removeItem('csrfToken');
     console.log("CSRF token cache cleared from memory.");
-    // If you had a JWT in localStorage (which we moved to HttpOnly), you'd clear it here too.
+  }
+
+  // Method to set CSRF token from login
+  static setCsrfToken(token) {
+    SecureAPI.#csrfToken = token;
+    sessionStorage.setItem('csrfToken', token);
+    console.log("CSRF token set from login:", token);
   }
 
   static async secureRequest(url, options = {}) {
-    const csrfToken = await this.getCSRFToken(); // Always get the current/fresh token
+    const csrfToken = await this.getCSRFToken();
+    // Get JWT token from where it's actually stored after login
+    const token = localStorage.getItem('access_token') || localStorage.getItem('token') || sessionStorage.getItem('access_token') || sessionStorage.getItem('token');
+    
+    console.log('JWT Token for request:', token ? 'Present' : 'Missing');
+    
     const defaultHeaders = {
       "Content-Type": "application/json",
-      "x-csrf-token": csrfToken, // THIS IS THE CRUCIAL HEADER
+      "x-csrf-token": csrfToken,
+      ...(token && { "Authorization": `Bearer ${token}` })
     };
+    
+    console.log('Sending CSRF token:', csrfToken);
+    console.log('JWT Token present:', !!token);
 
     return fetch(`${this.BACKEND_URL}${url}`, {
       ...options,
-      credentials: "include", // Ensure cookies are sent
+      credentials: "include",
       headers: {
         ...defaultHeaders,
-        ...options.headers, // Allow overriding headers
+        ...options.headers,
       },
     });
   }
@@ -112,10 +137,10 @@ const AdvisorPaymentForm = () => {
 
         const data = await response.json();
         if (response.ok) {
-          toast.success("Free trial activated! 🎉 You can now create your profile.");
+          toast.success("Free trial activated! 🎉 Redirecting to create your profile...");
           // Redirect to profile creation
           setTimeout(() => {
-            window.location.href = '/advisor/create-profile';
+            window.location.href = '/advisor-form';
           }, 2000);
           return;
         } else {
@@ -224,10 +249,12 @@ const AdvisorPaymentForm = () => {
           return;
         }
 
-        toast.success("Payment confirmed and profile activated! 🎉");
+        toast.success("Payment confirmed! 🎉 Redirecting to create your profile...");
         resetForm();
-        // Redirect user to create advisor profile or success page
-        // window.location.href = '/advisor/create-profile'; // Example redirect
+        // Redirect user to create advisor profile
+        setTimeout(() => {
+          window.location.href = '/advisor-form';
+        }, 2000);
       } else {
         toast.error(`Stripe payment not succeeded. Current status: ${paymentIntent?.status || 'unknown'} ❌`);
       }
@@ -266,9 +293,11 @@ const AdvisorPaymentForm = () => {
             <FaGlobe className="mr-2 text-gray-500" />
             <Field as="select" name="country" className="w-full outline-none">
               <option value="">Select country*</option>
-              <option value="Pakistan">Pakistan</option>
-              <option value="USA">USA</option>
-              <option value="UK">UK</option>
+              <option value="PK">Pakistan</option>
+              <option value="US">United States</option>
+              <option value="GB">United Kingdom</option>
+              <option value="CA">Canada</option>
+              <option value="AU">Australia</option>
             </Field>
           </div>
           <ErrorMessage name="country" component="p" className="text-red-500 text-sm" />
