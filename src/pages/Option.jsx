@@ -3,65 +3,137 @@ import { useNavigate } from 'react-router-dom';
 import Header from '../components/common/Header.jsx'
 import Footer from '../components/common/Footer.jsx'
 
-
 const Option = () => {
     const navigate = useNavigate();
+    
     return (
-        <div className="w-screen min-h-screen bg-white flex flex-col overflow-x-hidden">
+        <div className="w-screen min-h-screen bg-gradient-to-br from-gray-50 to-white flex flex-col overflow-x-hidden">
             <Header />
-            <div className='flex-grow w-full flex items-stretch'>
-                <div id="left" className="w-[45%] bg-white h-screen">
-                    <img src="src\assets\Option.png" alt="login-img" className="object-cover h-full w-full" />
+            
+            {/* Main Content */}
+            <div className='flex-grow w-full flex items-stretch pt-20'>
+                {/* Left Side - Image */}
+                <div className="w-[45%] relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-third/30 z-10"></div>
+                    <img 
+                        src="https://images.unsplash.com/photo-1557804506-669a67965ba0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80" 
+                        alt="Professional business meeting" 
+                        className="object-cover h-full w-full transform hover:scale-105 transition-transform duration-700" 
+                    />
+                    
+                    {/* Floating Elements */}
+                    <div className="absolute top-8 left-8 z-20">
+                        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 shadow-xl">
+                            <div className="flex items-center space-x-2">
+                                <div className="w-3 h-3 bg-primary rounded-full animate-pulse"></div>
+                                <span className="text-secondary font-semibold text-sm">Live Deals</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div className="absolute bottom-8 left-8 z-20">
+                        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 shadow-xl">
+                            <div className="text-secondary font-bold text-2xl">$2.4M+</div>
+                            <div className="text-gray-600 text-sm">Deals Closed</div>
+                        </div>
+                    </div>
                 </div>
-                <div id="right" className="w-[75%] flex justify-center items-center h-screen">
-                    <div className=' w-[50%] h-[50%] flex flex-col justify-center items-center'>
-                        <h1 className='text-5xl font-black'>Let's do some deals!</h1>
-                        <p className='text-xl text-gray-600 font-medium text-center mt-[5%]'>Streamline your deal flow process with our platform. <br /> Connect with qualified buyers or find the perfect <br /> investment opportunity.</p>
-                        <div className='w-[80%] h-[35%] mt-10 flex flex-col justify-between items-center'>
-
+                
+                {/* Right Side - Content */}
+                <div className="w-[55%] flex justify-center items-center min-h-screen bg-gradient-to-bl from-white to-gray-50/50 relative">
+                    {/* Background Pattern */}
+                    <div className="absolute inset-0 opacity-5">
+                        <div className="absolute top-20 left-20 w-32 h-32 bg-primary rounded-full blur-3xl"></div>
+                        <div className="absolute bottom-32 right-20 w-48 h-48 bg-third rounded-full blur-3xl"></div>
+                    </div>
+                    
+                    <div className='w-[70%] max-w-md flex flex-col justify-center items-center relative z-10'>
+                        {/* Main Heading */}
+                        <div className="text-center mb-8 animate-fadeIn">
+                            <div className="inline-flex items-center bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-semibold mb-6">
+                                <span className="w-2 h-2 bg-primary rounded-full mr-2 animate-pulse"></span>
+                                Welcome to DealFlow
+                            </div>
+                            
+                            <h1 className='text-5xl font-black text-secondary mb-4 leading-tight'>
+                                Let's do some 
+                                <span className="bg-gradient-to-r from-primary to-third bg-clip-text text-transparent"> deals!</span>
+                            </h1>
+                            
+                            <p className='text-lg text-gray-600 font-medium text-center leading-relaxed'>
+                                Streamline your deal flow process with our platform. 
+                                <br className="hidden sm:block" /> 
+                                Connect with qualified buyers or find the perfect 
+                                <br className="hidden sm:block" /> 
+                                investment opportunity.
+                            </p>
+                        </div>
+                        
+                        {/* Action Buttons */}
+                        <div className='w-full space-y-4 animate-fadeIn'>
                             <button
                                 onClick={() => navigate('/advisor-login')}
                                 className="
-        relative overflow-hidden border-2 border-primary text-primary
-        px-6 py-5 font-semibold rounded-lg
-        transition-colors duration-300 w-full text-xl
-        group
-    "
+                                    group relative w-full overflow-hidden
+                                    bg-gradient-to-r from-primary to-third
+                                    text-white font-semibold text-lg
+                                    px-8 py-4 rounded-xl
+                                    transform hover:scale-105 hover:shadow-2xl
+                                    transition-all duration-300 ease-out
+                                    border-0
+                                "
                             >
-                                <span className="relative z-10 group-hover:text-white">Advisor Login</span>
-                                <span
-                                    className="
-            absolute left-0 top-0 h-full w-0 bg-primary
-            transition-all duration-300 ease-in-out
-            group-hover:w-full z-0
-        "
-                                ></span>
+                                <div className="absolute inset-0 bg-gradient-to-r from-third to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                <div className="relative flex items-center justify-center space-x-2">
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                    <span>Advisor Login</span>
+                                </div>
                             </button>
 
                             <button
-                            onClick={() => navigate('/seller-login')}
+                                onClick={() => navigate('/seller-login')}
                                 className="
-    relative overflow-hidden border-2 border-primary text-primary
-    px-6 py-5 font-semibold rounded-lg
-    transition-colors duration-300 w-full text-xl
-    group
-  "
+                                    group relative w-full overflow-hidden
+                                    bg-white border-2 border-primary
+                                    text-primary font-semibold text-lg
+                                    px-8 py-4 rounded-xl
+                                    transform hover:scale-105 hover:shadow-2xl
+                                    transition-all duration-300 ease-out
+                                "
                             >
-                                <span className="relative z-10 group-hover:text-white">Seller Login</span>
-                                <span
-                                    className="
-      absolute left-0 top-0 h-full w-0 bg-primary
-      transition-all duration-300 ease-in-out
-      group-hover:w-full z-0
-    "
-                                ></span>
+                                <div className="absolute inset-0 bg-gradient-to-r from-primary to-third opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                <div className="relative flex items-center justify-center space-x-2 group-hover:text-white transition-colors duration-300">
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                    </svg>
+                                    <span>Seller Login</span>
+                                </div>
                             </button>
                         </div>
-
-
+                        
+                        {/* Stats Section */}
+                        <div className="w-full mt-12 pt-8 border-t border-gray-200">
+                            <div className="grid grid-cols-3 gap-4 text-center">
+                                <div className="p-3">
+                                    <div className="text-2xl font-bold text-primary">500+</div>
+                                    <div className="text-xs text-gray-500 uppercase tracking-wide">Active Users</div>
+                                </div>
+                                <div className="p-3">
+                                    <div className="text-2xl font-bold text-third">$50M+</div>
+                                    <div className="text-xs text-gray-500 uppercase tracking-wide">Volume</div>
+                                </div>
+                                <div className="p-3">
+                                    <div className="text-2xl font-bold text-secondary">98%</div>
+                                    <div className="text-xs text-gray-500 uppercase tracking-wide">Success Rate</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
+            
             <Footer />
         </div>
     )

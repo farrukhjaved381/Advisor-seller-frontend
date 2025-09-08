@@ -55,7 +55,8 @@ class SecureAPI {
       return SecureAPI.#csrfToken;
     }
 
-    throw new Error("No CSRF token available. Please login again.");
+    console.warn("No CSRF token available. User needs to login first.");
+    return null; // Return null instead of throwing error
   }
 
   // New method to clear the CSRF token cache
@@ -407,8 +408,11 @@ const AdvisorPayments = () => {
         }
         console.log('Stripe loaded successfully');
         
-        // Initialize CSRF token
-        await SecureAPI.getCSRFToken();
+        // Try to initialize CSRF token (optional for non-logged users)
+        const csrfToken = await SecureAPI.getCSRFToken();
+        if (!csrfToken) {
+          console.log('No CSRF token available - user needs to login first');
+        }
       } catch (err) {
         console.error("Failed to initialize:", err);
         setStripeError('Failed to initialize payment system. Please refresh the page.');

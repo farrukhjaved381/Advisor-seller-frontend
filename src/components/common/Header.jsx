@@ -32,7 +32,7 @@ const Header = () => {
             <div className="h-full w-[13%] min-w-[8%] flex justify-center items-center">
                 <a href="https://cimamplify.com/" target="_blank" rel="noopener noreferrer">
                     <img
-                        src="src/assets/fullLogo.svg"
+                        src="/fullLogo.svg"
                         alt="logo"
                         className="object-contain h-10 cursor-pointer"
                     />

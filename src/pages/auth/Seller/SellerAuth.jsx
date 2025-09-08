@@ -19,6 +19,7 @@ const Auth = () => {
             localStorage.setItem('user', JSON.stringify({}));
         }
     }, []);
+    
     const [email, setEmail] = useState('');
     const [emailError, setEmailError] = useState('');
     const [password, setPassword] = useState('');
@@ -117,108 +118,256 @@ const Auth = () => {
         }
     };
 
-
-
-
     return (
-        <div className="w-screen min-h-screen bg-white flex flex-col overflow-x-hidden">
-            <Toaster position="top-center" reverseOrder={false} />
+        <div className="w-screen min-h-screen bg-gradient-to-br from-gray-50 to-white flex flex-col overflow-x-hidden">
+            <Toaster 
+                position="top-center" 
+                reverseOrder={false}
+                toastOptions={{
+                    duration: 4000,
+                    style: {
+                        background: '#fff',
+                        color: '#17252a',
+                        borderRadius: '12px',
+                        padding: '16px',
+                        boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                    },
+                }}
+            />
             <Header />
-            <div className="flex-grow w-full flex items-stretch">
-                <div id="left" className="w-[45%] bg-white h-screen">
-                    <img src="/login.png" alt="login-img" className="object-contain" />
+            
+            {/* Main Content */}
+            <div className="flex-grow w-full flex items-stretch pt-20">
+                {/* Left Side - Image */}
+                <div className="w-[45%] relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-third/30 z-10"></div>
+                    <img 
+ src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+
+                        alt="Professional seller workspace" 
+                        className="object-cover h-full w-full transform hover:scale-105 transition-transform duration-700" 
+                    />
+                    
+                    {/* Floating Welcome Card */}
+                    <div className="absolute top-8 left-8 z-20">
+                        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-xl max-w-sm">
+                            <div className="flex items-center space-x-3 mb-3">
+                                <div className="w-4 h-4 bg-gradient-to-r from-primary to-third rounded-full animate-pulse"></div>
+                                <span className="text-secondary font-bold text-lg">Welcome Seller!</span>
+                            </div>
+                            <p className="text-gray-600 text-sm leading-relaxed">
+                                Access your seller dashboard and manage your products seamlessly.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    {/* Security Badge */}
+                    <div className="absolute bottom-8 right-8 z-20">
+                        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 shadow-xl">
+                            <div className="flex items-center space-x-2">
+                                <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                </svg>
+                                <span className="text-secondary font-semibold text-sm">Secure Login</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {/* Decorative Pattern */}
+                    <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-secondary/10 to-transparent z-10"></div>
                 </div>
-                <div id="right" className="w-[75%] flex justify-center items-center h-screen">
+                
+                {/* Right Side - Form */}
+                <div className="w-[55%] flex justify-center items-center min-h-screen bg-gradient-to-bl from-white to-gray-50/50 relative">
+                    {/* Background Pattern */}
+                    <div className="absolute inset-0 opacity-5">
+                        <div className="absolute top-32 right-32 w-40 h-40 bg-primary rounded-full blur-3xl"></div>
+                        <div className="absolute bottom-32 left-20 w-56 h-56 bg-third rounded-full blur-3xl"></div>
+                    </div>
+                    
                     <form
                         onSubmit={handleSubmit}
-                        className="text-center w-[60%] min-h-[60%] flex flex-col justify-start items-center gap-6 py-10 px-4"
+                        className="relative z-10 w-[80%] max-w-lg bg-white/70 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-white/20"
                     >
-                        <h2 className="text-3xl font-bold">Welcome Seller!</h2>
+                        {/* Header Section */}
+                        <div className="text-center mb-8">
+                            <div className="inline-flex items-center bg-gradient-to-r from-primary/10 to-third/10 text-primary px-4 py-2 rounded-full text-sm font-semibold mb-4">
+                                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                                </svg>
+                                Seller Portal
+                            </div>
+                            
+                            <h2 className="text-3xl font-black text-secondary mb-2">
+                                Welcome Back!
+                            </h2>
+                            <p className="text-gray-600 font-medium">
+                                Sign in to your seller account
+                            </p>
+                        </div>
 
                         {/* Email Field */}
-                        <div className="w-full flex flex-col items-start">
-                            <label htmlFor="email" className="font-semibold text-lg">Email Address</label>
-                            <input
-                                type="text"
-                                id="email"
-                                value={email}
-                                onChange={handleEmailChange}
-                                disabled={loading}
-                                className={`w-full h-12 rounded-lg px-3 border-2 focus:ring-2 outline-none ${emailError ? 'border-red-500' : 'border-primary/30 focus:border-primary focus:ring-primary'
+                        <div className="mb-6">
+                            <label htmlFor="email" className="block text-secondary font-semibold text-sm mb-3">
+                                Email Address
+                            </label>
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    id="email"
+                                    value={email}
+                                    onChange={handleEmailChange}
+                                    disabled={loading}
+                                    placeholder="Enter your email"
+                                    className={`w-full h-12 rounded-xl px-4 pl-11 bg-white/80 backdrop-blur-sm border-2 focus:ring-2 outline-none transition-all duration-300 ${
+                                        emailError 
+                                            ? 'border-red-400 focus:border-red-500 focus:ring-red-200' 
+                                            : 'border-gray-200 focus:border-primary focus:ring-primary/20 hover:border-gray-300'
                                     }`}
-                            />
-                            {emailError && <span className="text-red-500 text-sm mt-1">{emailError}</span>}
+                                />
+                                <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                                </svg>
+                            </div>
+                            {emailError && (
+                                <div className="flex items-center mt-2 text-red-500 text-sm">
+                                    <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                    </svg>
+                                    {emailError}
+                                </div>
+                            )}
                         </div>
 
                         {/* Password Field */}
-                        <div className="w-full flex flex-col items-start relative">
-                            <label htmlFor="password" className="font-semibold text-lg">Password</label>
-                            <div className="w-full relative">
+                        <div className="mb-6">
+                            <label htmlFor="password" className="block text-secondary font-semibold text-sm mb-3">
+                                Password
+                            </label>
+                            <div className="relative">
                                 <input
                                     type={showPassword ? 'text' : 'password'}
                                     id="password"
                                     value={password}
                                     onChange={handlePasswordChange}
                                     disabled={loading}
-                                    className={`w-full h-12 rounded-lg px-3 pr-10 border-2 focus:ring-2 outline-none ${passwordError ? 'border-red-500' : 'border-primary/30 focus:border-primary focus:ring-primary'
-                                        }`}
+                                    placeholder="Enter your password"
+                                    className={`w-full h-12 rounded-xl px-4 pl-11 pr-12 bg-white/80 backdrop-blur-sm border-2 focus:ring-2 outline-none transition-all duration-300 ${
+                                        passwordError 
+                                            ? 'border-red-400 focus:border-red-500 focus:ring-red-200' 
+                                            : 'border-gray-200 focus:border-primary focus:ring-primary/20 hover:border-gray-300'
+                                    }`}
                                 />
+                                <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                </svg>
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
                                     disabled={loading}
-                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600"
+                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
                                 >
-                                    {showPassword ? <FaEye /> : <FaEyeSlash />}
+                                    {showPassword ? <FaEye className="w-5 h-5" /> : <FaEyeSlash className="w-5 h-5" />}
                                 </button>
                             </div>
-                            {passwordError && <span className="text-red-500 text-sm mt-1">{passwordError}</span>}
+                            
+                            {passwordError && (
+                                <div className="flex items-center mt-2 text-red-500 text-sm">
+                                    <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                    </svg>
+                                    {passwordError}
+                                </div>
+                            )}
 
                             {password && !passwordError && (
-                                <span
-                                    className={`text-sm mt-1 ${passwordStrength === 'Weak'
-                                        ? 'text-red-500'
-                                        : passwordStrength === 'Medium'
-                                            ? 'text-yellow-500'
-                                            : 'text-green-500'
+                                <div className="flex items-center mt-2">
+                                    <div className="flex space-x-1 mr-3">
+                                        {[...Array(3)].map((_, i) => (
+                                            <div
+                                                key={i}
+                                                className={`h-1 w-6 rounded-full transition-colors ${
+                                                    (passwordStrength === 'Weak' && i === 0) ||
+                                                    (passwordStrength === 'Medium' && i <= 1) ||
+                                                    (passwordStrength === 'Strong' && i <= 2)
+                                                        ? passwordStrength === 'Weak'
+                                                            ? 'bg-red-400'
+                                                            : passwordStrength === 'Medium'
+                                                            ? 'bg-yellow-400'
+                                                            : 'bg-green-400'
+                                                        : 'bg-gray-200'
+                                                }`}
+                                            />
+                                        ))}
+                                    </div>
+                                    <span
+                                        className={`text-xs font-medium ${
+                                            passwordStrength === 'Weak'
+                                                ? 'text-red-500'
+                                                : passwordStrength === 'Medium'
+                                                ? 'text-yellow-600'
+                                                : 'text-green-500'
                                         }`}
-                                >
-                                    Strength: {passwordStrength}
-                                </span>
+                                    >
+                                        {passwordStrength} Password
+                                    </span>
+                                </div>
                             )}
                         </div>
 
                         {/* Forgot Password */}
-                        <span
-                            className="text-primary w-full text-right mt-2 ease-in-out duration-300 hover:text-secondary hover:scale-105 cursor-pointer"
-                            onClick={() => navigate("/forgot-password")}
-                        >
-                            Forgot Password?
-                        </span>
-
-
+                        <div className="text-right mb-6">
+                            <button
+                                type="button"
+                                onClick={() => navigate("/forgot-password")}
+                                className="text-primary hover:text-third font-medium text-sm transition-colors duration-200 hover:underline"
+                            >
+                                Forgot Password?
+                            </button>
+                        </div>
 
                         {/* Submit Button */}
                         <button
                             type="submit"
                             disabled={loading}
-                            className={`w-full h-14 text-lg font-medium text-white rounded-2xl mt-6 flex items-center justify-center
-                                ${loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary/80 hover:bg-primary hover:scale-105 ease-in-out duration-300'}`}
+                            className={`w-full h-14 rounded-xl font-semibold text-white text-lg transition-all duration-300 flex items-center justify-center ${
+                                loading
+                                    ? 'bg-gray-400 cursor-not-allowed'
+                                    : 'bg-gradient-to-r from-primary to-third hover:shadow-2xl hover:shadow-primary/25 transform hover:scale-105 active:scale-95'
+                            }`}
                         >
                             {loading ? (
-                                <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                <div className="flex items-center space-x-2">
+                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                    <span>Signing in...</span>
+                                </div>
                             ) : (
-                                "Login my account"
+                                <div className="flex items-center space-x-2">
+                                    <span>Login my account</span>
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                                    </svg>
+                                </div>
                             )}
                         </button>
 
-                        <p className="mt-4 w-full text-center">
-                            Don't have an account?{' '}
-                            <span onClick={() => navigate("/seller-register")} className="text-primary hover:text-secondary cursor-pointer">signup</span>
-                        </p>
+                        {/* Sign up link */}
+                        <div className="text-center mt-6 pt-6 border-t border-gray-200">
+                            <p className="text-gray-600">
+                                Don't have an account?{' '}
+                                <button
+                                    type="button"
+                                    onClick={() => navigate("/seller-register")}
+                                    className="text-primary hover:text-third font-semibold transition-colors duration-200 hover:underline"
+                                >
+                                    signup
+                                </button>
+                            </p>
+                        </div>
                     </form>
                 </div>
             </div>
+            
             <Footer />
         </div>
     );

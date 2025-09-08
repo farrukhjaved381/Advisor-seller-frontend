@@ -117,7 +117,7 @@ const Auth = () => {
             <Header />
             <div className="flex-grow w-full flex items-stretch">
                 <div id="left" className="w-[45%] bg-white h-screen ">
-                    <img src="src/assets/login.png" alt="login-img" className="object-contain" />
+                    <img src="/login.png" alt="login-img" className="object-contain" />
                 </div>
                 <div id="right" className="w-[75%] flex justify-center items-center h-screen ">
                     <form
