@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import AdvisorCard from "../../components/AdvisorCard";
+import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -814,9 +816,6 @@ const SellerDashboard = () => {
                                         Refresh Matches
                                     </button>
                                 </div>
-import AdvisorCard from "../../components/AdvisorCard";
-
-// ... (rest of the file)
 
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
