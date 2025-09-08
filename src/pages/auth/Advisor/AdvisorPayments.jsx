@@ -8,7 +8,6 @@ import { Elements, CardElement, useStripe, useElements } from "@stripe/react-str
 import { FaUser, FaGlobe, FaMapMarkerAlt, FaGift } from "react-icons/fa";
 
 // -------------------- Stripe --------------------
-console.log('Stripe Publishable Key:', import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY).catch(err => {
   console.error('Failed to load Stripe:', err);
   return null;
