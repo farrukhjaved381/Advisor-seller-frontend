@@ -814,125 +814,14 @@ const SellerDashboard = () => {
                                         Refresh Matches
                                     </button>
                                 </div>
+import AdvisorCard from "../../components/AdvisorCard";
+
+// ... (rest of the file)
+
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
                                     {matches.map((advisor) => (
-                                        <div
-                                            key={advisor.id || advisor._id}
-                                            className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 hover:border-blue-200 transform hover:-translate-y-1"
-                                        >
-                                            {/* Header */}
-                                            <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-4 text-white">
-                                                <div className="flex items-center space-x-3">
-                                                    {advisor.logoUrl ? (
-                                                        <img src={advisor.logoUrl} alt="Logo" className="w-12 h-12 rounded-full bg-white p-1" />
-                                                    ) : (
-                                                        <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-blue-600 font-bold">
-                                                            {advisor.companyName?.charAt(0) || 'A'}
-                                                        </div>
-                                                    )}
-                                                    <div>
-                                                        <h3 className="font-bold text-lg">{advisor.companyName}</h3>
-                                                        <p className="text-blue-100 text-sm">{advisor.advisorName}</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* Content */}
-                                            <div className="p-4 space-y-3">
-                                                <div className="flex justify-between items-center">
-                                                    <span className="text-sm text-gray-500">Experience</span>
-                                                    <span className="font-semibold">{advisor.yearsExperience} years</span>
-                                                </div>
-                                                
-                                                <div className="flex justify-between items-center">
-                                                    <span className="text-sm text-gray-500">Transactions</span>
-                                                    <span className="font-semibold">{advisor.numberOfTransactions}</span>
-                                                </div>
-
-                                                <div className="flex justify-between items-center">
-                                                    <span className="text-sm text-gray-500">Licensed</span>
-                                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                                        advisor.licensing === 'yes' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                                                    }`}>
-                                                        {advisor.licensing === 'yes' ? 'Yes' : 'No'}
-                                                    </span>
-                                                </div>
-
-                                                {/* Industries */}
-                                                <div>
-                                                    <span className="text-sm text-gray-500 block mb-1">Industries</span>
-                                                    <div className="flex flex-wrap gap-1">
-                                                        {advisor.industries?.slice(0, 2).map((industry, idx) => (
-                                                            <span key={idx} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
-                                                                {industry}
-                                                            </span>
-                                                        ))}
-                                                        {advisor.industries?.length > 2 && (
-                                                            <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
-                                                                +{advisor.industries.length - 2}
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                </div>
-
-                                                {/* Description */}
-                                                <p className="text-gray-600 text-sm line-clamp-3">
-                                                    {advisor.description}
-                                                </p>
-
-                                                {/* Contact Info */}
-                                                <div className="text-xs text-gray-500 space-y-1">
-                                                    <div>📧 {advisor.advisorEmail}</div>
-                                                    <div>📞 {advisor.phone}</div>
-                                                    {advisor.website && (
-                                                        <div>🌐 <a href={advisor.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                                                            {advisor.website}
-                                                        </a></div>
-                                                    )}
-                                                </div>
-                                            </div>
-
-                                            {/* Action Buttons */}
-                                            <div className="p-4 bg-gray-50 flex space-x-2">
-                                                <button
-                                                    onClick={async () => {
-                                                        try {
-                                                            const token = localStorage.getItem('access_token');
-                                                            await axios.post(
-                                                                'https://advisor-seller-backend.vercel.app/api/connections/introduction',
-                                                                { advisorIds: [advisor.id] },
-                                                                { headers: { Authorization: `Bearer ${token}` } }
-                                                            );
-                                                            toast.success('Introduction request sent!');
-                                                        } catch (error) {
-                                                            toast.error('Failed to send introduction request');
-                                                        }
-                                                    }}
-                                                    className="flex-1 bg-blue-600 text-white py-2 px-3 rounded-lg text-sm font-medium hover:bg-blue-700 transition"
-                                                >
-                                                    Request Introduction
-                                                </button>
-                                                <button
-                                                    onClick={async () => {
-                                                        try {
-                                                            const token = localStorage.getItem('access_token');
-                                                            await axios.post(
-                                                                'https://advisor-seller-backend.vercel.app/api/connections/direct-list',
-                                                                {},
-                                                                { headers: { Authorization: `Bearer ${token}` } }
-                                                            );
-                                                            toast.success('Direct contact list requested!');
-                                                        } catch (error) {
-                                                            toast.error('Failed to request direct list');
-                                                        }
-                                                    }}
-                                                    className="flex-1 bg-green-600 text-white py-2 px-3 rounded-lg text-sm font-medium hover:bg-green-700 transition"
-                                                >
-                                                    Get Direct List
-                                                </button>
-                                            </div>
-                                        </div>
+                                        <AdvisorCard key={advisor.id} advisor={advisor} />
                                     ))}
                                 </div>
                             )}
