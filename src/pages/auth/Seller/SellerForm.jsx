@@ -36,26 +36,47 @@ const mapGeography = (selectedId) => {
 
 // ✅ Validation schema
 const SellerSchema = Yup.object().shape({
-  fullName: Yup.string().required("Full Name is required"),
-  email: Yup.string().email("Invalid email").required("Email is required"),
+  fullName: Yup.string()
+    .min(2, "Full name must be at least 2 characters")
+    .max(50, "Full name must not exceed 50 characters")
+    .matches(/^[a-zA-Z\s]+$/, "Full name can only contain letters and spaces")
+    .required("Full Name is required"),
+  email: Yup.string()
+    .email("Invalid email format")
+    .matches(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Please enter a valid email address")
+    .required("Email is required"),
   companyName: Yup.string()
-    .min(3, "Company name must be at least 3 characters")
+    .min(2, "Company name must be at least 2 characters")
+    .max(100, "Company name must not exceed 100 characters")
     .required("Company name is required"),
   phone: Yup.string()
-    .matches(/^\+?[0-9\- ]+$/, "Enter a valid phone number")
+    .matches(/^\+?[1-9]\d{1,14}$/, "Enter a valid phone number with country code")
+    .min(10, "Phone number must be at least 10 digits")
     .required("Phone is required"),
   website: Yup.string()
-    .url("Enter a valid website URL (https://example.com)")
+    .matches(/^https?:\/\/.+\..+/, "Website must be a valid URL (https://example.com)")
+    .url("Enter a valid website URL")
     .required("Website is required"),
-  industry: Yup.string().required("Industry is required"),
-  geography: Yup.string().required("Geography is required"),
+  industry: Yup.string()
+    .min(1, "Please select an industry")
+    .required("Industry is required"),
+  geography: Yup.string()
+    .min(1, "Please select a geography")
+    .required("Geography is required"),
   annualRevenue: Yup.number()
+    .nullable()
+    .transform(value => (isNaN(value) || value === null || value === '' ? null : value))
+    .min(1000, "Annual revenue must be at least $1,000")
+    .max(999999999, "Annual revenue is too large")
     .required("Annual revenue is required")
-    .positive("Annual revenue must be positive"),
-
-  currency: Yup.string().required("Currency is required"),
+    .typeError("Annual revenue must be a valid number"),
+  currency: Yup.string()
+    .oneOf(["USD", "PKR", "EUR", "GBP"], "Please select a valid currency")
+    .required("Currency is required"),
   description: Yup.string()
-    .min(10, "Description must be at least 10 characters")
+    .min(20, "Description must be at least 20 characters")
+    .max(1000, "Description must not exceed 1000 characters")
+    .matches(/^(?!\s*$).+/, "Description cannot be empty or just whitespace")
     .required("Description is required"),
 });
 

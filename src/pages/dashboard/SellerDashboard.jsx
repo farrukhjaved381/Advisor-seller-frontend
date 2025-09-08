@@ -278,42 +278,46 @@ const SellerDashboard = () => {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                // Get name and email from API only
                 const token = localStorage.getItem("access_token");
-                const res = await axios.get("https://advisor-seller-backend.vercel.app/api/auth/profile", {
+                
+                // Get user auth data
+                const authRes = await axios.get("https://advisor-seller-backend.vercel.app/api/auth/profile", {
                     headers: { Authorization: `Bearer ${token}` },
                 });
-                let apiProfile = {};
-                if (res.status === 200 && res.data) {
-                    apiProfile = {
-                        id: res.data.id,
-                        name: res.data.name,
-                        email: res.data.email,
-                        role: res.data.role,
-                        isEmailVerified: res.data.isEmailVerified,
-                    };
-                }
-                // Get other fields from localStorage (but NOT name/email)
-                const storedUser = localStorage.getItem("user");
-                let localFields = {};
-                if (storedUser) {
-                    try {
-                        const parsedUser = JSON.parse(storedUser);
-                        localFields = {
-                            companyName: parsedUser.companyName,
-                            phone: parsedUser.phone,
-                            website: parsedUser.website,
-                            industry: parsedUser.industry,
-                            geography: parsedUser.geography,
-                            annualRevenue: profile.annualRevenue || seller?.annualRevenue || "",
-                            currency: parsedUser.currency,
-                            description: parsedUser.description,
+                
+                let combinedProfile = {
+                    id: authRes.data.id,
+                    name: authRes.data.name,
+                    email: authRes.data.email,
+                    role: authRes.data.role,
+                    isEmailVerified: authRes.data.isEmailVerified,
+                };
+                
+                // Try to get seller profile from database
+                try {
+                    const sellerRes = await axios.get("https://advisor-seller-backend.vercel.app/api/sellers/profile", {
+                        headers: { Authorization: `Bearer ${token}` },
+                    });
+                    
+                    if (sellerRes.status === 200 && sellerRes.data) {
+                        combinedProfile = {
+                            ...combinedProfile,
+                            companyName: sellerRes.data.companyName,
+                            phone: sellerRes.data.phone,
+                            website: sellerRes.data.website,
+                            industry: sellerRes.data.industry,
+                            geography: sellerRes.data.geography,
+                            annualRevenue: sellerRes.data.annualRevenue,
+                            currency: sellerRes.data.currency,
+                            description: sellerRes.data.description,
                         };
-                    } catch (err) {
-                        console.error("Error parsing user from localStorage:", err);
                     }
+                } catch (sellerErr) {
+                    // If no seller profile exists, use empty values
+                    console.log("No seller profile found in database");
                 }
-                setProfile({ ...apiProfile, ...localFields });
+                
+                setProfile(combinedProfile);
             } catch (err) {
                 console.error("Error fetching profile from API:", err);
             }
@@ -580,143 +584,196 @@ const SellerDashboard = () => {
     return (
         <div className="flex h-screen bg-gray-50">
             {/* Sidebar */}
-            <aside className="w-64 bg-white shadow-md flex flex-col p-6">
-                <h1 className="text-2xl font-bold mb-8">CIM Amplify</h1>
-                <nav className="flex flex-col gap-4">
-                    <button
-                        className={`text-left px-4 py-2 rounded-lg ${activeTab === "pending" ? "bg-green-100 font-medium" : "hover:bg-gray-100"
-                            }`}
-                        onClick={() => setActiveTab("pending")}
-                    >
-                        All Deals
-                    </button>
-                    <button
-                        className={`text-left px-4 py-2 rounded-lg ${activeTab === "marketplace" ? "bg-green-100 font-medium" : "hover:bg-gray-100"
-                            }`}
-                        onClick={() => setActiveTab("marketplace")}
-                    >
-                        MarketPlace
-                    </button>
-                    <button
-                        className={`text-left px-4 py-2 rounded-lg ${activeTab === "company" ? "bg-green-100 font-medium" : "hover:bg-gray-100"
-                            }`}
-                        onClick={() => setActiveTab("company")}
-                    >
-                        Company Profile
-                    </button>
-                    <button className="text-left px-4 py-2 hover:bg-gray-100 rounded-lg text-red-500" onClick={handleLogout}>
-                        Sign Out
-                    </button>
-                </nav>
-            </aside>
+            <aside className="w-72 bg-gradient-to-b from-secondary to-secondary/90 shadow-xl flex flex-col relative overflow-hidden">
+  {/* Background Pattern */}
+  <div className="absolute inset-0 opacity-5">
+    <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-third/20"></div>
+    <div className="absolute top-0 left-0 w-32 h-32 bg-primary/10 rounded-full -translate-x-16 -translate-y-16"></div>
+    <div className="absolute bottom-0 right-0 w-24 h-24 bg-third/10 rounded-full translate-x-12 translate-y-12"></div>
+  </div>
+  {/* Header */}
+  <div className="relative z-10 p-8 border-b border-primary/20">
+    <div className="flex items-center justify-center">
+            <img
+                src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=768,fit=crop,q=95/mk3JaNVZEltBD9g4/logo-transparency-mnlJLXr4jxIOR470.png"
+                alt="Advisor Chooser logo"
+                className="h-12 w-auto object-contain"
+            />
+    </div>
+  </div>
+  {/* Navigation */}
+  <nav className="relative z-10 flex-1 px-6 py-8 space-y-2">
+    <button
+      className={`w-full text-left px-6 py-4 rounded-xl transition-all duration-300 flex items-center space-x-3 group ${
+        activeTab === "pending"
+          ? "bg-primary text-white shadow-lg transform scale-105"
+          : "text-gray-300 hover:text-white hover:bg-white/10"
+      }`}
+      onClick={() => setActiveTab("pending")}
+    >
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+      </svg>
+      <span className="font-medium">All Deals</span>
+    </button>
+    <button
+      className={`w-full text-left px-6 py-4 rounded-xl transition-all duration-300 flex items-center space-x-3 group ${
+        activeTab === "marketplace"
+          ? "bg-primary text-white shadow-lg transform scale-105"
+          : "text-gray-300 hover:text-white hover:bg-white/10"
+      }`}
+      onClick={() => setActiveTab("marketplace")}
+    >
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+      </svg>
+      <span className="font-medium">MarketPlace</span>
+    </button>
+    <button
+      className={`w-full text-left px-6 py-4 rounded-xl transition-all duration-300 flex items-center space-x-3 group ${
+        activeTab === "company"
+          ? "bg-primary text-white shadow-lg transform scale-105"
+          : "text-gray-300 hover:text-white hover:bg-white/10"
+      }`}
+      onClick={() => setActiveTab("company")}
+    >
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+      </svg>
+      <span className="font-medium">Company Profile</span>
+    </button>
+  </nav>
+  {/* Sign Out Button */}
+  <div className="relative z-10 p-6 border-t border-primary/20">
+    <button
+      className="w-full text-left px-6 py-4 rounded-xl text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all duration-300 flex items-center space-x-3 group"
+      onClick={handleLogout}
+    >
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+      </svg>
+      <span className="font-medium">Sign Out</span>
+    </button>
+  </div>
+</aside>
 
             {/* Main Content */}
             <main className="flex-1 flex flex-col">
                 {/* Topbar */}
-                <header className="flex items-center justify-between bg-white shadow px-6 py-4">
-                    <div className="flex items-center w-1/2">
-                        <input
-                            type="text"
-                            placeholder="Search deals..."
-                            className="w-full px-4 py-2 border rounded-lg focus:outline-none bg-gray-100"
-                        />
-                    </div>
-                    <div className="relative">
-                        <button
-                            className="flex items-center gap-2"
-                            onClick={() => setProfileDropdownOpen(prev => !prev)}
-                        >
-                            <span className="font-medium">{userProfile.name || "Loading..."}</span>
-                            <div className="w-10 h-10 flex items-center justify-center bg-gray-200 rounded-full">
-                                {(userProfile.name || "A").charAt(0)}
-                            </div>
-                        </button>
+                <header className="flex items-center justify-between bg-white/95 backdrop-blur-sm shadow-lg border-b border-primary/10 px-8 py-6 relative overflow-hidden">
+  {/* Background Accent */}
+  <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-third/5"></div>
+  {/* Search Section */}
+  <div className="flex items-center w-1/2 relative z-10">
+    <div className="relative w-full max-w-md">
+      <input
+        type="text"
+        placeholder="Search deals..."
+        className="w-full pl-12 pr-4 py-3 border-2 border-primary/20 rounded-xl focus:outline-none focus:border-primary bg-white/80 backdrop-blur-sm transition-all duration-300 hover:bg-white focus:bg-white shadow-sm"
+      />
+      <svg className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-primary/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      </svg>
+    </div>
+  </div>
+  {/* Profile Section */}
+  <div className="relative z-10">
+    <button
+      className="flex items-center gap-4 px-4 py-2 rounded-xl hover:bg-primary/10 transition-all duration-300 group"
+      onClick={() => setProfileDropdownOpen(prev => !prev)}
+    >
+      <div className="text-right">
+        <span className="block font-semibold text-secondary group-hover:text-primary transition-colors">
+          {userProfile.name || "Loading..."}
+        </span>
+        <span className="block text-sm text-gray-500">Seller Account</span>
+      </div>
+      <div className="relative">
+        <div className="w-12 h-12 flex items-center justify-center bg-gradient-to-br from-primary to-third rounded-full text-white font-bold shadow-lg ring-2 ring-primary/20">
+          {(userProfile.name || "A").charAt(0)}
+        </div>
+        <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
+      </div>
+    </button>
+    {/* Enhanced Profile Dropdown */}
+    {profileDropdownOpen && (
+      <div className="absolute right-0 mt-4 w-80 bg-white/95 backdrop-blur-sm border border-primary/20 rounded-2xl shadow-2xl p-6 z-50 animate-fadeIn">
+        <div className="flex flex-col gap-4">
+          {/* Profile Header */}
+          <div className="flex items-center gap-4 pb-4 border-b border-gray-100">
+            <div className="w-16 h-16 flex items-center justify-center bg-gradient-to-br from-primary to-third rounded-full text-white font-bold text-xl shadow-lg">
+              {(userProfile.name || "A").charAt(0)}
+            </div>
+            <div>
+              <h3 className="font-semibold text-secondary text-lg">{userProfile.name}</h3>
+              <p className="text-sm text-gray-500">Seller Account</p>
+            </div>
+          </div>
+          {/* Name Field */}
+          <div>
+            <label className="block text-sm font-medium text-gray-600 mb-2">Name</label>
+            <input
+              type="text"
+              value={userProfile.name}
+              readOnly
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 cursor-not-allowed text-gray-600"
+            />
+          </div>
+          {/* Email Field */}
+          <div>
+            <label className="block text-sm font-medium text-gray-600 mb-2">Email</label>
+            <input
+              type="email"
+              value={userProfile.email}
+              readOnly
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 cursor-not-allowed text-gray-600"
+            />
+          </div>
+          {/* Reset Password Button */}
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  const res = await axios.post(
+                    "https://advisor-seller-backend.vercel.app/api/auth/forgot-password",
+                    { email: userProfile.email },
+                    { validateStatus: () => true }
+                  );
+                  if (res.status === 200 || res.status === 201) {
+                    toast.success(res.data?.message || "Check your email to reset your password", {
+                      duration: 2000,
+                      id: "reset-password-success"
+                    });
+                    setTimeout(() => {
+                      window.location.href = "/seller-login";
+                    }, 2000);
+                  } else {
+                    toast.error(res.data?.message || "Failed to send reset link. Please try again.");
+                  }
+                } catch (err) {
+                  console.error(err);
+                  toast.error("Network error. Please try again later.");
+                }
+              }}
+              className="w-full px-6 py-3 bg-gradient-to-r from-primary to-third text-white rounded-xl hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-3 font-medium transform hover:scale-105"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+              </svg>
+              <span>Reset Password</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+  </div>
+</header>
 
-                        {profileDropdownOpen && (
-                            <div className="absolute right-0 mt-2 w-64 bg-white border rounded-xl shadow-lg p-4 z-50">
-                                <div className="flex flex-col gap-3">
-                                    {/* Name */}
-                                    <div>
-                                        <label className="text-sm text-gray-500">Name</label>
-                                        <input
-                                            type="text"
-                                            value={userProfile.name}
-                                            readOnly
-                                            className="w-full px-3 py-2 border rounded-lg bg-gray-100 cursor-not-allowed"
-                                        />
-                                    </div>
-
-                                    {/* Email */}
-                                    <div>
-                                        <label className="text-sm text-gray-500">Email</label>
-                                        <input
-                                            type="email"
-                                            value={userProfile.email}
-                                            readOnly
-                                            className="w-full px-3 py-2 border rounded-lg bg-gray-100 cursor-not-allowed"
-                                        />
-                                    </div>
 
 
-                                    /* Reset Password Button */
-                                    <div>
-                                        <button
-                                            type="button"
-                                            onClick={async () => {
-                                                try {
-                                                    const res = await axios.post(
-                                                        "https://advisor-seller-backend.vercel.app/api/auth/forgot-password",
-                                                        { email: userProfile.email },
-                                                        { validateStatus: () => true }
-                                                    );
 
-                                                    if (res.status === 200 || res.status === 201) {
-                                                        // Show success toast with controlled duration
-                                                        toast.success(res.data?.message || "Check your email to reset your password", {
-                                                            duration: 2000,
-                                                            id: "reset-password-success"
-                                                        });
 
-                                                        // Wait for toast to display fully before redirect
-                                                        setTimeout(() => {
-                                                            window.location.href = "/seller-login";
-                                                        }, 2000);
-                                                    } else {
-                                                        // Show error toast but DON'T redirect
-                                                        toast.error(res.data?.message || "Failed to send reset link. Please try again.");
-                                                    }
-                                                } catch (err) {
-                                                    console.error(err);
-                                                    // Show network error toast but DON'T redirect
-                                                    toast.error("Network error. Please try again later.");
-                                                }
-                                            }}
-                                            className="w-full mt-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/80 transition flex items-center justify-center gap-2"
-                                        >
-                                            <span>Reset Password</span>
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                className="h-5 w-5"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                stroke="currentColor"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={2}
-                                                    d="M12 4v16m8-8H4"
-                                                />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                    </div>
-
-                </header>
 
                 {/* Tabs Content */}
                 <div className="px-6 py-4 overflow-y-auto">
@@ -758,17 +815,126 @@ const SellerDashboard = () => {
                                     </button>
                                 </div>
                             ) : (
-                                <ul className="space-y-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
                                     {matches.map((advisor) => (
-                                        <li
+                                        <div
                                             key={advisor.id || advisor._id}
-                                            className="border p-4 rounded-lg bg-white shadow hover:shadow-md transition"
+                                            className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 hover:border-blue-200 transform hover:-translate-y-1"
                                         >
-                                            <h4 className="font-semibold text-lg">{advisor.name}</h4>
-                                            <p className="text-gray-600">{advisor.description}</p>
-                                        </li>
+                                            {/* Header */}
+                                            <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-4 text-white">
+                                                <div className="flex items-center space-x-3">
+                                                    {advisor.logoUrl ? (
+                                                        <img src={advisor.logoUrl} alt="Logo" className="w-12 h-12 rounded-full bg-white p-1" />
+                                                    ) : (
+                                                        <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-blue-600 font-bold">
+                                                            {advisor.companyName?.charAt(0) || 'A'}
+                                                        </div>
+                                                    )}
+                                                    <div>
+                                                        <h3 className="font-bold text-lg">{advisor.companyName}</h3>
+                                                        <p className="text-blue-100 text-sm">{advisor.advisorName}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Content */}
+                                            <div className="p-4 space-y-3">
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-sm text-gray-500">Experience</span>
+                                                    <span className="font-semibold">{advisor.yearsExperience} years</span>
+                                                </div>
+                                                
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-sm text-gray-500">Transactions</span>
+                                                    <span className="font-semibold">{advisor.numberOfTransactions}</span>
+                                                </div>
+
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-sm text-gray-500">Licensed</span>
+                                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                                        advisor.licensing === 'yes' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                                                    }`}>
+                                                        {advisor.licensing === 'yes' ? 'Yes' : 'No'}
+                                                    </span>
+                                                </div>
+
+                                                {/* Industries */}
+                                                <div>
+                                                    <span className="text-sm text-gray-500 block mb-1">Industries</span>
+                                                    <div className="flex flex-wrap gap-1">
+                                                        {advisor.industries?.slice(0, 2).map((industry, idx) => (
+                                                            <span key={idx} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                                                                {industry}
+                                                            </span>
+                                                        ))}
+                                                        {advisor.industries?.length > 2 && (
+                                                            <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
+                                                                +{advisor.industries.length - 2}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                {/* Description */}
+                                                <p className="text-gray-600 text-sm line-clamp-3">
+                                                    {advisor.description}
+                                                </p>
+
+                                                {/* Contact Info */}
+                                                <div className="text-xs text-gray-500 space-y-1">
+                                                    <div>📧 {advisor.advisorEmail}</div>
+                                                    <div>📞 {advisor.phone}</div>
+                                                    {advisor.website && (
+                                                        <div>🌐 <a href={advisor.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                                                            {advisor.website}
+                                                        </a></div>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {/* Action Buttons */}
+                                            <div className="p-4 bg-gray-50 flex space-x-2">
+                                                <button
+                                                    onClick={async () => {
+                                                        try {
+                                                            const token = localStorage.getItem('access_token');
+                                                            await axios.post(
+                                                                'https://advisor-seller-backend.vercel.app/api/connections/introduction',
+                                                                { advisorIds: [advisor.id] },
+                                                                { headers: { Authorization: `Bearer ${token}` } }
+                                                            );
+                                                            toast.success('Introduction request sent!');
+                                                        } catch (error) {
+                                                            toast.error('Failed to send introduction request');
+                                                        }
+                                                    }}
+                                                    className="flex-1 bg-blue-600 text-white py-2 px-3 rounded-lg text-sm font-medium hover:bg-blue-700 transition"
+                                                >
+                                                    Request Introduction
+                                                </button>
+                                                <button
+                                                    onClick={async () => {
+                                                        try {
+                                                            const token = localStorage.getItem('access_token');
+                                                            await axios.post(
+                                                                'https://advisor-seller-backend.vercel.app/api/connections/direct-list',
+                                                                {},
+                                                                { headers: { Authorization: `Bearer ${token}` } }
+                                                            );
+                                                            toast.success('Direct contact list requested!');
+                                                        } catch (error) {
+                                                            toast.error('Failed to request direct list');
+                                                        }
+                                                    }}
+                                                    className="flex-1 bg-green-600 text-white py-2 px-3 rounded-lg text-sm font-medium hover:bg-green-700 transition"
+                                                >
+                                                    Get Direct List
+                                                </button>
+                                            </div>
+                                        </div>
                                     ))}
-                                </ul>
+                                </div>
                             )}
                         </div>
                     )}
