@@ -4,20 +4,20 @@ import * as Yup from "yup";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { motion } from "framer-motion";
-import { FaUpload, FaFileAlt, FaUser, FaQuoteLeft, FaFilePdf, FaCheckCircle, FaImage } from "react-icons/fa";
+import { FaUpload, FaFileAlt, FaUser, FaQuoteLeft, FaFilePdf, FaCheckCircle, FaImage, FaPlus, FaTrash } from "react-icons/fa";
 
 // =================== Advisor Upload Page ===================
 const AdvisorUpload = () => {
     const [logoFile, setLogoFile] = useState(null);
 
-    // ✅ Use Array.from instead of fill (to avoid shared references)
+    // Start with one testimonial
     const initialValues = {
         logoFile: null,
-        testimonials: Array.from({ length: 5 }, () => ({
+        testimonials: [{
             clientName: "",
             testimonial: "",
             pdfFile: null,
-        })),
+        }],
     };
 
     const validationSchema = Yup.object().shape({
@@ -26,21 +26,15 @@ const AdvisorUpload = () => {
             .of(
                 Yup.object().shape({
                     clientName: Yup.string().notRequired(),
-                    testimonial: Yup.string().when("clientName", {
-                        is: (val) => !!val && val.trim() !== "",
-                        then: (schema) => schema.required("Testimonial required"),
-                        otherwise: (schema) => schema.notRequired(),
-                    }),
-                    pdfFile: Yup.mixed().when("clientName", {
-                        is: (val) => !!val && val.trim() !== "",
-                        then: (schema) => schema.required("PDF required"),
-                        otherwise: (schema) => schema.notRequired(),
-                    }),
+                    testimonial: Yup.string().notRequired(),
+                    pdfFile: Yup.mixed().notRequired(),
                 })
             )
+            .min(1, "At least one testimonial is required")
+            .max(5, "Maximum 5 testimonials allowed")
             .test(
-                "at-least-one",
-                "At least one testimonial is required",
+                "at-least-one-complete",
+                "At least one complete testimonial is required",
                 (arr) => arr && arr.some((t) => t.clientName && t.testimonial && t.pdfFile)
             ),
     });
@@ -228,7 +222,7 @@ const AdvisorUpload = () => {
                             className="bg-brand-light p-6 rounded-2xl border border-primary/10 shadow-sm"
                         >
                             <FieldArray name="testimonials">
-                                {() => {
+                                {({ push, remove }) => {
                                     const completedTestimonials = values.testimonials.filter(
                                         (t) => t.clientName && t.testimonial && t.pdfFile
                                     ).length;
@@ -240,10 +234,22 @@ const AdvisorUpload = () => {
                                                     <FaQuoteLeft className="mr-3 text-primary" />
                                                     Client Testimonials
                                                 </h3>
-                                                <div className="bg-primary/10 px-3 py-1 rounded-full">
-                                                    <span className="text-primary font-medium text-sm">
-                                                        {completedTestimonials}/5 completed
-                                                    </span>
+                                                <div className="flex items-center space-x-3">
+                                                    <div className="bg-primary/10 px-3 py-1 rounded-full">
+                                                        <span className="text-primary font-medium text-sm">
+                                                            {completedTestimonials}/{values.testimonials.length} completed
+                                                        </span>
+                                                    </div>
+                                                    {values.testimonials.length < 5 && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => push({ clientName: "", testimonial: "", pdfFile: null })}
+                                                            className="flex items-center px-3 py-1 bg-primary text-white rounded-full hover:bg-primary/90 transition-all duration-200 text-sm"
+                                                        >
+                                                            <FaPlus className="mr-1" />
+                                                            Add Testimonial
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </div>
 
@@ -253,7 +259,7 @@ const AdvisorUpload = () => {
                                                     
                                                     return (
                                                         <motion.div
-                                                            key={index}
+                                                            key={`testimonial-${index}`}
                                                             initial={{ opacity: 0, y: 20 }}
                                                             animate={{ opacity: 1, y: 0 }}
                                                             transition={{ delay: index * 0.1 }}
@@ -268,20 +274,31 @@ const AdvisorUpload = () => {
                                                                     <FaUser className="mr-2 text-primary" />
                                                                     Testimonial {index + 1}
                                                                 </h4>
-                                                                {isCompleted && (
-                                                                    <FaCheckCircle className="text-green-500" />
-                                                                )}
+                                                                <div className="flex items-center space-x-2">
+                                                                    {isCompleted && (
+                                                                        <FaCheckCircle className="text-green-500" />
+                                                                    )}
+                                                                    {values.testimonials.length > 1 && (
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => remove(index)}
+                                                                            className="text-red-500 hover:text-red-700 transition-colors duration-200"
+                                                                        >
+                                                                            <FaTrash size={12} />
+                                                                        </button>
+                                                                    )}
+                                                                </div>
                                                             </div>
 
                                                             <div className="space-y-3">
                                                                 <div>
                                                                     <Field
-                                                                        name={`testimonials.${index}.clientName`}
+                                                                        name={`testimonials[${index}].clientName`}
                                                                         placeholder="Client Name"
                                                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 text-sm bg-white"
                                                                     />
                                                                     <ErrorMessage
-                                                                        name={`testimonials.${index}.clientName`}
+                                                                        name={`testimonials[${index}].clientName`}
                                                                         component="div"
                                                                         className="text-red-500 text-xs mt-1"
                                                                     />
@@ -290,13 +307,13 @@ const AdvisorUpload = () => {
                                                                 <div>
                                                                     <Field
                                                                         as="textarea"
-                                                                        name={`testimonials.${index}.testimonial`}
+                                                                        name={`testimonials[${index}].testimonial`}
                                                                         placeholder="Write the testimonial here..."
                                                                         rows="3"
                                                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 text-sm bg-white resize-none"
                                                                     />
                                                                     <ErrorMessage
-                                                                        name={`testimonials.${index}.testimonial`}
+                                                                        name={`testimonials[${index}].testimonial`}
                                                                         component="div"
                                                                         className="text-red-500 text-xs mt-1"
                                                                     />
@@ -311,7 +328,7 @@ const AdvisorUpload = () => {
                                                                                 const file = e.target.files[0];
                                                                                 if (file) {
                                                                                     setFieldValue(
-                                                                                        `testimonials.${index}.pdfFile`,
+                                                                                        `testimonials[${index}].pdfFile`,
                                                                                         file
                                                                                     );
                                                                                 }
@@ -342,7 +359,7 @@ const AdvisorUpload = () => {
                                                                     )}
 
                                                                     <ErrorMessage
-                                                                        name={`testimonials.${index}.pdfFile`}
+                                                                        name={`testimonials[${index}].pdfFile`}
                                                                         component="div"
                                                                         className="text-red-500 text-xs mt-1"
                                                                     />
@@ -352,6 +369,12 @@ const AdvisorUpload = () => {
                                                     );
                                                 })}
                                             </div>
+                                            
+                                            <ErrorMessage
+                                                name="testimonials"
+                                                component="div"
+                                                className="text-red-500 text-sm mt-4 text-center"
+                                            />
                                         </div>
                                     );
                                 }}
