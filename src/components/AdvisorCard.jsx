@@ -2,7 +2,7 @@ import React from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
-const AdvisorCard = ({ advisor }) => {
+const AdvisorCard = ({ advisor, onSelect, isSelected, onGetDirectList }) => {
   const handleRequestIntroduction = async () => {
     try {
       const token = localStorage.getItem('access_token');
@@ -18,28 +18,28 @@ const AdvisorCard = ({ advisor }) => {
   };
 
   const handleGetDirectList = async () => {
-    try {
-      const token = localStorage.getItem('access_token');
-      await axios.post(
-        'https://advisor-seller-backend.vercel.app/api/connections/direct-list',
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      toast.success('Direct contact list requested!');
-    } catch (error) {
-      toast.error('Failed to request direct list');
+    if (onGetDirectList) {
+      onGetDirectList();
     }
   };
 
   return (
     <div className="bg-white shadow-lg rounded-lg overflow-hidden">
       <div className="p-6">
-        <div className="flex items-center">
-          <img className="h-16 w-16 rounded-full object-cover" src={advisor.logoUrl} alt={advisor.companyName} />
-          <div className="ml-4">
-            <h3 className="text-lg font-semibold text-gray-800">{advisor.companyName}</h3>
-            <p className="text-sm text-gray-600">{advisor.advisorName}</p>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <img className="h-16 w-16 rounded-full object-cover" src={advisor.logoUrl} alt={advisor.companyName} />
+            <div className="ml-4">
+              <h3 className="text-lg font-semibold text-gray-800">{advisor.companyName}</h3>
+              <p className="text-sm text-gray-600">{advisor.advisorName}</p>
+            </div>
           </div>
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={onSelect}
+            className="form-checkbox h-5 w-5 text-blue-600 rounded"
+          />
         </div>
         <div className="mt-4">
           <p className="text-sm text-gray-600">{advisor.description}</p>

@@ -1,88 +1,62 @@
-import React, { useState } from "react";
-import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom"; // Use Link and useNavigate for better routing
 
 const Header = () => {
-    const [hoveredIndex, setHoveredIndex] = useState(null);
-    const navigate = useNavigate();
+  const [isScrolled, setIsScrolled] = useState(false);
+  const navigate = useNavigate();
 
-    const navLinks = [
-        { label: "Benefits", href: "https://cimamplify.com/#Benefits" },
-        { label: "How it Works", href: "https://cimamplify.com/#How%20it%20Works" },
-        { label: "Guidelines", href: "https://cimamplify.com/#Guidelines" },
-        { label: "FAQs", href: "https://cimamplify.com/#FAQs" },
-    ];
+  // Scroll effect to change header appearance
+  useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
-    // 🔹 Handle Member Login click
-    const handleMemberLogin = () => {
-        const user = localStorage.getItem("user"); // or use your API logic
+  // Handle login/register based on user status
+  const handleMemberLogin = () => {
+    const user = localStorage.getItem("user");
+    if (user) {
+      navigate("/"); // Use navigate for in-app routing
+    } else {
+      navigate("/authRegister");
+    }
+  };
 
-        if (user) {
-            // user already registered
-            navigate("/");
-        } else {
-            // user not registered
-            navigate("/authRegister");
-        }
-    };
+  return (
+    <header
+      className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
+        isScrolled
+          ? "bg-white/90 border-b border-gray-200 shadow-lg"
+          : "bg-gradient-to-r from-gray-100 via-gray-50 to-white/80 border-b border-gray-100 shadow"
+      }`}
+    >
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-20 w-full">
+          {/* Logo Section */}
+          <div>
+            <Link to="/" className="flex items-center">
+              <img
+                src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=768,fit=crop,q=95/mk3JaNVZEltBD9g4/logo-transparency-mnlJLXr4jxIOR470.png"
+                alt="Advisor Chooser logo"
+                className="h-14 w-auto object-contain transition-all duration-300"
+              />
+            </Link>
+          </div>
 
-    return (
-        <div className="bg-white/70 backdrop-blur w-full flex-wrap min-w-[50%] h-16 fixed top-0 left-0 z-50 flex justify-around whitespace-nowrap items-center border-b-[0.1rem] border-b-gray-400 font-poppins">
-            {/* Logo */}
-            <div className="h-full w-[13%] min-w-[8%] flex justify-center items-center">
-                <a href="https://cimamplify.com/" target="_blank" rel="noopener noreferrer">
-                    <img
-                        src="/fullLogo.svg"
-                        alt="logo"
-                        className="object-contain h-10 cursor-pointer"
-                    />
-                </a>
-            </div>
-
-            {/* Navbar */}
-            <div className="h-full w-[35%] flex justify-between items-center">
-                <div
-                    className="flex w-full flex-nowrap whitespace-nowrap h-full justify-between items-center space-x-4 relative"
-                    onMouseLeave={() => setHoveredIndex(null)}
-                >
-                    {/* Links */}
-                    {navLinks.map((link, index) => (
-                        <div
-                            key={index}
-                            className="relative flex flex-col items-center"
-                            onMouseEnter={() => setHoveredIndex(index)}
-                        >
-                            <a
-                                href={link.href}
-                                className="text-lg font-semibold text-[#616a76] transition-all duration-300 hover:text-primary hover:text-xl"
-                            >
-                                {link.label}
-                            </a>
-
-                            {/* Slider */}
-                            {hoveredIndex === index && (
-                                <motion.span
-                                    layoutId="navbar-slider"
-                                    transition={{
-                                        type: "spring",
-                                        stiffness: 300,
-                                        damping: 25,
-                                        mass: 1.2,
-                                    }}
-                                    className="absolute -bottom-5 h-[4px] w-full bg-primary rounded-full origin-center"
-                                />
-                            )}
-                        </div>
-                    ))}
-
-                    {/* Button */}
-                    <div className="h-[70%] max-w-[25%] min-w-[25%] bg-primary text-white font-semibold text-lg flex justify-center items-center rounded-md hover:scale-105 transition-transform duration-200 px-2 hover:drop-shadow-lg">
-                        <button onClick={handleMemberLogin}>Member Login</button>
-                    </div>
-                </div>
-            </div>
+          {/* Navigation & Login Section */}
+          <nav className="flex items-center space-x-6">
+            {/* Member Login Button */}
+            <button
+              onClick={handleMemberLogin}
+              className="bg-gradient-to-r from-third to-primary text-white font-semibold text-lg py-3 px-8 rounded-full shadow-lg hover:bg-third transition duration-300 ease-in-out"
+            >
+              Member Login
+            </button>
+          </nav>
         </div>
-    );
+      </div>
+    </header>
+  );
 };
 
 export default Header;

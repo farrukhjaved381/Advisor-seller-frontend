@@ -8,7 +8,7 @@ const Option = () => {
     
     return (
         <div className="w-screen min-h-screen bg-gradient-to-br from-gray-50 to-white flex flex-col overflow-x-hidden">
-            
+             <Header />
             {/* Main Content */}
             <div className='flex-grow w-full flex items-stretch pt-20'>
                 {/* Left Side - Image */}
@@ -25,15 +25,15 @@ const Option = () => {
                         <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 shadow-xl">
                             <div className="flex items-center space-x-2">
                                 <div className="w-3 h-3 bg-primary rounded-full animate-pulse"></div>
-                                <span className="text-secondary font-semibold text-sm">Live Deals</span>
+                                <span className="text-secondary font-semibold text-sm">Live Matches</span>
                             </div>
                         </div>
                     </div>
                     
                     <div className="absolute bottom-8 left-8 z-20">
                         <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 shadow-xl">
-                            <div className="text-secondary font-bold text-2xl">$2.4M+</div>
-                            <div className="text-gray-600 text-sm">Deals Closed</div>
+                            <div className="text-secondary font-bold text-2xl">500+</div>
+                            <div className="text-gray-600 text-sm">Active Advisors</div>
                         </div>
                     </div>
                 </div>
@@ -51,20 +51,20 @@ const Option = () => {
                         <div className="text-center mb-8 animate-fadeIn">
                             <div className="inline-flex items-center bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-semibold mb-6">
                                 <span className="w-2 h-2 bg-primary rounded-full mr-2 animate-pulse"></span>
-                                Welcome to DealFlow
+                                Welcome to the Platform
                             </div>
                             
                             <h1 className='text-5xl font-black text-secondary mb-4 leading-tight'>
-                                Let's do some 
-                                <span className="bg-gradient-to-r from-primary to-third bg-clip-text text-transparent"> deals!</span>
+                                Connect with 
+                                <span className="bg-gradient-to-r from-primary to-third bg-clip-text text-transparent ">&nbsp;Expert Advisors</span>
                             </h1>
                             
                             <p className='text-lg text-gray-600 font-medium text-center leading-relaxed'>
-                                Streamline your deal flow process with our platform. 
+                                Seamlessly match businesses with qualified advisors.
                                 <br className="hidden sm:block" /> 
-                                Connect with qualified buyers or find the perfect 
+                                Get professional guidance or showcase your expertise
                                 <br className="hidden sm:block" /> 
-                                investment opportunity.
+                                in our trusted marketplace.
                             </p>
                         </div>
                         
@@ -117,15 +117,15 @@ const Option = () => {
                             <div className="grid grid-cols-3 gap-4 text-center">
                                 <div className="p-3">
                                     <div className="text-2xl font-bold text-primary">500+</div>
-                                    <div className="text-xs text-gray-500 uppercase tracking-wide">Active Users</div>
+                                    <div className="text-xs text-gray-500 uppercase tracking-wide">Active Advisors</div>
                                 </div>
                                 <div className="p-3">
                                     <div className="text-2xl font-bold text-third">$50M+</div>
-                                    <div className="text-xs text-gray-500 uppercase tracking-wide">Volume</div>
+                                    <div className="text-xs text-gray-500 uppercase tracking-wide">Business Volume</div>
                                 </div>
                                 <div className="p-3">
                                     <div className="text-2xl font-bold text-secondary">98%</div>
-                                    <div className="text-xs text-gray-500 uppercase tracking-wide">Success Rate</div>
+                                    <div className="text-xs text-gray-500 uppercase tracking-wide">Match Success</div>
                                 </div>
                             </div>
                         </div>

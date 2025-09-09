@@ -292,12 +292,14 @@ const AdvisorDashboard = () => {
             </div>
             <div className="px-6 py-6">
               <div className="flex flex-wrap gap-4">
-                <button
-                  onClick={() => navigate('/advisor-form')}
-                  className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
-                >
-                  {profile ? 'Edit Profile' : 'Create Profile'}
-                </button>
+                {profile && (
+                  <button
+                    onClick={() => navigate('/edit-advisor-profile')}
+                    className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                  >
+                    Edit Profile
+                  </button>
+                )}
                 {!profile && (
                   <button
                     onClick={() => navigate('/advisor-payments')}

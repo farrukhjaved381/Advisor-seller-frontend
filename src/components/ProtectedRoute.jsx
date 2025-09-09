@@ -74,9 +74,28 @@ const ProtectedRoute = ({ children, requiredRole, requiresPayment = false }) => 
     return <Navigate to="/" replace />;
   }
 
-  if (requiresPayment && user.role === 'advisor' && !user.isPaymentVerified) {
-    // Advisor hasn't paid
-    return <Navigate to="/advisor-payments" replace />;
+  // Advisor specific redirection logic
+  if (user.role === 'advisor') {
+    const { pathname } = window.location;
+
+    // NOTE: This logic assumes that the user object from the backend
+    // has a boolean property 'isProfileComplete'.
+    if (!user.isPaymentVerified) {
+      // If not paid, must go to payments page
+      if (pathname !== '/advisor-payments' && pathname !== '/adviser-payment') {
+        return <Navigate to="/advisor-payments" replace />;
+      }
+    } else if (user.isProfileComplete === false) {
+      // If paid but profile incomplete, must go to form/upload page
+      if (pathname !== '/advisor-form' && pathname !== '/advisor-upload') {
+        return <Navigate to="/advisor-form" replace />;
+      }
+    } else {
+      // If paid and profile complete, should not be on payment/form pages
+      if (pathname === '/advisor-payments' || pathname === '/adviser-payment' || pathname === '/advisor-form' || pathname === '/advisor-upload') {
+        return <Navigate to="/advisor-dashboard" replace />;
+      }
+    }
   }
 
   if (!authorized) {

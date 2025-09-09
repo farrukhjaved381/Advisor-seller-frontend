@@ -144,7 +144,7 @@ const AdvisorRegister = () => {
         }}
       />
      
-      
+     <Header />
       {/* Main Content */}
       <div className="flex-grow w-full flex items-stretch pt-20">
         {/* Left Side - Image */}

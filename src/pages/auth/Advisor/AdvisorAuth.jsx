@@ -3,6 +3,7 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import axios from "axios";
 import { toast, Toaster } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import Header from "../../../components/common/Header";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
@@ -115,6 +116,8 @@ const Auth = () => {
           if (user.role === "advisor") {
             if (!user.isPaymentVerified) {
               navigate("/advisor-payments");
+            } else if (!user.isProfileComplete) {
+              navigate("/advisor-form");
             } else {
               navigate("/advisor-dashboard");
             }
@@ -154,7 +157,7 @@ const Auth = () => {
           },
         }}
       />
-
+<Header />
       {/* Main Content */}
       <div className="flex-grow w-full flex items-stretch pt-20">
         {/* Left Side - Image */}

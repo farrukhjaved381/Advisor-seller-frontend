@@ -7,7 +7,8 @@ import AdvisorSignin from "../pages/auth/Advisor/AdvisorAuth.jsx";
 import AdvisorRegister from "../pages/auth/Advisor/AdvisorRegister.jsx";
 import Option from "../pages/Option";
 import AuthRegister from "../pages/auth/authRegister.jsx"
-import VerifyEmail from "../pages/auth/Seller/SellerForm.jsx";
+import VerifyEmail from "../pages/auth/Seller/VerifyEmail.jsx";
+import SellerForm from "../pages/auth/Seller/SellerForm.jsx";
 import SellerDashboard from "../pages/dashboard/SellerDashboard.jsx";
 import AdvisorDashboard from "../pages/dashboard/AdvisorDashboard.jsx";
 import Continue from "../pages/Continue.jsx"
@@ -17,6 +18,7 @@ import AdvisorPayments from "../pages/auth/Advisor/AdvisorPayments.jsx";
 import AdvisorForm from "../pages/auth/Advisor/AdvisorForm.jsx";
 import AdvisorUpload from "../pages/auth/Advisor/AdvisorUpload.jsx";
 import ProtectedRoute from "../components/ProtectedRoute.jsx";
+import EditAdvisorProfile from "../pages/dashboard/EditAdvisorProfile.jsx";
 
 
 const AppRoutes = () => {
@@ -28,6 +30,11 @@ const AppRoutes = () => {
             <Route path="/seller-login" element={<SellerSignin />} />
             <Route path="/seller-register" element={<SellerRegister />} />
             <Route path="/verify-email" element={<VerifyEmail />} />
+            <Route path="/seller-form" element={
+                <ProtectedRoute requiredRole="seller">
+                    <SellerForm />
+                </ProtectedRoute>
+            } />
             <Route path="/seller-dashboard" element={
                 <ProtectedRoute requiredRole="seller">
                     <SellerDashboard />
@@ -61,6 +68,11 @@ const AppRoutes = () => {
             <Route path="/advisor-upload" element={
                 <ProtectedRoute requiredRole="advisor">
                     <AdvisorUpload />
+                </ProtectedRoute>
+            } />
+            <Route path="/edit-advisor-profile" element={
+                <ProtectedRoute requiredRole="advisor">
+                    <EditAdvisorProfile />
                 </ProtectedRoute>
             } />
         </Routes>

@@ -1,10 +1,10 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { toast, Toaster } from "react-hot-toast";
 import { Formik, Form, Field, ErrorMessage, useFormikContext } from "formik";
 import * as Yup from "yup";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { rawGeographyData } from '../../../components/Static/geographyData';
 import { rawIndustryData } from '../../../components/Static/industryData';
 import { FaChevronDown, FaChevronRight } from "react-icons/fa";
@@ -36,6 +36,15 @@ const mapGeography = (selectedId) => {
 
 // ✅ Validation schema
 const SellerSchema = Yup.object().shape({
+  fullName: Yup.string()
+    .min(2, "Full name must be at least 2 characters")
+    .max(50, "Full name must not exceed 50 characters")
+    .matches(/^[a-zA-Z\s]+$/, "Full name can only contain letters and spaces")
+    .required("Full Name is required"),
+  email: Yup.string()
+    .email("Invalid email format")
+    .matches(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Please enter a valid email address")
+    .required("Email is required"),
   companyName: Yup.string()
     .min(2, "Company name must be at least 2 characters")
     .max(100, "Company name must not exceed 100 characters")
@@ -238,204 +247,77 @@ const RadioFilter = ({ title, data, fieldName }) => {
   );
 };
 
-const SellerForm = () => {
+const VerifyEmail = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [emailVerified, setEmailVerified] = useState(null);
 
-  // ------------------- Formik Initial Values -------------------
-  const initialValues = {
-    companyName: "",
-    phone: "",
-    website: "",
-    industry: "",
-    geography: "",
-    annualRevenue: "",
-    currency: "USD",
-    description: "",
-  };
+  useEffect(() => {
+    const verifyEmailAndLogin = async () => {
+      const params = new URLSearchParams(location.search);
+      const token = params.get("token");
 
+      if (!token) return;
 
-  // ------------------- Submit Handler -------------------
-  const handleSubmit = async (values, { setSubmitting, resetForm }) => {
-    try {
-      // Get token from localStorage
-      const token = localStorage.getItem("access_token");
-      
-      if (!token) {
-        toast.error("Please login first to create profile.");
-        navigate("/seller-login");
-        return;
+      try {
+        // Step 1: Verify Email using GET + query string
+        const verifyRes = await axios.get(
+          `https://advisor-seller-backend.vercel.app/api/auth/verify-email?token=${token}`,
+          { validateStatus: () => true }
+        );
+
+        if (verifyRes.status === 200 && verifyRes.data.success) {
+          toast.success(verifyRes.data.message || "Email verified successfully ✅");
+          setEmailVerified(true);
+
+          // Step 2: Log the user in by calling the login endpoint with the token
+          // Note: This assumes your backend has an endpoint to log in with a verification token.
+          // If not, you might need to prompt the user to log in manually.
+          // For this example, we'll assume a hypothetical endpoint.
+          
+          // Step 2: Log the user in by calling the login endpoint with the token
+          const loginRes = await axios.post(
+            "https://advisor-seller-backend.vercel.app/api/auth/login-with-token",
+            { token },
+            { validateStatus: () => true }
+          );
+
+          if (loginRes.status === 200 || loginRes.status === 201) {
+            const { access_token, refresh_token, user } = loginRes.data;
+            localStorage.setItem("access_token", access_token);
+            localStorage.setItem("refresh_token", refresh_token);
+            localStorage.setItem("user", JSON.stringify(user));
+            toast.success("Login successful! Redirecting...");
+            navigate("/seller-form");
+          } else {
+            toast.error(loginRes.data?.message || "Login failed after verification.");
+            navigate("/seller-login");
+          }
+
+        } else {
+          toast.error(verifyRes.data?.message || "Email verification failed ❌");
+          setEmailVerified(false);
+        }
+      } catch (err) {
+        console.error("Verification error:", err);
+        toast.error("Something went wrong while verifying email ❌");
+        setEmailVerified(false);
       }
+    };
 
-      const payload = {
-        companyName: values.companyName,
-        phone: values.phone,
-        website: values.website,
-        industry: mapIndustry(values.industry),   // map to top-level label
-        geography: mapGeography(values.geography), // map to top-level label
-        annualRevenue: Number(values.annualRevenue), // ensure it's a number
-        currency: values.currency,
-        description: values.description,
-      };
-
-
-      const res = await axios.post(
-        "https://advisor-seller-backend.vercel.app/api/sellers/profile",
-        payload,
-        { headers: { Authorization: `Bearer ${token}` }, validateStatus: () => true }
-      );
-
-      if (res.status === 201 || res.status === 200) {
-        toast.success("Seller profile created successfully! Redirecting to dashboard...");
-        resetForm();
-        // Direct redirect to seller dashboard
-        window.location.href = '/seller-dashboard';
-      } else {
-        toast.error(res.data?.message || "Failed to create profile. Please try again.");
-      }
-    } catch (err) {
-      console.error("Error submitting seller form:", err);
-      toast.error("Something went wrong. Please try again later.");
-    } finally {
-      setSubmitting(false);
-    }
-  };
+    verifyEmailAndLogin();
+  }, [location.search, navigate]);
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-primary/10 px-4 relative">
       <Toaster position="top-center" reverseOrder={false} />
-
-        <div className="w-full max-w-5xl bg-white shadow-lg mt-[5rem] mb-[5rem] rounded-2xl p-8 outline">
-          <h2 className="text-4xl font-bold text-center mb-6">Seller Profile Form</h2>
-
-          <Formik
-            enableReinitialize
-            initialValues={initialValues}
-            validationSchema={SellerSchema}
-            onSubmit={handleSubmit}
-          >
-            {({ isSubmitting, setFieldValue }) => (
-              <Form className="flex flex-col gap-4">
-
-                {/* Company Name */}
-                <AnimatedInput name="companyName" placeholder="Company Name" />
-
-                {/* Phone */}
-                <AnimatedInput name="phone" placeholder="Phone" />
-
-                {/* Website */}
-                <AnimatedInput name="website" placeholder="Website" />
-
-                {/* Revenue Size Range and Currency Block */}
-                <div className="w-full flex flex-col space-y-4">
-                  <div className="flex items-end justify-between">
-                    <h3 className="block text-sm font-bold text-gray-700">Revenue Size Range</h3>
-                    <div className="w-24">
-                      {/* Animated Currency Dropdown */}
-                      <Field name="currency">
-                        {({ field, form }) => {
-                          const [open, setOpen] = React.useState(false);
-                          const currencies = [
-                            { value: "USD", label: "USD" },
-                            { value: "PKR", label: "PKR" },
-                            { value: "EUR", label: "EUR" },
-                            { value: "GBP", label: "GBP" },
-                          ];
-                          return (
-                            <div className="relative w-full">
-                              <div
-                                tabIndex={0}
-                                className={`w-full p-2 rounded-xl border-[0.15rem] border-primary/30 bg-white text-sm flex items-center justify-between cursor-pointer hover:border-primary hover:border-[0.2rem] focus:border-primary focus:outline-none transition ease-in-out duration-300 ${open ? 'ring-2 ring-primary/30' : ''}`}
-                                onClick={() => setOpen((prev) => !prev)}
-                                onBlur={() => setTimeout(() => setOpen(false), 120)}
-                              >
-                                <span>{currencies.find(c => c.value === field.value)?.label || 'Select Currency'}</span>
-                                <motion.span animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }} className="ml-2">
-                                  <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5" stroke="#888" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                                </motion.span>
-                              </div>
-                              <AnimatePresence>
-                                {open && (
-                                  <motion.ul
-                                    initial={{ opacity: 0, y: -10, scale: 0.98 }}
-                                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                                    exit={{ opacity: 0, y: -10, scale: 0.98 }}
-                                    transition={{ duration: 0.18 }}
-                                    className="absolute left-0 z-10 w-full bg-white border border-primary/30 rounded-xl shadow-lg mt-1 overflow-hidden"
-                                  >
-                                    {currencies.map((c) => (
-                                      <li
-                                        key={c.value}
-                                        className={`px-4 py-2 text-sm cursor-pointer hover:bg-primary/10 transition ${field.value === c.value ? 'bg-primary/10 font-semibold text-primary' : ''}`}
-                                        onClick={() => {
-                                          form.setFieldValue('currency', c.value);
-                                          setOpen(false);
-                                        }}
-                                      >
-                                        {c.label}
-                                      </li>
-                                    ))}
-                                  </motion.ul>
-                                )}
-                              </AnimatePresence>
-                            </div>
-                          );
-                        }}
-                      </Field>
-                    </div>
-                  </div>
-                  <div className="w-full">
-                    <AnimatedInput name="annualRevenue" type="number" placeholder="Annual Revenue" prefix="$" />
-                  </div>
-
-                </div>
-
-                {/* Industry & Geography filters */}
-                <div className="w-full flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
-                  <RadioFilter
-                    title="Industry Sectors"
-                    data={rawIndustryData}
-                    fieldName="industry"
-                  />
-                  <RadioFilter
-                    title="Geographies"
-                    data={rawGeographyData}
-                    fieldName="geography"
-                  />
-                </div>
-
-
-                {/* Description */}
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Description
-                  </label>
-                  <Field
-                    as="textarea"
-                    name="description"
-                    rows="4"
-                    className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary"
-                  />
-                  <ErrorMessage
-                    name="description"
-                    component="p"
-                    className="text-red-500 text-sm mt-1"
-                  />
-                </div>
-
-                {/* Submit */}
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full h-12 bg-primary text-white rounded-lg hover:bg-primary/90 transition disabled:opacity-50"
-                >
-                  {isSubmitting ? "Submitting..." : "Create Profile"}
-                </button>
-              </Form>
-            )}
-          </Formik>
-        </div>
+      <div className="text-center">
+        {emailVerified === null && <p>Verifying your email...</p>}
+        {emailVerified === true && <p>Email verified successfully! Redirecting to login...</p>}
+        {emailVerified === false && <p>Email verification failed. Please try again or contact support.</p>}
+      </div>
     </div>
   );
 };
 
-export default SellerForm;
+export default VerifyEmail;
