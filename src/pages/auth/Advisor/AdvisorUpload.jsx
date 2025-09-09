@@ -115,6 +115,16 @@ const AdvisorUpload = () => {
                 }
             );
 
+            // After successful profile creation, re-fetch user data to get the updated isProfileComplete status
+            const updatedUserRes = await axios.get(
+                "https://advisor-seller-backend.vercel.app/api/auth/profile",
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            if (updatedUserRes.status === 200 && updatedUserRes.data) {
+                localStorage.setItem("user", JSON.stringify(updatedUserRes.data));
+            }
+
             toast.success("Advisor profile created successfully! Redirecting to dashboard...");
             resetForm();
             setLogoFile(null);
