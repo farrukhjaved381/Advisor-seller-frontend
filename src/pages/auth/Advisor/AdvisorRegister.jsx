@@ -143,7 +143,7 @@ const AdvisorRegister = () => {
           },
         }}
       />
-      <Header />
+     
       
       {/* Main Content */}
       <div className="flex-grow w-full flex items-stretch pt-20">
@@ -392,7 +392,6 @@ const AdvisorRegister = () => {
         </div>
       </div>
       
-      <Footer />
     </div>
   );
 };

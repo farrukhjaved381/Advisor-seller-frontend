@@ -142,7 +142,6 @@ const SellerRegister = () => {
           },
         }}
       />
-      <Header />
       
       {/* Main Content */}
       <div className="flex-grow w-full flex items-stretch pt-20">
@@ -390,7 +389,6 @@ const SellerRegister = () => {
         </div>
       </div>
       
-      <Footer />
     </div>
   );
 };

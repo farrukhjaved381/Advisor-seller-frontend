@@ -134,7 +134,6 @@ const Auth = () => {
                     },
                 }}
             />
-            <Header />
             
             {/* Main Content */}
             <div className="flex-grow w-full flex items-stretch pt-20">
@@ -368,7 +367,7 @@ const Auth = () => {
                 </div>
             </div>
             
-            <Footer />
+           
         </div>
     );
 };

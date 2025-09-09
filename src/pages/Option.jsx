@@ -8,7 +8,6 @@ const Option = () => {
     
     return (
         <div className="w-screen min-h-screen bg-gradient-to-br from-gray-50 to-white flex flex-col overflow-x-hidden">
-            <Header />
             
             {/* Main Content */}
             <div className='flex-grow w-full flex items-stretch pt-20'>
@@ -133,8 +132,7 @@ const Option = () => {
                     </div>
                 </div>
             </div>
-            
-            <Footer />
+        
         </div>
     )
 }
