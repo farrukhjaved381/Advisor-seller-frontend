@@ -5,7 +5,17 @@ import * as Yup from "yup";
 import { toast, Toaster } from "react-hot-toast";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
-import { FaUser, FaGlobe, FaMapMarkerAlt, FaGift } from "react-icons/fa";
+import { 
+  FaUser, 
+  FaGlobe, 
+  FaMapMarkerAlt, 
+  FaGift, 
+  FaCreditCard, 
+  FaShieldAlt,
+  FaLock,
+  FaCheckCircle,
+  FaSpinner
+} from "react-icons/fa";
 
 // -------------------- Stripe --------------------
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY).catch(err => {
@@ -101,10 +111,10 @@ class SecureAPI {
 
 // -------------------- Validation Schema --------------------
 const PaymentSchema = Yup.object().shape({
-  firstName: Yup.string().matches(/^[A-Za-z]+$/, "Only alphabets allowed").min(2).max(20).required(),
-  lastName: Yup.string().matches(/^[A-Za-z]+$/, "Only alphabets allowed").min(2).max(20).required(),
+  firstName: Yup.string().matches(/^[A-Za-z]+$/, "Only alphabets allowed").min(2).max(20).required("First name is required"),
+  lastName: Yup.string().matches(/^[A-Za-z]+$/, "Only alphabets allowed").min(2).max(20).required("Last name is required"),
   country: Yup.string().required("Country is required"),
-  postalCode: Yup.string().matches(/^[0-9]{4,10}$/, "Invalid postal code").required(),
+  postalCode: Yup.string().matches(/^[0-9]{4,10}$/, "Invalid postal code").required("Postal code is required"),
   coupon: Yup.string().matches(/^[A-Za-z0-9]*$/, "Only letters & numbers allowed").notRequired(),
 });
 
@@ -115,6 +125,9 @@ const AdvisorPaymentForm = () => {
 
   const [amount, setAmount] = useState(500000); // Amount in cents ($5000)
   const [couponApplied, setCouponApplied] = useState(false);
+  const [originalAmount] = useState(500000);
+  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
+  const [cardReady, setCardReady] = useState(false);
 
   // You might want to get the user's email from a global auth context
   // For now, assuming a placeholder or a way to pass it down
@@ -126,6 +139,8 @@ const AdvisorPaymentForm = () => {
       toast.error("Please enter a coupon code");
       return;
     }
+
+    setIsApplyingCoupon(true);
 
     try {
       // Check if it's a free trial coupon first
@@ -167,6 +182,8 @@ const AdvisorPaymentForm = () => {
     } catch (err) {
       console.error("Apply coupon error:", err);
       toast.error("Error applying coupon ❌");
+    } finally {
+      setIsApplyingCoupon(false);
     }
   };
 
@@ -267,134 +284,298 @@ const AdvisorPaymentForm = () => {
   };
 
   return (
-    <Formik
-      initialValues={{ firstName: "", lastName: "", country: "", postalCode: "", coupon: "" }}
-      validationSchema={PaymentSchema}
-      onSubmit={handleSubmitPayment}
-    >
-      {({ values, isSubmitting }) => (
-        <Form className="flex flex-col gap-4">
-          {/* Name Fields */}
-          <div className="flex gap-2">
-            <div className="flex-1 flex items-center border rounded-lg px-3 py-2">
-              <FaUser className="mr-2 text-gray-500" />
-              <Field name="firstName" placeholder="John" className="w-full outline-none" />
+    <div className="space-y-8">
+      {/* Header Section */}
+      <div className="text-center space-y-4">
+        <div className="mx-auto w-16 h-16 bg-gradient-to-r from-primary to-third rounded-full flex items-center justify-center">
+          <FaShieldAlt className="text-white text-2xl" />
+        </div>
+        <div>
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">Advisor Membership</h1>
+          <p className="text-gray-600">Join our exclusive network of professional advisors</p>
+        </div>
+        
+        {/* Pricing Display */}
+        <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-6 border border-blue-100">
+          <div className="flex items-center justify-center space-x-4">
+            {couponApplied && (
+              <div className="text-right">
+                <p className="text-sm text-gray-500 line-through">${(originalAmount / 100).toFixed(2)}</p>
+              </div>
+            )}
+            <div className="text-center">
+              <p className="text-4xl font-bold text-gray-800">${(amount / 100).toFixed(2)}</p>
+              <p className="text-sm text-gray-500">One-time setup fee</p>
             </div>
-            <div className="flex-1 flex items-center border rounded-lg px-3 py-2">
-              <FaUser className="mr-2 text-gray-500" />
-              <Field name="lastName" placeholder="Doe" className="w-full outline-none" />
-            </div>
-          </div>
-          <ErrorMessage name="firstName" component="p" className="text-red-500 text-sm" />
-          <ErrorMessage name="lastName" component="p" className="text-red-500 text-sm" />
-
-          {/* Country */}
-          <div className="flex items-center border rounded-lg px-3 py-2">
-            <FaGlobe className="mr-2 text-gray-500" />
-            <Field as="select" name="country" className="w-full outline-none">
-              <option value="">Select country*</option>
-              <option value="PK">Pakistan</option>
-              <option value="US">United States</option>
-              <option value="GB">United Kingdom</option>
-              <option value="CA">Canada</option>
-              <option value="AU">Australia</option>
-            </Field>
-          </div>
-          <ErrorMessage name="country" component="p" className="text-red-500 text-sm" />
-
-          {/* Postal Code */}
-          <div className="flex items-center border rounded-lg px-3 py-2">
-            <FaMapMarkerAlt className="mr-2 text-gray-500" />
-            <Field name="postalCode" placeholder="12345" className="w-full outline-none" />
-          </div>
-          <ErrorMessage name="postalCode" component="p" className="text-red-500 text-sm" />
-
-          {/* Card Element */}
-          <div className="border rounded-lg px-3 py-2 min-h-[50px]">
-            {stripe ? (
-              <CardElement 
-                options={{ 
-                  hidePostalCode: true,
-                  style: {
-                    base: {
-                      fontSize: '16px',
-                      color: '#424770',
-                      fontFamily: 'Arial, sans-serif',
-                      '::placeholder': {
-                        color: '#aab7c4',
-                      },
-                    },
-                    invalid: {
-                      color: '#9e2146',
-                    },
-                  },
-                }} 
-                onReady={() => console.log('CardElement ready')}
-                onChange={(event) => {
-                  if (event.error) {
-                    console.error('CardElement error:', event.error);
-                  }
-                }}
-              />
-            ) : (
-              <div className="flex items-center justify-center h-[40px]">
-                <p className="text-gray-500 text-sm">Loading payment form...</p>
+            {couponApplied && (
+              <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                <FaCheckCircle className="inline mr-1" />
+                Discount Applied
               </div>
             )}
           </div>
+        </div>
+      </div>
 
-          {/* Coupon */}
-          <div className="flex gap-2">
-            <div className="flex-1 flex items-center border rounded-lg px-3 py-2">
-              <FaGift className="mr-2 text-gray-500" />
-              <Field name="coupon" placeholder="DISCOUNT50" className="w-full outline-none" />
+      <Formik
+        initialValues={{ firstName: "", lastName: "", country: "", postalCode: "", coupon: "" }}
+        validationSchema={PaymentSchema}
+        onSubmit={handleSubmitPayment}
+      >
+        {({ values, isSubmitting, errors, touched }) => (
+          <Form className="space-y-6">
+            {/* Personal Information Section */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+                <FaUser className="mr-2 text-blue-500" />
+                Personal Information
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">First Name</label>
+                  <div className={`relative border-2 rounded-lg transition-colors ${
+                    errors.firstName && touched.firstName 
+                      ? 'border-red-300 bg-red-50' 
+                      : 'border-gray-200 hover:border-blue-300 focus-within:border-blue-500'
+                  }`}>
+                    <div className="flex items-center px-4 py-3">
+                      <FaUser className="mr-3 text-gray-400" />
+                      <Field 
+                        name="firstName" 
+                        placeholder="Enter first name" 
+                        className="w-full outline-none bg-transparent text-gray-800"
+                      />
+                    </div>
+                  </div>
+                  <ErrorMessage name="firstName" component="p" className="text-red-500 text-sm flex items-center">
+                    <span className="ml-1">⚠️</span>
+                    <span className="ml-1">{errors.firstName}</span>
+                  </ErrorMessage>
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Last Name</label>
+                  <div className={`relative border-2 rounded-lg transition-colors ${
+                    errors.lastName && touched.lastName 
+                      ? 'border-red-300 bg-red-50' 
+                      : 'border-gray-200 hover:border-blue-300 focus-within:border-blue-500'
+                  }`}>
+                    <div className="flex items-center px-4 py-3">
+                      <FaUser className="mr-3 text-gray-400" />
+                      <Field 
+                        name="lastName" 
+                        placeholder="Enter last name" 
+                        className="w-full outline-none bg-transparent text-gray-800"
+                      />
+                    </div>
+                  </div>
+                  <ErrorMessage name="lastName" component="p" className="text-red-500 text-sm flex items-center">
+                    <span className="ml-1">⚠️</span>
+                    <span className="ml-1">{errors.lastName}</span>
+                  </ErrorMessage>
+                </div>
+              </div>
             </div>
-            <button
-              type="button"
-              onClick={() => handleApplyCoupon(values.coupon)}
-              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
-            >
-              Apply
-            </button>
-          </div>
 
-          {/* Setup Coupons for Testing */}
-          <button
-            type="button"
-            onClick={async () => {
-              try {
-                const response = await fetch(`${SecureAPI.BACKEND_URL}/api/payment/setup-coupons`);
-                if (response.ok) {
-                  toast.success("Test coupons created! Try: FREETRIAL2024, DISCOUNT50, SAVE1000");
-                } else {
-                  toast.error("Failed to setup coupons");
-                }
-              } catch (err) {
-                toast.error("Error setting up coupons");
-              }
-            }}
-            className="w-full bg-gray-500 text-white py-2 rounded-lg hover:bg-gray-600 transition mb-2"
-          >
-            Setup Test Coupons (Dev Only)
-          </button>
+            {/* Location Information */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+                <FaMapMarkerAlt className="mr-2 text-blue-500" />
+                Location Details
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Country</label>
+                  <div className={`relative border-2 rounded-lg transition-colors ${
+                    errors.country && touched.country 
+                      ? 'border-red-300 bg-red-50' 
+                      : 'border-gray-200 hover:border-blue-300 focus-within:border-blue-500'
+                  }`}>
+                    <div className="flex items-center px-4 py-3">
+                      <FaGlobe className="mr-3 text-gray-400" />
+                      <Field as="select" name="country" className="w-full outline-none bg-transparent text-gray-800">
+                        <option value="">Select your country</option>
+                        <option value="PK">🇵🇰 Pakistan</option>
+                        <option value="US">🇺🇸 United States</option>
+                        <option value="GB">🇬🇧 United Kingdom</option>
+                        <option value="CA">🇨🇦 Canada</option>
+                        <option value="AU">🇦🇺 Australia</option>
+                      </Field>
+                    </div>
+                  </div>
+                  <ErrorMessage name="country" component="p" className="text-red-500 text-sm flex items-center">
+                    <span className="ml-1">⚠️</span>
+                    <span className="ml-1">{errors.country}</span>
+                  </ErrorMessage>
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Postal Code</label>
+                  <div className={`relative border-2 rounded-lg transition-colors ${
+                    errors.postalCode && touched.postalCode 
+                      ? 'border-red-300 bg-red-50' 
+                      : 'border-gray-200 hover:border-blue-300 focus-within:border-blue-500'
+                  }`}>
+                    <div className="flex items-center px-4 py-3">
+                      <FaMapMarkerAlt className="mr-3 text-gray-400" />
+                      <Field 
+                        name="postalCode" 
+                        placeholder="Enter postal code" 
+                        className="w-full outline-none bg-transparent text-gray-800"
+                      />
+                    </div>
+                  </div>
+                  <ErrorMessage name="postalCode" component="p" className="text-red-500 text-sm flex items-center">
+                    <span className="ml-1">⚠️</span>
+                    <span className="ml-1">{errors.postalCode}</span>
+                  </ErrorMessage>
+                </div>
+              </div>
+            </div>
 
-          {/* Submit */}
-          <button
-            type="submit"
-            disabled={isSubmitting || !stripe || !elements}
-            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
-          >
-            {isSubmitting ? "Processing..." : `Pay $${(amount / 100).toFixed(2)}`}
-          </button>
-        </Form>
-      )}
-    </Formik>
+            {/* Payment Information */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+                <FaCreditCard className="mr-2 text-blue-500" />
+                Payment Information
+              </h3>
+              
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">Card Details</label>
+                <div className="border-2 rounded-lg px-4 py-4 transition-colors border-gray-200 hover:border-blue-300 focus-within:border-blue-500 bg-white">
+                  {stripe ? (
+                    <CardElement 
+                      options={{ 
+                        hidePostalCode: true,
+                        style: {
+                          base: {
+                            fontSize: '16px',
+                            color: '#374151',
+                            fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
+                            fontSmoothing: 'antialiased',
+                            '::placeholder': {
+                              color: '#9CA3AF',
+                            },
+                          },
+                          invalid: {
+                            color: '#EF4444',
+                            iconColor: '#EF4444'
+                          },
+                        },
+                      }} 
+                      onReady={() => {
+                        console.log('CardElement ready');
+                        setCardReady(true);
+                      }}
+                      onChange={(event) => {
+                        if (event.error) {
+                          console.error('CardElement error:', event.error);
+                        }
+                      }}
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center h-12">
+                      <FaSpinner className="animate-spin mr-2 text-blue-500" />
+                      <p className="text-gray-500">Loading secure payment form...</p>
+                    </div>
+                  )}
+                </div>
+                <div className="flex items-center text-sm text-gray-500 mt-2">
+                  <FaLock className="mr-2" />
+                  <span>Your payment information is encrypted and secure</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Coupon Section */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+                <FaGift className="mr-2 text-green-500" />
+                Promotional Code
+              </h3>
+              
+              <div className="flex gap-3">
+                <div className="flex-1 space-y-2">
+                  <div className="border-2 rounded-lg transition-colors border-gray-200 hover:border-green-300 focus-within:border-green-500">
+                    <div className="flex items-center px-4 py-3">
+                      <FaGift className="mr-3 text-gray-400" />
+                      <Field 
+                        name="coupon" 
+                        placeholder="Enter promo code (optional)" 
+                        className="w-full outline-none bg-transparent text-gray-800"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleApplyCoupon(values.coupon)}
+                  disabled={isApplyingCoupon || !values.coupon?.trim()}
+                  className="px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white font-medium rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                >
+                  {isApplyingCoupon ? (
+                    <>
+                      <FaSpinner className="animate-spin mr-2" />
+                      Applying...
+                    </>
+                  ) : (
+                    'Apply'
+                  )}
+                </button>
+              </div>
+            </div>
+
+
+            {/* Submit Button */}
+            <div className="pt-4">
+              <button
+                type="submit"
+                disabled={isSubmitting || !stripe || !elements || !cardReady}
+                className="w-full bg-gradient-to-r from-primary to-third text-white font-semibold py-4 px-6 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:scale-[1.02] flex items-center justify-center text-lg"
+              >
+                {isSubmitting ? (
+                  <>
+                    <FaSpinner className="animate-spin mr-3" />
+                    Processing Payment...
+                  </>
+                ) : (
+                  <>
+                    <FaLock className="mr-3" />
+                    Complete Payment • ${(amount / 100).toFixed(2)}
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Trust Indicators */}
+            <div className="text-center space-y-2 pt-4 border-t border-gray-200">
+              <div className="flex items-center justify-center space-x-4 text-sm text-gray-500">
+                <div className="flex items-center">
+                  <FaShieldAlt className="mr-1" />
+                  <span>256-bit SSL Encryption</span>
+                </div>
+                <div className="flex items-center">
+                  <FaLock className="mr-1" />
+                  <span>PCI Compliant</span>
+                </div>
+              </div>
+              <p className="text-xs text-gray-400">
+                Powered by Stripe • Your payment information is never stored on our servers
+              </p>
+            </div>
+          </Form>
+        )}
+      </Formik>
+    </div>
   );
 };
 
-// -------------------- Wrapper Component (Revised) --------------------
+// -------------------- Wrapper Component (Enhanced) --------------------
 const AdvisorPayments = () => {
   const [stripeError, setStripeError] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const initializeApp = async () => {
@@ -412,24 +593,46 @@ const AdvisorPayments = () => {
         if (!csrfToken) {
           console.log('No CSRF token available - user needs to login first');
         }
+        
+        setIsLoading(false);
       } catch (err) {
         console.error("Failed to initialize:", err);
         setStripeError('Failed to initialize payment system. Please refresh the page.');
+        setIsLoading(false);
       }
     };
 
     initializeApp();
   }, []);
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50">
+        <div className="text-center space-y-4">
+          <div className="mx-auto w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+            <FaSpinner className="animate-spin text-white text-2xl" />
+          </div>
+          <div>
+            <h2 className="text-xl font-semibold text-gray-800">Initializing Payment System</h2>
+            <p className="text-gray-600">Please wait while we prepare your secure checkout...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (stripeError) {
     return (
-      <div className="w-full min-h-screen flex justify-center items-center bg-gray-100 p-6">
-        <div className="w-full max-w-lg bg-white shadow-lg rounded-xl p-8 text-center">
-          <h1 className="text-2xl font-bold mb-6 text-red-600">Payment System Error</h1>
-          <p className="text-gray-600 mb-4">{stripeError}</p>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-orange-50 p-6">
+        <div className="max-w-md w-full bg-white shadow-2xl rounded-3xl p-8 text-center">
+          <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-6">
+            <FaShieldAlt className="text-red-500 text-2xl" />
+          </div>
+          <h1 className="text-2xl font-bold mb-4 text-red-600">Payment System Error</h1>
+          <p className="text-gray-600 mb-6">{stripeError}</p>
           <button 
             onClick={() => window.location.reload()} 
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+            className="w-full bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold py-3 px-6 rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-200"
           >
             Refresh Page
           </button>
@@ -440,14 +643,63 @@ const AdvisorPayments = () => {
 
   return (
     <Elements stripe={stripePromise}>
-      <div className="w-full min-h-screen flex justify-center items-center bg-gray-100 p-6">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-4 sm:p-6">
         <Toaster
           position="top-center"
-          toastOptions={{ style: { minWidth: "400px", maxWidth: "600px" } }}
+          toastOptions={{ 
+            style: { 
+              minWidth: "300px", 
+              maxWidth: "500px",
+              borderRadius: "12px",
+              fontSize: "14px",
+              padding: "12px 16px"
+            },
+            duration: 4000,
+            success: {
+              iconTheme: {
+                primary: '#10B981',
+                secondary: '#ffffff',
+              },
+            },
+            error: {
+              iconTheme: {
+                primary: '#EF4444',
+                secondary: '#ffffff',
+              },
+            }
+          }}
         />
-        <div className="w-full max-w-lg bg-white shadow-lg rounded-xl p-8">
-          <h1 className="text-2xl font-bold mb-6 text-center">Advisor Payments</h1>
-          <AdvisorPaymentForm />
+        <div className="max-w-2xl mx-auto">
+          <div className="bg-white shadow-2xl rounded-3xl overflow-hidden">
+            <div className="px-8 py-10 sm:px-12 sm:py-12">
+              <AdvisorPaymentForm />
+            </div>
+          </div>
+          
+          {/* Additional Trust Signals */}
+          <div className="mt-8 text-center space-y-4">
+            <div className="flex items-center justify-center space-x-6 text-sm text-gray-500">
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                  <FaShieldAlt className="text-blue-500 text-xs" />
+                </div>
+                <span>Bank-level Security</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                  <FaCheckCircle className="text-green-500 text-xs" />
+                </div>
+                <span>Instant Activation</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                  <FaUser className="text-purple-500 text-xs" />
+                </div>
+                <span>24/7 Support</span>
+              </div>
+            </div>
+            
+          </div>
         </div>
       </div>
     </Elements>

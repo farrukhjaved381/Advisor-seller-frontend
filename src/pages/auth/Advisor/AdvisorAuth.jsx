@@ -179,7 +179,7 @@ const Auth = () => {
                 </span>
               </div>
               <p className="text-gray-600 text-sm leading-relaxed">
-                Access your advisor dashboard and manage your deals seamlessly.
+                Access your advisor dashboard and manage your account seamlessly.
               </p>
             </div>
           </div>

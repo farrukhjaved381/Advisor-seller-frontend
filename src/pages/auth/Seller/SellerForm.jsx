@@ -4,10 +4,10 @@ import axios from "axios";
 import { toast, Toaster } from "react-hot-toast";
 import { Formik, Form, Field, ErrorMessage, useFormikContext } from "formik";
 import * as Yup from "yup";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { rawGeographyData } from '../../../components/Static/geographyData';
 import { rawIndustryData } from '../../../components/Static/industryData';
-import { FaChevronDown, FaChevronRight } from "react-icons/fa";
+import { FaChevronDown, FaChevronRight, FaSearch, FaBuilding, FaPhone, FaGlobe, FaDollarSign, FaIndustry, FaMapMarkerAlt, FaFileAlt } from "react-icons/fa";
 
 // Map selected industry id to top-level industry label
 const mapIndustry = (selectedId) => {
@@ -71,12 +71,17 @@ const SellerSchema = Yup.object().shape({
     .required("Description is required"),
 });
 
-// 🆕 Updated AnimatedInput to take an optional 'prefix' prop
-const AnimatedInput = ({ name, type = "text", placeholder, readOnly = false, prefix = "" }) => {
+// Enhanced AnimatedInput with icon support
+const AnimatedInput = ({ name, type = "text", placeholder, readOnly = false, prefix = "", icon = null }) => {
   return (
     <div className="relative w-full">
+      {icon && (
+        <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary z-10">
+          {icon}
+        </div>
+      )}
       {prefix && (
-        <span className="absolute left-3 top-4 text-primary/60 peer-focus:text-secondary peer-hover:text-secondary transition-all duration-300 pointer-events-none">
+        <span className="absolute left-10 top-1/2 transform -translate-y-1/2 text-secondary/60 pointer-events-none">
           {prefix}
         </span>
       )}
@@ -84,30 +89,21 @@ const AnimatedInput = ({ name, type = "text", placeholder, readOnly = false, pre
         type={type}
         name={name}
         readOnly={readOnly}
-        className={`peer p-4 w-full rounded-xl border-[0.15rem] border-primary/30
-          hover:border-primary hover:border-[0.2rem] focus:border-primary
-          focus:outline-none transition ease-in-out duration-300
-          focus:scale-105 placeholder-transparent bg-white
-          read-only:bg-gray-100 read-only:cursor-not-allowed
-          ${prefix ? 'pl-8' : ''}`}
+        placeholder=" "
+        className={`peer w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary placeholder-transparent
+          ${icon ? 'pl-10' : ''} ${prefix ? 'pl-16' : ''}
+          read-only:bg-gray-100 read-only:cursor-not-allowed`}
       />
       <label
-        htmlFor={name}
-        className="absolute left-3 px-1 bg-white text-primary font-semibold transition-all
-          duration-300 peer-placeholder-shown:top-4 peer-placeholder-shown:text-primary/60
-          peer-placeholder-shown:text-base peer-focus:top-[-8px] peer-focus:text-base
-          peer-focus:text-secondary rounded-full
-          peer-hover:top-[-8px] peer-hover:text-base peer-hover:text-secondary
-          peer-[&:not(:placeholder-shown)]:top-[-8px] peer-[&:not(:placeholder-shown)]:text-sm
-          peer-[&:not(:not(:placeholder-shown))]:text-secondary"
+        className={`absolute bg-white px-2 text-sm font-medium text-secondary/70 transition-all duration-200 pointer-events-none
+          peer-placeholder-shown:top-1/2 peer-placeholder-shown:transform peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-base peer-placeholder-shown:text-secondary/50
+          peer-focus:top-0 peer-focus:text-xs peer-focus:text-primary
+          peer-[&:not(:placeholder-shown)]:top-0 peer-[&:not(:placeholder-shown)]:text-xs peer-[&:not(:placeholder-shown)]:text-primary
+          ${icon ? 'left-8' : 'left-3'}`}
       >
         {placeholder}
       </label>
-      <ErrorMessage
-        name={name}
-        component="p"
-        className="text-red-500 text-sm mt-1"
-      />
+      <ErrorMessage name={name} component="p" className="text-red-500 text-sm mt-1" />
     </div>
   );
 };
@@ -166,12 +162,12 @@ const RadioFilter = ({ title, data, fieldName }) => {
                 <button
                   type="button"
                   onClick={() => handleToggleCollapse(item)}
-                  className="p-1 text-gray-500 hover:text-gray-700 transition"
+                  className="p-1 text-secondary/60 hover:text-primary transition-colors duration-200"
                 >
                   {isCollapsed ? <FaChevronRight /> : <FaChevronDown />}
                 </button>
               )}
-              <label className="flex items-center text-sm font-medium cursor-pointer text-gray-700 hover:text-primary transition-colors duration-200">
+              <label className="flex items-center text-sm font-medium cursor-pointer text-secondary hover:text-primary transition-colors duration-200">
                 <input
                   type="radio"
                   name={fieldName}
@@ -186,19 +182,19 @@ const RadioFilter = ({ title, data, fieldName }) => {
                 <button
                   type="button"
                   onClick={() => handleToggleDescription(item.id)}
-                  className="p-1 text-gray-500 hover:text-gray-700 transition"
+                  className="p-1 text-secondary/60 hover:text-primary transition-colors duration-200"
                 >
                   {isDescriptionVisible ? <FaChevronDown /> : <FaChevronRight />}
                 </button>
               )}
             </div>
             {fieldName === 'industry' && isDescriptionVisible && (
-              <p className="text-xs text-gray-500 mt-1 ml-10 transition-all duration-300 ease-in-out">
+              <p className="text-xs text-secondary/70 mt-1 ml-10 transition-all duration-300 ease-in-out">
                 {item.description}
               </p>
             )}
             {isItemParent && !isCollapsed && (
-              <ul className="mt-2 pl-4 border-l-2 border-primary/20">
+              <ul className="mt-2 pl-4 border-l-2 border-primary/30">
                 {renderRadios(item.children)}
               </ul>
             )}
@@ -210,22 +206,20 @@ const RadioFilter = ({ title, data, fieldName }) => {
 
   return (
     <div className="w-full">
-      <h3 className="block text-sm font-medium mb-2">{title}</h3>
-      <div className="relative mb-2">
+      <h3 className="block text-sm font-medium text-secondary mb-3">{title}</h3>
+      <div className="relative mb-3">
         <input
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={`Search ${title}`}
-          className="w-full p-2 pr-10 rounded-xl border-[0.15rem] border-primary/30 focus:border-primary focus:outline-none transition"
+          className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-brand text-secondary"
         />
-        <svg xmlns="http://www.w3.org/2000/svg" className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
+        <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-secondary/50" />
       </div>
-      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 max-h-64 overflow-y-auto shadow-inner">
+      <div className="bg-brand-light border border-primary/20 rounded-lg p-4 max-h-64 overflow-y-auto shadow-inner">
         {filteredData.length > 0 ? renderRadios(filteredData) : (
-          <p className="text-gray-500 text-sm">No results found for "{query}".</p>
+          <p className="text-secondary/60 text-sm text-center py-4">No results found for "{query}".</p>
         )}
       </div>
 
@@ -301,11 +295,19 @@ const SellerForm = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-primary/10 px-4 relative">
+    <div className="min-h-screen bg-gradient-to-br from-brand to-brand-light py-8">
       <Toaster position="top-center" reverseOrder={false} />
-
-        <div className="w-full max-w-5xl bg-white shadow-lg mt-[5rem] mb-[5rem] rounded-2xl p-8 outline">
-          <h2 className="text-4xl font-bold text-center mb-6">Seller Profile Form</h2>
+      
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="max-w-5xl mx-auto p-8 bg-brand-light shadow-2xl rounded-3xl border border-primary/10"
+      >
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-secondary mb-2">Seller Profile</h1>
+          <p className="text-secondary/70 text-lg">Create your business profile to connect with advisors</p>
+          <div className="w-24 h-1 bg-gradient-to-r from-primary to-third mx-auto mt-4 rounded-full"></div>
+        </div>
 
           <Formik
             enableReinitialize
@@ -314,23 +316,47 @@ const SellerForm = () => {
             onSubmit={handleSubmit}
           >
             {({ isSubmitting, setFieldValue }) => (
-              <Form className="flex flex-col gap-4">
+              <Form className="space-y-8">
 
-                {/* Company Name */}
-                <AnimatedInput name="companyName" placeholder="Company Name" />
+                {/* Company Information */}
+                <motion.div 
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="bg-brand-light p-6 rounded-2xl border border-primary/10 shadow-sm"
+                >
+                  <h3 className="text-xl font-semibold text-secondary mb-6 flex items-center">
+                    <FaBuilding className="mr-3 text-primary" />
+                    Company Information
+                  </h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <AnimatedInput name="companyName" placeholder="Company Name" icon={<FaBuilding />} />
+                    </div>
+                    
+                    <div>
+                      <AnimatedInput name="phone" placeholder="Phone Number" icon={<FaPhone />} />
+                    </div>
+                    
+                    <div className="md:col-span-2">
+                      <AnimatedInput name="website" placeholder="Website URL" icon={<FaGlobe />} />
+                    </div>
+                  </div>
+                </motion.div>
 
-                {/* Phone */}
-                <AnimatedInput name="phone" placeholder="Phone" />
-
-                {/* Website */}
-                <AnimatedInput name="website" placeholder="Website" />
-
-                {/* Revenue Size Range and Currency Block */}
-                <div className="w-full flex flex-col space-y-4">
-                  <div className="flex items-end justify-between">
-                    <h3 className="block text-sm font-bold text-gray-700">Revenue Size Range</h3>
-                    <div className="w-24">
-                      {/* Animated Currency Dropdown */}
+                {/* Revenue Information */}
+                <motion.div 
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="bg-brand-light p-6 rounded-2xl border border-primary/10 shadow-sm"
+                >
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-xl font-semibold text-secondary flex items-center">
+                      <FaDollarSign className="mr-3 text-primary" />
+                      Revenue Information
+                    </h3>
+                    <div className="w-32">
                       <Field name="currency">
                         {({ field, form }) => {
                           const [open, setOpen] = React.useState(false);
@@ -344,13 +370,13 @@ const SellerForm = () => {
                             <div className="relative w-full">
                               <div
                                 tabIndex={0}
-                                className={`w-full p-2 rounded-xl border-[0.15rem] border-primary/30 bg-white text-sm flex items-center justify-between cursor-pointer hover:border-primary hover:border-[0.2rem] focus:border-primary focus:outline-none transition ease-in-out duration-300 ${open ? 'ring-2 ring-primary/30' : ''}`}
+                                className={`w-full px-3 py-2 rounded-lg border border-gray-300 bg-white text-sm flex items-center justify-between cursor-pointer hover:border-primary focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 ${open ? 'ring-2 ring-primary/20' : ''}`}
                                 onClick={() => setOpen((prev) => !prev)}
                                 onBlur={() => setTimeout(() => setOpen(false), 120)}
                               >
-                                <span>{currencies.find(c => c.value === field.value)?.label || 'Select Currency'}</span>
+                                <span className="text-secondary">{currencies.find(c => c.value === field.value)?.label || 'Currency'}</span>
                                 <motion.span animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }} className="ml-2">
-                                  <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5" stroke="#888" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                                  <FaChevronDown className="text-secondary/60" />
                                 </motion.span>
                               </div>
                               <AnimatePresence>
@@ -360,12 +386,12 @@ const SellerForm = () => {
                                     animate={{ opacity: 1, y: 0, scale: 1 }}
                                     exit={{ opacity: 0, y: -10, scale: 0.98 }}
                                     transition={{ duration: 0.18 }}
-                                    className="absolute left-0 z-10 w-full bg-white border border-primary/30 rounded-xl shadow-lg mt-1 overflow-hidden"
+                                    className="absolute left-0 z-10 w-full bg-white border border-primary/20 rounded-lg shadow-lg mt-1 overflow-hidden"
                                   >
                                     {currencies.map((c) => (
                                       <li
                                         key={c.value}
-                                        className={`px-4 py-2 text-sm cursor-pointer hover:bg-primary/10 transition ${field.value === c.value ? 'bg-primary/10 font-semibold text-primary' : ''}`}
+                                        className={`px-4 py-2 text-sm cursor-pointer hover:bg-primary/10 transition ${field.value === c.value ? 'bg-primary/10 font-semibold text-primary' : 'text-secondary'}`}
                                         onClick={() => {
                                           form.setFieldValue('currency', c.value);
                                           setOpen(false);
@@ -383,57 +409,90 @@ const SellerForm = () => {
                       </Field>
                     </div>
                   </div>
-                  <div className="w-full">
-                    <AnimatedInput name="annualRevenue" type="number" placeholder="Annual Revenue" prefix="$" />
+                  
+                  <AnimatedInput name="annualRevenue" type="number" placeholder="Annual Revenue" prefix="$" icon={<FaDollarSign />} />
+                </motion.div>
+
+                {/* Industry & Geography */}
+                <motion.div 
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="bg-brand-light p-6 rounded-2xl border border-primary/10 shadow-sm"
+                >
+                  <h3 className="text-xl font-semibold text-secondary mb-6">Business Details</h3>
+                  
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div>
+                      <div className="flex items-center mb-3">
+                        <FaIndustry className="mr-2 text-primary" />
+                        <span className="text-sm font-medium text-secondary">Industry Sector</span>
+                      </div>
+                      <RadioFilter
+                        title="Industry Sectors"
+                        data={rawIndustryData}
+                        fieldName="industry"
+                      />
+                    </div>
+                    
+                    <div>
+                      <div className="flex items-center mb-3">
+                        <FaMapMarkerAlt className="mr-2 text-primary" />
+                        <span className="text-sm font-medium text-secondary">Geographic Location</span>
+                      </div>
+                      <RadioFilter
+                        title="Geographies"
+                        data={rawGeographyData}
+                        fieldName="geography"
+                      />
+                    </div>
                   </div>
-
-                </div>
-
-                {/* Industry & Geography filters */}
-                <div className="w-full flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
-                  <RadioFilter
-                    title="Industry Sectors"
-                    data={rawIndustryData}
-                    fieldName="industry"
-                  />
-                  <RadioFilter
-                    title="Geographies"
-                    data={rawGeographyData}
-                    fieldName="geography"
-                  />
-                </div>
+                </motion.div>
 
 
                 {/* Description */}
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Description
-                  </label>
-                  <Field
-                    as="textarea"
-                    name="description"
-                    rows="4"
-                    className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary"
-                  />
-                  <ErrorMessage
-                    name="description"
-                    component="p"
-                    className="text-red-500 text-sm mt-1"
-                  />
-                </div>
+                <motion.div 
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="bg-brand-light p-6 rounded-2xl border border-primary/10 shadow-sm"
+                >
+                  <h3 className="text-xl font-semibold text-secondary mb-6 flex items-center">
+                    <FaFileAlt className="mr-3 text-primary" />
+                    Company Description
+                  </h3>
+                  
+                  <div className="relative">
+                    <Field
+                      as="textarea"
+                      name="description"
+                      rows="4"
+                      placeholder="Describe your company, products, services, and what makes you unique..."
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary resize-none"
+                    />
+                    <ErrorMessage name="description" component="p" className="text-red-500 text-sm mt-2" />
+                  </div>
+                </motion.div>
 
                 {/* Submit */}
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full h-12 bg-primary text-white rounded-lg hover:bg-primary/90 transition disabled:opacity-50"
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="flex justify-center pt-6"
                 >
-                  {isSubmitting ? "Submitting..." : "Create Profile"}
-                </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="px-8 py-4 bg-gradient-to-r from-primary to-third text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-primary/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    {isSubmitting ? "Creating Profile..." : "Create Seller Profile"}
+                  </button>
+                </motion.div>
               </Form>
             )}
           </Formik>
-        </div>
+      </motion.div>
     </div>
   );
 };

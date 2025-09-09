@@ -984,12 +984,6 @@ const SellerDashboard = () => {
                       <p className="text-gray-600">Update your business information and preferences</p>
                     </div>
                   </div>
-                  <button
-                    onClick={() => setIsEditModalOpen(true)}
-                    className="bg-blue-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-blue-700 transition"
-                  >
-                    Edit Profile
-                  </button>
                 </div>
               </div>
 
