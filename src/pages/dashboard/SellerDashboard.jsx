@@ -919,7 +919,6 @@ const SellerDashboard = () => {
                       advisor={advisor}
                       onSelect={() => handleSelectAdvisor(advisor.id)}
                       isSelected={selectedAdvisors.includes(advisor.id)}
-                      onGetDirectList={handleGetDirectList}
                     />
                   ))}
                 </div>

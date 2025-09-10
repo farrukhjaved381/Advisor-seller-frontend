@@ -2,11 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import { motion } from 'framer-motion';
+import { FaUser, FaBuilding, FaPhone, FaGlobe, FaCalendarAlt, FaChartLine, FaDollarSign, FaMapMarkerAlt, FaIndustry, FaCog, FaSignOutAlt, FaEdit, FaToggleOn, FaToggleOff } from 'react-icons/fa';
 
 const AdvisorDashboard = () => {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('overview');
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -69,248 +73,400 @@ const AdvisorDashboard = () => {
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      // Clear all stored data
+      // Clear cookies
+      if (typeof document !== 'undefined') {
+        const cookies = document.cookie.split(";");
+        for (let cookie of cookies) {
+          const eqPos = cookie.indexOf("=");
+          const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+          document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+        }
+      }
       localStorage.clear();
       sessionStorage.clear();
       toast.success('Logged out successfully!');
-      navigate('/advisor-login');
+      setTimeout(() => {
+        navigate('/advisor-login');
+      }, 2000);
     }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-brand to-brand-light">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-gradient-to-r from-blue-600 to-purple-700 shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div className="flex items-center space-x-3">
-              <div className="bg-white p-2 rounded-full">
-                <svg className="w-8 h-8 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z"/>
-                </svg>
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold text-white">Advisor Dashboard</h1>
-                <p className="text-blue-100">Manage your advisory profile and leads</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="text-right">
-                <p className="text-white font-medium">{user?.name || user?.email}</p>
-                <p className="text-blue-100 text-sm">Professional Advisor</p>
-              </div>
-              <button
-                onClick={handleLogout}
-                className="bg-white bg-opacity-20 text-white px-6 py-3 rounded-xl hover:bg-opacity-30 transition-all duration-200 font-medium backdrop-blur-sm"
-              >
-                Logout
-              </button>
-            </div>
+    <div className="flex h-screen bg-gray-50">
+      {/* Sidebar */}
+      <aside className="w-72 bg-gradient-to-b from-secondary to-secondary/90 shadow-xl flex flex-col relative overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-third/20"></div>
+          <div className="absolute top-0 left-0 w-32 h-32 bg-primary/10 rounded-full -translate-x-16 -translate-y-16"></div>
+          <div className="absolute bottom-0 right-0 w-24 h-24 bg-third/10 rounded-full translate-x-12 translate-y-12"></div>
+        </div>
+        
+        {/* Header */}
+        <div className="relative z-10 p-8 border-b border-primary/20">
+          <div className="flex items-center justify-center">
+            <img
+              src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=768,fit=crop,q=95/mk3JaNVZEltBD9g4/logo-transparency-mnlJLXr4jxIOR470.png"
+              alt="Advisor Chooser logo"
+              className="h-12 w-auto object-contain"
+            />
           </div>
         </div>
-      </header>
+        
+        {/* Navigation */}
+        <nav className="relative z-10 flex-1 px-6 py-8 space-y-2">
+          <button
+            className={`w-full text-left px-6 py-4 rounded-xl transition-all duration-300 flex items-center space-x-3 group ${
+              activeTab === "overview"
+                ? "bg-primary text-white shadow-lg transform scale-105"
+                : "text-gray-300 hover:text-white hover:bg-white/10"
+            }`}
+            onClick={() => setActiveTab("overview")}
+          >
+            <FaUser className="w-5 h-5" />
+            <span className="font-medium">Profile Overview</span>
+          </button>
+
+          <button
+            className={`w-full text-left px-6 py-4 rounded-xl transition-all duration-300 flex items-center space-x-3 group ${
+              activeTab === "leads"
+                ? "bg-primary text-white shadow-lg transform scale-105"
+                : "text-gray-300 hover:text-white hover:bg-white/10"
+            }`}
+            onClick={() => setActiveTab("leads")}
+          >
+            <FaChartLine className="w-5 h-5" />
+            <span className="font-medium">Lead Management</span>
+          </button>
+
+          <button
+            className={`w-full text-left px-6 py-4 rounded-xl transition-all duration-300 flex items-center space-x-3 group ${
+              activeTab === "settings"
+                ? "bg-primary text-white shadow-lg transform scale-105"
+                : "text-gray-300 hover:text-white hover:bg-white/10"
+            }`}
+            onClick={() => setActiveTab("settings")}
+          >
+            <FaCog className="w-5 h-5" />
+            <span className="font-medium">Settings</span>
+          </button>
+        </nav>
+        
+        {/* Sign Out Button */}
+        <div className="relative z-10 p-6 border-t border-primary/20">
+          <button
+            className="w-full text-left px-6 py-4 rounded-xl text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all duration-300 flex items-center space-x-3 group"
+            onClick={handleLogout}
+          >
+            <FaSignOutAlt className="w-5 h-5" />
+            <span className="font-medium">Sign Out</span>
+          </button>
+        </div>
+      </aside>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
-          {/* Profile Overview */}
-          <div className="bg-white overflow-hidden shadow-xl rounded-2xl mb-8 border border-gray-100">
-            <div className="bg-gradient-to-r from-gray-50 to-blue-50 px-6 py-4 border-b border-gray-200">
-              <h3 className="text-xl font-bold text-gray-900 flex items-center">
-                <svg className="w-6 h-6 text-blue-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                Profile Overview
-              </h3>
-            </div>
-            <div className="px-6 py-6">
-              {profile ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <div>
-                    <dt className="text-sm font-medium text-gray-500">Company Name</dt>
-                    <dd className="mt-1 text-sm text-gray-900">{profile.companyName}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-sm font-medium text-gray-500">Phone</dt>
-                    <dd className="mt-1 text-sm text-gray-900">{profile.phone}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-sm font-medium text-gray-500">Website</dt>
-                    <dd className="mt-1 text-sm text-gray-900">
-                      <a href={profile.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800">
-                        {profile.website}
-                      </a>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-sm font-medium text-gray-500">Years Experience</dt>
-                    <dd className="mt-1 text-sm text-gray-900">{profile.yearsExperience} years</dd>
-                  </div>
-                  <div>
-                    <dt className="text-sm font-medium text-gray-500">Transactions</dt>
-                    <dd className="mt-1 text-sm text-gray-900">{profile.numberOfTransactions}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-sm font-medium text-gray-500">Profile Status</dt>
-                    <dd className="mt-1">
-                      <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${
-                        profile.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                      }`}>
-                        {profile.isActive ? 'Active' : 'Inactive'}
-                      </span>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-sm font-medium text-gray-500">Lead Status</dt>
-                    <dd className="mt-1">
-                      <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${
-                        profile.sendLeads ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800'
-                      }`}>
-                        {profile.sendLeads ? 'Receiving Leads' : 'Leads Paused'}
-                      </span>
-                    </dd>
-                  </div>
-                </div>
-              ) : (
-                <p className="text-gray-500">No profile found. Please create your profile.</p>
-              )}
-            </div>
+      <main className="flex-1 flex flex-col">
+        {/* Topbar */}
+        <header className="flex items-center justify-between bg-white/95 backdrop-blur-sm shadow-lg border-b border-primary/10 px-8 py-6 relative overflow-hidden">
+          {/* Background Accent */}
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-third/5"></div>
+          
+          {/* Title Section */}
+          <div className="flex items-center relative z-10">
+            <h1 className="text-2xl font-bold text-secondary">Advisor Dashboard</h1>
           </div>
-
-          {/* Industries & Geographies */}
-          {profile && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-              <div className="bg-white overflow-hidden shadow-xl rounded-2xl border border-gray-100">
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-gray-200">
-                  <h3 className="text-lg font-bold text-gray-900 flex items-center">
-                    <svg className="w-5 h-5 text-blue-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M4 3a2 2 0 100 4h12a2 2 0 100-4H4z"/>
-                      <path fillRule="evenodd" d="M3 8a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd"/>
-                    </svg>
-                    Industries
-                  </h3>
+          
+          {/* Profile Section */}
+          <div className="relative z-10">
+            <button
+              className="flex items-center gap-4 px-4 py-2 rounded-xl hover:bg-primary/10 transition-all duration-300 group"
+              onClick={() => setProfileDropdownOpen(prev => !prev)}
+            >
+              <div className="text-right">
+                <span className="block font-semibold text-secondary group-hover:text-primary transition-colors">
+                  {user?.name || "Loading..."}
+                </span>
+                <span className="block text-sm text-gray-500">Advisor Account</span>
+              </div>
+              <div className="relative">
+                <div className="w-12 h-12 flex items-center justify-center bg-gradient-to-br from-primary to-third rounded-full text-white font-bold shadow-lg ring-2 ring-primary/20">
+                  {(user?.name || "A").charAt(0)}
                 </div>
-                <div className="px-6 py-6">
-                  <div className="flex flex-wrap gap-3">
-                    {profile.industries?.map((industry, index) => (
-                      <span key={index} className="inline-flex px-4 py-2 text-sm font-medium bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 rounded-full border border-blue-300">
-                        {industry}
-                      </span>
-                    ))}
+                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
+              </div>
+            </button>
+            
+            {/* Profile Dropdown */}
+            {profileDropdownOpen && (
+              <div className="absolute right-0 mt-4 w-80 bg-white/95 backdrop-blur-sm border border-primary/20 rounded-2xl shadow-2xl p-6 z-50 animate-fadeIn">
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-center gap-4 pb-4 border-b border-gray-100">
+                    <div className="w-16 h-16 flex items-center justify-center bg-gradient-to-br from-primary to-third rounded-full text-white font-bold text-xl shadow-lg">
+                      {(user?.name || "A").charAt(0)}
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-secondary text-lg">{user?.name}</h3>
+                      <p className="text-sm text-gray-500">Advisor Account</p>
+                    </div>
                   </div>
-                </div>
-              </div>
-
-              <div className="bg-white overflow-hidden shadow-xl rounded-2xl border border-gray-100">
-                <div className="bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-4 border-b border-gray-200">
-                  <h3 className="text-lg font-bold text-gray-900 flex items-center">
-                    <svg className="w-5 h-5 text-green-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"/>
-                    </svg>
-                    Geographies
-                  </h3>
-                </div>
-                <div className="px-6 py-6">
-                  <div className="flex flex-wrap gap-3">
-                    {profile.geographies?.map((geography, index) => (
-                      <span key={index} className="inline-flex px-4 py-2 text-sm font-medium bg-gradient-to-r from-green-100 to-green-200 text-green-800 rounded-full border border-green-300">
-                        {geography}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Lead Management */}
-          {profile && (
-            <div className="bg-white overflow-hidden shadow-xl rounded-2xl mb-8 border border-gray-100">
-              <div className="bg-gradient-to-r from-yellow-50 to-orange-50 px-6 py-4 border-b border-gray-200">
-                <h3 className="text-xl font-bold text-gray-900 flex items-center">
-                  <svg className="w-6 h-6 text-orange-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
-                  </svg>
-                  Lead Management
-                </h3>
-              </div>
-              <div className="px-6 py-6">
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  
                   <div>
-                    <h4 className="text-sm font-medium text-gray-900">Receive New Leads</h4>
-                    <p className="text-sm text-gray-500">
-                      {profile.sendLeads ? 'You are currently receiving new leads from sellers' : 'Lead delivery is paused'}
-                    </p>
-                  </div>
-                  <button
-                    onClick={async () => {
-                      try {
-                        const token = localStorage.getItem('access_token');
-                        await axios.patch(
-                          'https://advisor-seller-backend.vercel.app/api/advisors/profile/pause-leads',
-                          { sendLeads: !profile.sendLeads },
-                          { headers: { Authorization: `Bearer ${token}` } }
-                        );
-                        toast.success(`Leads ${!profile.sendLeads ? 'resumed' : 'paused'} successfully!`);
-                        fetchUserData();
-                      } catch (error) {
-                        toast.error('Failed to update lead status');
-                      }
-                    }}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      profile.sendLeads ? 'bg-blue-600' : 'bg-gray-200'
-                    }`}
-                  >
-                    <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        profile.sendLeads ? 'translate-x-6' : 'translate-x-1'
-                      }`}
+                    <label className="block text-sm font-medium text-gray-600 mb-2">Name</label>
+                    <input
+                      type="text"
+                      value={user?.name || ""}
+                      readOnly
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 cursor-not-allowed text-gray-600"
                     />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-2">Email</label>
+                    <input
+                      type="email"
+                      value={user?.email || ""}
+                      readOnly
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 cursor-not-allowed text-gray-600"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </header>
+
+        {/* Tab Content */}
+        <div className="px-6 py-4 overflow-y-auto">
+          {/* Profile Overview Tab */}
+          {activeTab === "overview" && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-6"
+            >
+              {profile ? (
+                <>
+                  {/* Profile Stats Cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <motion.div className="bg-gradient-to-br from-primary/10 to-primary/5 p-6 rounded-2xl border border-primary/20">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-secondary/70">Years Experience</p>
+                          <p className="text-2xl font-bold text-secondary">{profile.yearsExperience}</p>
+                        </div>
+                        <FaCalendarAlt className="w-8 h-8 text-primary" />
+                      </div>
+                    </motion.div>
+                    
+                    <motion.div className="bg-gradient-to-br from-third/10 to-third/5 p-6 rounded-2xl border border-third/20">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-secondary/70">Transactions</p>
+                          <p className="text-2xl font-bold text-secondary">{profile.numberOfTransactions}</p>
+                        </div>
+                        <FaChartLine className="w-8 h-8 text-third" />
+                      </div>
+                    </motion.div>
+                    
+                    <motion.div className="bg-gradient-to-br from-forth/10 to-forth/5 p-6 rounded-2xl border border-forth/20">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-secondary/70">Profile Status</p>
+                          <p className={`text-lg font-semibold ${profile.isActive ? 'text-green-600' : 'text-red-600'}`}>
+                            {profile.isActive ? 'Active' : 'Inactive'}
+                          </p>
+                        </div>
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${profile.isActive ? 'bg-green-100' : 'bg-red-100'}`}>
+                          <div className={`w-4 h-4 rounded-full ${profile.isActive ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                        </div>
+                      </div>
+                    </motion.div>
+                    
+                    <motion.div className="bg-gradient-to-br from-green-100 to-green-50 p-6 rounded-2xl border border-green-200">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-secondary/70">Lead Status</p>
+                          <p className={`text-lg font-semibold ${profile.sendLeads ? 'text-green-600' : 'text-yellow-600'}`}>
+                            {profile.sendLeads ? 'Receiving' : 'Paused'}
+                          </p>
+                        </div>
+                        {profile.sendLeads ? <FaToggleOn className="w-8 h-8 text-green-500" /> : <FaToggleOff className="w-8 h-8 text-yellow-500" />}
+                      </div>
+                    </motion.div>
+                  </div>
+
+                  {/* Company Information */}
+                  <motion.div className="bg-brand-light p-6 rounded-2xl border border-primary/10 shadow-sm">
+                    <h3 className="text-xl font-semibold text-secondary mb-6 flex items-center">
+                      <FaBuilding className="mr-3 text-primary" />
+                      Company Information
+                    </h3>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      <div className="flex items-center space-x-3">
+                        <FaBuilding className="text-primary" />
+                        <div>
+                          <p className="text-sm font-medium text-secondary/70">Company Name</p>
+                          <p className="text-secondary font-medium">{profile.companyName}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center space-x-3">
+                        <FaPhone className="text-primary" />
+                        <div>
+                          <p className="text-sm font-medium text-secondary/70">Phone</p>
+                          <p className="text-secondary font-medium">{profile.phone}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center space-x-3">
+                        <FaGlobe className="text-primary" />
+                        <div>
+                          <p className="text-sm font-medium text-secondary/70">Website</p>
+                          <a href={profile.website} target="_blank" rel="noopener noreferrer" className="text-primary hover:text-third transition-colors">
+                            {profile.website}
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+
+                  {/* Industries & Geographies */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <motion.div className="bg-brand-light p-6 rounded-2xl border border-primary/10 shadow-sm">
+                      <h3 className="text-lg font-semibold text-secondary mb-4 flex items-center">
+                        <FaIndustry className="mr-3 text-primary" />
+                        Industries
+                      </h3>
+                      <div className="flex flex-wrap gap-2">
+                        {profile.industries?.map((industry, index) => (
+                          <span key={index} className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium border border-primary/20">
+                            {industry}
+                          </span>
+                        ))}
+                      </div>
+                    </motion.div>
+
+                    <motion.div className="bg-brand-light p-6 rounded-2xl border border-primary/10 shadow-sm">
+                      <h3 className="text-lg font-semibold text-secondary mb-4 flex items-center">
+                        <FaMapMarkerAlt className="mr-3 text-primary" />
+                        Geographies
+                      </h3>
+                      <div className="flex flex-wrap gap-2">
+                        {profile.geographies?.map((geography, index) => (
+                          <span key={index} className="px-3 py-1 bg-third/10 text-third rounded-full text-sm font-medium border border-third/20">
+                            {geography}
+                          </span>
+                        ))}
+                      </div>
+                    </motion.div>
+                  </div>
+                </>
+              ) : (
+                <div className="bg-yellow-50 border-l-4 border-yellow-400 p-6 rounded-lg text-center space-y-4">
+                  <h3 className="text-xl font-semibold text-gray-800">No Profile Found</h3>
+                  <p className="text-gray-700">Please create your advisor profile to get started.</p>
+                  <button
+                    onClick={() => navigate('/advisor-payments')}
+                    className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors font-medium"
+                  >
+                    Create Profile
                   </button>
                 </div>
-              </div>
-            </div>
+              )}
+            </motion.div>
           )}
 
-          {/* Actions */}
-          <div className="bg-white overflow-hidden shadow-xl rounded-2xl border border-gray-100">
-            <div className="bg-gradient-to-r from-purple-50 to-pink-50 px-6 py-4 border-b border-gray-200">
-              <h3 className="text-xl font-bold text-gray-900 flex items-center">
-                <svg className="w-6 h-6 text-purple-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd"/>
-                </svg>
+          {/* Lead Management Tab */}
+          {activeTab === "leads" && profile && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-brand-light p-6 rounded-2xl border border-primary/10 shadow-sm"
+            >
+              <h3 className="text-xl font-semibold text-secondary mb-6 flex items-center">
+                <FaChartLine className="mr-3 text-primary" />
+                Lead Management
+              </h3>
+              
+              <div className="flex items-center justify-between p-6 bg-white rounded-xl border border-primary/10">
+                <div>
+                  <h4 className="text-lg font-medium text-secondary">Receive New Leads</h4>
+                  <p className="text-secondary/70 mt-1">
+                    {profile.sendLeads ? 'You are currently receiving new leads from sellers' : 'Lead delivery is paused'}
+                  </p>
+                </div>
+                <button
+                  onClick={async () => {
+                    try {
+                      const token = localStorage.getItem('access_token');
+                      await axios.patch(
+                        'https://advisor-seller-backend.vercel.app/api/advisors/profile/pause-leads',
+                        { sendLeads: !profile.sendLeads },
+                        { headers: { Authorization: `Bearer ${token}` } }
+                      );
+                      toast.success(`Leads ${!profile.sendLeads ? 'resumed' : 'paused'} successfully!`);
+                      fetchUserData();
+                    } catch (error) {
+                      toast.error('Failed to update lead status');
+                    }
+                  }}
+                  className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${
+                    profile.sendLeads ? 'bg-primary' : 'bg-gray-300'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform shadow-lg ${
+                      profile.sendLeads ? 'translate-x-7' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Settings Tab */}
+          {activeTab === "settings" && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-brand-light p-6 rounded-2xl border border-primary/10 shadow-sm"
+            >
+              <h3 className="text-xl font-semibold text-secondary mb-6 flex items-center">
+                <FaCog className="mr-3 text-primary" />
                 Profile Actions
               </h3>
-            </div>
-            <div className="px-6 py-6">
+              
               <div className="flex flex-wrap gap-4">
                 {profile && (
                   <button
                     onClick={() => navigate('/edit-advisor-profile')}
-                    className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                    className="flex items-center px-6 py-3 bg-gradient-to-r from-primary to-third text-white rounded-xl hover:shadow-lg transition-all duration-300 font-medium transform hover:scale-105"
                   >
+                    <FaEdit className="mr-2" />
                     Edit Profile
                   </button>
                 )}
                 {!profile && (
                   <button
                     onClick={() => navigate('/advisor-payments')}
-                    className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors font-medium"
+                    className="flex items-center px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 font-medium transform hover:scale-105"
                   >
+                    <FaDollarSign className="mr-2" />
                     Make Payment
                   </button>
                 )}
               </div>
-            </div>
-          </div>
+            </motion.div>
+          )}
         </div>
       </main>
     </div>

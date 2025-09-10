@@ -9,7 +9,7 @@ const ProtectedRoute = ({ children, requiredRole, requiresPayment = false }) => 
 
   useEffect(() => {
     checkAuth();
-  }, []);
+  }, [window.location.pathname]);
 
   const checkAuth = async () => {
     try {
@@ -25,6 +25,14 @@ const ProtectedRoute = ({ children, requiredRole, requiresPayment = false }) => 
 
       const userData = response.data;
       setUser(userData);
+      
+      // Clear old form data if profile is incomplete to start fresh
+      if (userData.role === 'advisor' && !userData.isProfileComplete) {
+        sessionStorage.removeItem('advisor-profile');
+      }
+      
+      // Update localStorage with fresh data
+      localStorage.setItem('user', JSON.stringify(userData));
 
       // Check role
       if (requiredRole && userData.role !== requiredRole) {
@@ -78,22 +86,19 @@ const ProtectedRoute = ({ children, requiredRole, requiresPayment = false }) => 
   if (user.role === 'advisor') {
     const { pathname } = window.location;
 
-    // NOTE: This logic assumes that the user object from the backend
-    // has a boolean property 'isProfileComplete'.
+
     if (!user.isPaymentVerified) {
-      // If not paid, must go to payments page
       if (pathname !== '/advisor-payments' && pathname !== '/adviser-payment') {
         return <Navigate to="/advisor-payments" replace />;
       }
-    } else if (user.isProfileComplete === false) {
-      // If paid but profile incomplete, must go to form/upload page
-      if (pathname !== '/advisor-form' && pathname !== '/advisor-upload') {
-        return <Navigate to="/advisor-form" replace />;
+    } else if (user.isProfileComplete === true) {
+      sessionStorage.removeItem('advisor-profile');
+      if (pathname !== '/advisor-dashboard') {
+        return <Navigate to="/advisor-dashboard" replace />;
       }
     } else {
-      // If paid and profile complete, should not be on payment/form pages
-      if (pathname === '/advisor-payments' || pathname === '/adviser-payment' || pathname === '/advisor-form' || pathname === '/advisor-upload') {
-        return <Navigate to="/advisor-dashboard" replace />;
+      if (pathname !== '/advisor-form') {
+        return <Navigate to="/advisor-form" replace />;
       }
     }
   }

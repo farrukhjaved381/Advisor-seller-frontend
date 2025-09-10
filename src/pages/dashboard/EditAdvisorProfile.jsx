@@ -7,10 +7,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { rawIndustryData } from "../../components/Static/industryData";
 import { rawGeographyData } from "../../components/Static/geographyData";
-import { FaChevronDown, FaChevronRight } from "react-icons/fa";
-
-// IndustryChooser and GeographyChooser components are copied from AdvisorForm.jsx
-// with slight modifications for the edit form.
+import { FaChevronDown, FaChevronRight, FaSearch, FaBuilding, FaPhone, FaGlobe, FaCalendarAlt, FaChartLine, FaDollarSign, FaFileAlt, FaCertificate, FaIndustry, FaMapMarkerAlt } from "react-icons/fa";
 
 const IndustryChooser = ({ options, selected, onChange }) => {
   const [query, setQuery] = useState("");
@@ -55,7 +52,7 @@ const IndustryChooser = ({ options, selected, onChange }) => {
                 <button
                   type="button"
                   onClick={() => handleToggleCollapse(item)}
-                  className="p-1 text-gray-500 hover:text-gray-700 transition-colors duration-200"
+                  className="p-1 text-secondary/60 hover:text-primary transition-colors duration-200"
                 >
                   {isCollapsed ? (
                     <FaChevronRight size={12} />
@@ -64,7 +61,7 @@ const IndustryChooser = ({ options, selected, onChange }) => {
                   )}
                 </button>
               )}
-              <label className="flex items-center text-sm cursor-pointer text-gray-700 hover:text-blue-600 transition-colors duration-200">
+              <label className="flex items-center text-sm cursor-pointer text-secondary hover:text-primary transition-colors duration-200">
                 <input
                   type="checkbox"
                   checked={selected.includes(item.label)}
@@ -75,7 +72,7 @@ const IndustryChooser = ({ options, selected, onChange }) => {
                       onChange(selected.filter((i) => i !== item.label));
                     }
                   }}
-                  className="form-checkbox h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded transition-colors duration-200"
+                  className="form-checkbox h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded transition-colors duration-200"
                 />
                 <span className="ml-2 select-none flex items-center">
                   {item.label}
@@ -83,7 +80,7 @@ const IndustryChooser = ({ options, selected, onChange }) => {
               </label>
             </div>
             {isItemParent && !isCollapsed && (
-              <div className="ml-6 border-l border-gray-200 pl-4 mt-1">
+              <div className="ml-6 border-l border-primary/20 pl-4 mt-1">
                 {renderItems(item.children)}
               </div>
             )}
@@ -101,28 +98,15 @@ const IndustryChooser = ({ options, selected, onChange }) => {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search Industry Sectors"
-          className="w-full pl-4 pr-10 py-2.5 rounded-lg border border-gray-300 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all duration-200 bg-gray-50"
+          className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-brand text-secondary"
         />
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-          />
-        </svg>
+        <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-secondary/50" />
       </div>
-      <div className="bg-white border border-gray-200 rounded-lg p-4 h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+      <div className="bg-brand-light border border-primary/20 rounded-lg p-4 h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-gray-100 shadow-inner">
         {filteredData.length > 0 ? (
           renderItems(filteredData)
         ) : (
-          <p className="text-gray-500 text-sm text-center py-4">
+          <p className="text-secondary/60 text-sm text-center py-4">
             No results found for "{query}".
           </p>
         )}
@@ -174,7 +158,7 @@ const GeographyChooser = ({ options, selected, onChange }) => {
                 <button
                   type="button"
                   onClick={() => handleToggleCollapse(item)}
-                  className="p-1 text-gray-500 hover:text-gray-700 transition-colors duration-200"
+                  className="p-1 text-secondary/60 hover:text-primary transition-colors duration-200"
                 >
                   {isCollapsed ? (
                     <FaChevronRight size={12} />
@@ -183,7 +167,7 @@ const GeographyChooser = ({ options, selected, onChange }) => {
                   )}
                 </button>
               )}
-              <label className="flex items-center text-sm cursor-pointer text-gray-700 hover:text-blue-600 transition-colors duration-200">
+              <label className="flex items-center text-sm cursor-pointer text-secondary hover:text-primary transition-colors duration-200">
                 <input
                   type="checkbox"
                   checked={selected.includes(item.label)}
@@ -194,13 +178,13 @@ const GeographyChooser = ({ options, selected, onChange }) => {
                       onChange(selected.filter((i) => i !== item.label));
                     }
                   }}
-                  className="form-checkbox h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded transition-colors duration-200"
+                  className="form-checkbox h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded transition-colors duration-200"
                 />
                 <span className="ml-2 select-none">{item.label}</span>
               </label>
             </div>
             {isItemParent && !isCollapsed && (
-              <div className="ml-6 border-l border-gray-200 pl-4 mt-1">
+              <div className="ml-6 border-l border-primary/20 pl-4 mt-1">
                 {renderItems(item.children)}
               </div>
             )}
@@ -218,28 +202,15 @@ const GeographyChooser = ({ options, selected, onChange }) => {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search Geographies"
-          className="w-full pl-4 pr-10 py-2.5 rounded-lg border border-gray-300 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all duration-200 bg-gray-50"
+          className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-brand text-secondary"
         />
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-          />
-        </svg>
+        <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-secondary/50" />
       </div>
-      <div className="bg-white border border-gray-200 rounded-lg p-4 h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+      <div className="bg-brand-light border border-primary/20 rounded-lg p-4 h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-gray-100 shadow-inner">
         {filteredData.length > 0 ? (
           renderItems(filteredData)
         ) : (
-          <p className="text-gray-500 text-sm text-center py-4">
+          <p className="text-secondary/60 text-sm text-center py-4">
             No results found for "{query}".
           </p>
         )}
@@ -304,227 +275,285 @@ const EditAdvisorProfile = () => {
 
   if (!initialValues) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-brand to-brand-light">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="max-w-5xl mx-auto p-6 bg-white shadow-xl rounded-2xl my-10"
-    >
-      <h2 className="text-2xl font-bold mb-4">Edit Advisor Profile</h2>
-
-      <Formik
-        initialValues={initialValues}
-        validationSchema={validationSchema}
-        onSubmit={onSubmit}
-        enableReinitialize
+    <div className="min-h-screen bg-gradient-to-br from-brand to-brand-light py-8">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="max-w-5xl mx-auto p-8 bg-brand-light shadow-2xl rounded-3xl border border-primary/10"
       >
-        {({ isSubmitting, setFieldValue, values }) => (
-          <Form className="space-y-4">
-            <div>
-              <label>Company Name</label>
-              <Field name="companyName" className="w-full p-2 border rounded" />
-              <ErrorMessage
-                name="companyName"
-                component="div"
-                className="text-red-500 text-sm"
-              />
-            </div>
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-secondary mb-2">Edit Advisor Profile</h1>
+          <p className="text-secondary/70 text-lg">Update your professional advisor information</p>
+          <div className="w-24 h-1 bg-gradient-to-r from-primary to-third mx-auto mt-4 rounded-full"></div>
+        </div>
 
-            <div>
-              <label>Phone</label>
-              <Field name="phone" className="w-full p-2 border rounded" />
-              <ErrorMessage
-                name="phone"
-                component="div"
-                className="text-red-500 text-sm"
-              />
-            </div>
+        <Formik
+          initialValues={initialValues}
+          validationSchema={validationSchema}
+          onSubmit={onSubmit}
+          enableReinitialize
+        >
+          {({ isSubmitting, setFieldValue, values }) => (
+            <Form className="space-y-8">
+              {/* Company Information */}
+              <motion.div 
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="bg-brand-light p-6 rounded-2xl border border-primary/10 shadow-sm"
+              >
+                <h3 className="text-xl font-semibold text-secondary mb-6 flex items-center">
+                  <FaBuilding className="mr-3 text-primary" />
+                  Company Information
+                </h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-secondary mb-2">Company Name</label>
+                    <Field name="companyName" className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary" />
+                    <ErrorMessage name="companyName" component="div" className="text-red-500 text-sm mt-1" />
+                  </div>
 
-            <div>
-              <label>Website</label>
-              <Field name="website" className="w-full p-2 border rounded" />
-              <ErrorMessage
-                name="website"
-                component="div"
-                className="text-red-500 text-sm"
-              />
-            </div>
+                  <div>
+                    <label className="block text-sm font-medium text-secondary mb-2 flex items-center">
+                      <FaPhone className="mr-2 text-primary" />
+                      Phone
+                    </label>
+                    <Field name="phone" className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary" />
+                    <ErrorMessage name="phone" component="div" className="text-red-500 text-sm mt-1" />
+                  </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-semibold mb-2">
-                  Industries
-                </label>
-                <IndustryChooser
-                  options={rawIndustryData}
-                  selected={values.industries}
-                  onChange={(val) => setFieldValue("industries", val)}
-                />
-                <ErrorMessage
-                  name="industries"
-                  component="div"
-                  className="text-red-500 text-sm mt-1"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold mb-2">
-                  Geographies
-                </label>
-                <GeographyChooser
-                  options={rawGeographyData}
-                  selected={values.geographies}
-                  onChange={(val) => setFieldValue("geographies", val)}
-                />
-                <ErrorMessage
-                  name="geographies"
-                  component="div"
-                  className="text-red-500 text-sm mt-1"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label>Years of Experience</label>
-              <Field
-                name="yearsExperience"
-                type="number"
-                className="w-full p-2 border rounded"
-              />
-              <ErrorMessage
-                name="yearsExperience"
-                component="div"
-                className="text-red-500 text-sm"
-              />
-            </div>
-
-            <div>
-              <label>Number of Transactions</label>
-              <Field
-                name="numberOfTransactions"
-                type="number"
-                className="w-full p-2 border rounded"
-              />
-              <ErrorMessage
-                name="numberOfTransactions"
-                component="div"
-                className="text-red-500 text-sm"
-              />
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="text-sm font-semibold text-gray-700">
-                  Revenue Size Range
-                </label>
-                <div className="w-24">
-                  <Field name="currency">
-                    {({ field }) => (
-                      <select
-                        {...field}
-                        className="w-full p-2 border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                      >
-                        <option value="USD">USD</option>
-                        <option value="PKR">PKR</option>
-                        <option value="EUR">EUR</option>
-                        <option value="GBP">GBP</option>
-                      </select>
-                    )}
-                  </Field>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-secondary mb-2 flex items-center">
+                      <FaGlobe className="mr-2 text-primary" />
+                      Website
+                    </label>
+                    <Field name="website" className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary" />
+                    <ErrorMessage name="website" component="div" className="text-red-500 text-sm mt-1" />
+                  </div>
                 </div>
-              </div>
-              <div className="flex space-x-2 mt-2">
-                <div className="flex-1">
-                  <Field
-                    name="revenueRange.min"
-                    type="number"
-                    placeholder="Min"
-                    className="w-full p-2 border rounded"
-                  />
-                  <ErrorMessage
-                    name="revenueRange.min"
-                    component="div"
-                    className="text-red-500 text-sm"
-                  />
+              </motion.div>
+
+              {/* Industries & Geographies */}
+              <motion.div 
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.1 }}
+                className="bg-brand-light p-6 rounded-2xl border border-primary/10 shadow-sm"
+              >
+                <h3 className="text-xl font-semibold text-secondary mb-6">Expertise Areas</h3>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  <div>
+                    <div className="flex items-center mb-3">
+                      <FaIndustry className="mr-2 text-primary" />
+                      <span className="text-sm font-medium text-secondary">Industries</span>
+                    </div>
+                    <IndustryChooser
+                      options={rawIndustryData}
+                      selected={values.industries}
+                      onChange={(val) => setFieldValue("industries", val)}
+                    />
+                    <ErrorMessage name="industries" component="div" className="text-red-500 text-sm mt-2" />
+                  </div>
+
+                  <div>
+                    <div className="flex items-center mb-3">
+                      <FaMapMarkerAlt className="mr-2 text-primary" />
+                      <span className="text-sm font-medium text-secondary">Geographies</span>
+                    </div>
+                    <GeographyChooser
+                      options={rawGeographyData}
+                      selected={values.geographies}
+                      onChange={(val) => setFieldValue("geographies", val)}
+                    />
+                    <ErrorMessage name="geographies" component="div" className="text-red-500 text-sm mt-2" />
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <Field
-                    name="revenueRange.max"
-                    type="number"
-                    placeholder="Max"
-                    className="w-full p-2 border rounded"
-                  />
-                  <ErrorMessage
-                    name="revenueRange.max"
-                    component="div"
-                    className="text-red-500 text-sm"
-                  />
+              </motion.div>
+
+              {/* Experience & Performance */}
+              <motion.div 
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 }}
+                className="bg-brand-light p-6 rounded-2xl border border-primary/10 shadow-sm"
+              >
+                <h3 className="text-xl font-semibold text-secondary mb-6 flex items-center">
+                  <FaChartLine className="mr-3 text-primary" />
+                  Experience & Performance
+                </h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-secondary mb-2 flex items-center">
+                      <FaCalendarAlt className="mr-2 text-primary" />
+                      Years of Experience
+                    </label>
+                    <Field
+                      name="yearsExperience"
+                      type="number"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary"
+                    />
+                    <ErrorMessage name="yearsExperience" component="div" className="text-red-500 text-sm mt-1" />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-secondary mb-2">
+                      Number of Transactions
+                    </label>
+                    <Field
+                      name="numberOfTransactions"
+                      type="number"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary"
+                    />
+                    <ErrorMessage name="numberOfTransactions" component="div" className="text-red-500 text-sm mt-1" />
+                  </div>
                 </div>
-              </div>
-            </div>
+              </motion.div>
 
-            <div>
-              <label>Description</label>
-              <Field
-                as="textarea"
-                name="description"
-                className="w-full p-2 border rounded"
-              />
-              <ErrorMessage
-                name="description"
-                component="div"
-                className="text-red-500 text-sm"
-              />
-            </div>
+              {/* Revenue Range */}
+              <motion.div 
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+                className="bg-brand-light p-6 rounded-2xl border border-primary/10 shadow-sm"
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-semibold text-secondary flex items-center">
+                    <FaDollarSign className="mr-3 text-primary" />
+                    Revenue Size Range
+                  </h3>
+                  <div className="w-32">
+                    <Field name="currency">
+                      {({ field }) => (
+                        <select
+                          {...field}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white text-secondary"
+                        >
+                          <option value="USD">USD</option>
+                          <option value="PKR">PKR</option>
+                          <option value="EUR">EUR</option>
+                          <option value="GBP">GBP</option>
+                        </select>
+                      )}
+                    </Field>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-secondary mb-2">Minimum Revenue</label>
+                    <Field
+                      name="revenueRange.min"
+                      type="number"
+                      placeholder="Enter minimum amount"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary"
+                    />
+                    <ErrorMessage name="revenueRange.min" component="div" className="text-red-500 text-sm mt-1" />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-secondary mb-2">Maximum Revenue</label>
+                    <Field
+                      name="revenueRange.max"
+                      type="number"
+                      placeholder="Enter maximum amount"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary"
+                    />
+                    <ErrorMessage name="revenueRange.max" component="div" className="text-red-500 text-sm mt-1" />
+                  </div>
+                </div>
+              </motion.div>
 
-            <div>
-              <label className="block text-sm font-semibold mb-3">
-                Are you licensed?
-              </label>
-              <div className="flex space-x-6">
-                <label className="flex items-center cursor-pointer">
-                  <Field
-                    type="radio"
-                    name="licensing"
-                    value="yes"
-                    className="form-radio h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                  />
-                  <span className="ml-2 text-sm text-gray-700">Yes</span>
-                </label>
-                <label className="flex items-center cursor-pointer">
-                  <Field
-                    type="radio"
-                    name="licensing"
-                    value="no"
-                    className="form-radio h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                  />
-                  <span className="ml-2 text-sm text-gray-700">No</span>
-                </label>
-              </div>
-              <ErrorMessage
-                name="licensing"
-                component="div"
-                className="text-red-500 text-sm mt-1"
-              />
-            </div>
+              {/* Description & Licensing */}
+              <motion.div 
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.4 }}
+                className="bg-brand-light p-6 rounded-2xl border border-primary/10 shadow-sm"
+              >
+                <h3 className="text-xl font-semibold text-secondary mb-6 flex items-center">
+                  <FaFileAlt className="mr-3 text-primary" />
+                  Additional Information
+                </h3>
+                
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-secondary mb-2">Company Description</label>
+                    <Field
+                      as="textarea"
+                      name="description"
+                      rows={4}
+                      placeholder="Describe your company, services, and expertise..."
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary resize-none"
+                    />
+                    <ErrorMessage name="description" component="div" className="text-red-500 text-sm mt-1" />
+                  </div>
 
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="px-4 py-2 bg-blue-600 text-white rounded-xl shadow hover:bg-blue-700 disabled:bg-gray-400"
-            >
-              {isSubmitting ? "Updating..." : "Update Profile"}
-            </button>
-          </Form>
-        )}
-      </Formik>
-    </motion.div>
+                  <div>
+                    <label className="block text-sm font-medium text-secondary mb-4 flex items-center">
+                      <FaCertificate className="mr-2 text-primary" />
+                      Are you licensed?
+                    </label>
+                    <div className="flex space-x-8">
+                      <label className="flex items-center cursor-pointer group">
+                        <Field
+                          type="radio"
+                          name="licensing"
+                          value="yes"
+                          className="form-radio h-5 w-5 text-primary focus:ring-primary border-gray-300 transition-colors duration-200"
+                        />
+                        <span className="ml-3 text-secondary group-hover:text-primary transition-colors duration-200">Yes</span>
+                      </label>
+                      <label className="flex items-center cursor-pointer group">
+                        <Field
+                          type="radio"
+                          name="licensing"
+                          value="no"
+                          className="form-radio h-5 w-5 text-primary focus:ring-primary border-gray-300 transition-colors duration-200"
+                        />
+                        <span className="ml-3 text-secondary group-hover:text-primary transition-colors duration-200">No</span>
+                      </label>
+                    </div>
+                    <ErrorMessage name="licensing" component="div" className="text-red-500 text-sm mt-2" />
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Submit Buttons */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="flex justify-center space-x-4 pt-6"
+              >
+                <button
+                  type="button"
+                  onClick={() => navigate("/advisor-dashboard")}
+                  className="px-6 py-3 bg-gray-500 text-white rounded-xl hover:bg-gray-600 transition-colors font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="px-8 py-4 bg-gradient-to-r from-primary to-third text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-primary/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                >
+                  {isSubmitting ? "Updating Profile..." : "Update Profile"}
+                </button>
+              </motion.div>
+            </Form>
+          )}
+        </Formik>
+      </motion.div>
+    </div>
   );
 };
 

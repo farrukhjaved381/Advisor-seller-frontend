@@ -110,16 +110,37 @@ const Auth = () => {
           console.log("Login Bearer token:", localStorage.getItem("access_token"));
           console.log("Login CSRF token:", localStorage.getItem("x-csrf-token"));
 
-          // Redirect by role
-          const user = res.data.user;
+          // Fetch fresh user data to get current profile status
+          const userRes = await axios.get(
+            "https://advisor-seller-backend.vercel.app/api/auth/profile",
+            { headers: { Authorization: `Bearer ${accessToken}` } }
+          );
+          
+          const user = userRes.data;
+          console.log('User data from API:', user);
+          localStorage.setItem("user", JSON.stringify(user));
 
           if (user.role === "advisor") {
             if (!user.isPaymentVerified) {
               navigate("/advisor-payments");
-            } else if (!user.isProfileComplete) {
-              navigate("/advisor-form");
             } else {
-              navigate("/advisor-dashboard");
+              // Check if advisor profile exists by trying to fetch it
+              try {
+                const profileRes = await axios.get(
+                  "https://advisor-seller-backend.vercel.app/api/advisors/profile",
+                  { headers: { Authorization: `Bearer ${accessToken}` } }
+                );
+                
+                if (profileRes.status === 200 && profileRes.data) {
+                  console.log('Profile exists, redirecting to dashboard');
+                  window.location.href = '/advisor-dashboard';
+                  return;
+                }
+              } catch (profileErr) {
+                console.log('No profile found, redirecting to form');
+              }
+              
+              navigate("/advisor-form");
             }
           } else if (user.role === "seller") {
             navigate("/seller-dashboard");

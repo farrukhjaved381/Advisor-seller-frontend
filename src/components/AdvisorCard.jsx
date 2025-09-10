@@ -2,7 +2,7 @@ import React from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
-const AdvisorCard = ({ advisor, onSelect, isSelected, onGetDirectList }) => {
+const AdvisorCard = ({ advisor, onSelect, isSelected }) => {
   const handleRequestIntroduction = async () => {
     try {
       const token = localStorage.getItem('access_token');
@@ -14,12 +14,6 @@ const AdvisorCard = ({ advisor, onSelect, isSelected, onGetDirectList }) => {
       toast.success('Introduction request sent!');
     } catch (error) {
       toast.error('Failed to send introduction request');
-    }
-  };
-
-  const handleGetDirectList = async () => {
-    if (onGetDirectList) {
-      onGetDirectList();
     }
   };
 
@@ -80,12 +74,6 @@ const AdvisorCard = ({ advisor, onSelect, isSelected, onGetDirectList }) => {
           className="flex-1 bg-blue-600 text-white py-2 px-3 rounded-lg text-sm font-medium hover:bg-blue-700 transition"
         >
           Request Introduction
-        </button>
-        <button
-          onClick={handleGetDirectList}
-          className="flex-1 bg-green-600 text-white py-2 px-3 rounded-lg text-sm font-medium hover:bg-green-700 transition"
-        >
-          Get Direct List
         </button>
       </div>
     </div>

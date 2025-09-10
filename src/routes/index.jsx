@@ -57,11 +57,7 @@ const AppRoutes = () => {
                     <AdvisorForm />
                 </ProtectedRoute>
             } />
-            <Route path="/advisor-dashboard" element={
-                <ProtectedRoute requiredRole="advisor">
-                    <AdvisorDashboard />
-                </ProtectedRoute>
-            } />
+            <Route path="/advisor-dashboard" element={<AdvisorDashboard />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/continue" element={<Continue />} />

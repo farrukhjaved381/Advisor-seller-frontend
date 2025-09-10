@@ -95,15 +95,46 @@ const Auth = () => {
                     // ✅ Login succeeded
 
                     // Store tokens and user data
-                    if (res.data) {
-                        const { access_token, refresh_token, user } = res.data;
-                        localStorage.setItem('access_token', access_token || '');
-                        localStorage.setItem('refresh_token', refresh_token || '');
-                        localStorage.setItem('user', JSON.stringify(user || {}));
-                    }
+                    const accessToken = res.data.access_token;
+                    localStorage.setItem('access_token', accessToken || '');
+                    localStorage.setItem('refresh_token', res.data.refresh_token || '');
+                    localStorage.setItem('user', JSON.stringify(res.data.user || {}));
+
+                    // Fetch fresh user data to check profile status
+                    const userRes = await axios.get(
+                        "https://advisor-seller-backend.vercel.app/api/auth/profile",
+                        { headers: { Authorization: `Bearer ${accessToken}` } }
+                    );
+                    
+                    const user = userRes.data;
+                    localStorage.setItem("user", JSON.stringify(user));
 
                     toast.success("Login successful ✅");
-                    navigate("/seller-dashboard");
+                    
+                    if (user.role === "seller") {
+                        if (!user.isEmailVerified) {
+                            navigate("/verify-email");
+                        } else {
+                            // Check if seller profile exists
+                            try {
+                                const profileRes = await axios.get(
+                                    "https://advisor-seller-backend.vercel.app/api/sellers/profile",
+                                    { headers: { Authorization: `Bearer ${accessToken}` } }
+                                );
+                                
+                                if (profileRes.status === 200 && profileRes.data) {
+                                    navigate("/seller-dashboard");
+                                } else {
+                                    navigate("/seller-form");
+                                }
+                            } catch (profileErr) {
+                                // No profile found, redirect to form
+                                navigate("/seller-form");
+                            }
+                        }
+                    } else {
+                        navigate("/seller-dashboard");
+                    }
                 } else if (res.status === 401) {
                     toast.error("Incorrect email or password ❌");
                 } else {

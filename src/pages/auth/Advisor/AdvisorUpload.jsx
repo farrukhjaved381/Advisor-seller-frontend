@@ -9,6 +9,27 @@ import { FaUpload, FaFileAlt, FaUser, FaQuoteLeft, FaFilePdf, FaCheckCircle, FaI
 // =================== Advisor Upload Page ===================
 const AdvisorUpload = () => {
     const [logoFile, setLogoFile] = useState(null);
+    
+    // Check if user already has complete profile on component mount
+    React.useEffect(() => {
+        const checkProfile = async () => {
+            try {
+                const token = localStorage.getItem("access_token");
+                const userRes = await axios.get(
+                    "https://advisor-seller-backend.vercel.app/api/auth/profile",
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
+                
+                if (userRes.data.isProfileComplete) {
+                    window.location.href = '/advisor-dashboard';
+                }
+            } catch (err) {
+                // Continue normally if check fails
+            }
+        };
+        
+        checkProfile();
+    }, []);
 
     // Start with one testimonial
     const initialValues = {
@@ -57,6 +78,25 @@ const AdvisorUpload = () => {
 
     const onSubmit = async (values, { setSubmitting, resetForm }) => {
         try {
+            const token = localStorage.getItem("access_token");
+            
+            // Check if profile already exists
+            try {
+                const userRes = await axios.get(
+                    "https://advisor-seller-backend.vercel.app/api/auth/profile",
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
+                
+                if (userRes.data.isProfileComplete) {
+                    toast.success("Profile already exists! Redirecting to dashboard...");
+                    sessionStorage.removeItem("advisor-profile");
+                    window.location.href = '/advisor-dashboard';
+                    return;
+                }
+            } catch (err) {
+                // Continue with profile creation if check fails
+            }
+
             const profileData = JSON.parse(sessionStorage.getItem("advisor-profile")) || {};
 
             // 1. Upload logo
@@ -97,7 +137,6 @@ const AdvisorUpload = () => {
             }
 
             // 3. Final profile submit using JWT authentication
-            const token = localStorage.getItem("access_token");
             const payload = {
                 ...profileData,
                 logoUrl,
@@ -115,28 +154,22 @@ const AdvisorUpload = () => {
                 }
             );
 
-            // After successful profile creation, re-fetch user data to get the updated isProfileComplete status
-            const updatedUserRes = await axios.get(
-                "https://advisor-seller-backend.vercel.app/api/auth/profile",
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-
-            if (updatedUserRes.status === 200 && updatedUserRes.data) {
-                localStorage.setItem("user", JSON.stringify(updatedUserRes.data));
-            }
-
             toast.success("Advisor profile created successfully! Redirecting to dashboard...");
             resetForm();
             setLogoFile(null);
             sessionStorage.removeItem("advisor-profile");
             
-            // Redirect to dashboard after success
-            setTimeout(() => {
-                window.location.href = '/advisor-dashboard';
-            }, 2000);
+            // Redirect to dashboard
+            window.location.href = '/advisor-dashboard';
         } catch (error) {
             console.error(error);
-            toast.error("Error submitting form. Please try again.");
+            if (error.response?.status === 409) {
+                toast.success("Profile already exists! Redirecting to dashboard...");
+                sessionStorage.removeItem("advisor-profile");
+                window.location.href = '/advisor-dashboard';
+            } else {
+                toast.error("Error submitting form. Please try again.");
+            }
         } finally {
             setSubmitting(false);
         }
