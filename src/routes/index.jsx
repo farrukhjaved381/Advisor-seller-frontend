@@ -1,5 +1,4 @@
 import { Routes, Route } from "react-router-dom";
-
 import Auth from "../pages/auth/auth.jsx";
 import SellerSignin from "../pages/auth/Seller/SellerAuth.jsx";
 import SellerRegister from "../pages/auth/Seller/SellerRegister.jsx";
@@ -20,8 +19,6 @@ import AdvisorUpload from "../pages/auth/Advisor/AdvisorUpload.jsx";
 import ProtectedRoute from "../components/ProtectedRoute.jsx";
 import EditAdvisorProfile from "../pages/dashboard/EditAdvisorProfile.jsx";
 import AdvisorVerify from "../pages/auth/Advisor/AdvisorVerify.jsx";
-
-
 const AppRoutes = () => {
     return (
         <Routes>
@@ -59,7 +56,11 @@ const AppRoutes = () => {
                     <AdvisorForm />
                 </ProtectedRoute>
             } />
-            <Route path="/advisor-dashboard" element={<AdvisorDashboard />} />
+            <Route path="/advisor-dashboard" element={
+                <ProtectedRoute requiredRole="advisor">
+                    <AdvisorDashboard />
+                </ProtectedRoute>
+            } />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/continue" element={<Continue />} />
@@ -76,5 +77,4 @@ const AppRoutes = () => {
         </Routes>
     );
 };
-
 export default AppRoutes;
