@@ -319,10 +319,18 @@ const SellerDashboard = () => {
         {},
         { headers: { Authorization: `Bearer ${token}` } },
       )
-      toast.success("Direct contact list requested!")
-      setDirectContactList(response.data.advisors)
+      
+      if (response.status === 200) {
+        toast.success(response.data.message || `Direct contact list sent! ${response.data.advisorCount} advisors notified.`)
+      }
     } catch (error) {
-      toast.error("Failed to request direct list")
+      if (error.response?.status === 404) {
+        toast.error("No matching advisors found or seller profile not complete")
+      } else if (error.response?.status === 429) {
+        toast.error("Too many requests. Please try again later.")
+      } else {
+        toast.error(error.response?.data?.message || "Failed to request direct list")
+      }
     }
   }
 
@@ -728,17 +736,7 @@ const SellerDashboard = () => {
 
         {/* Bottom Section */}
         <div className="p-6 border-t border-gray-100 space-y-4">
-          {/* Quick Stats */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-gray-50 rounded-lg p-3 text-center">
-              <div className="text-xl font-semibold text-primary">{matches.length}</div>
-              <div className="text-xs text-gray-600">Active Deals</div>
-            </div>
-            <div className="bg-gray-50 rounded-lg p-3 text-center">
-              <div className="text-xl font-semibold text-green-600">{profile.companyName ? "100" : "60"}%</div>
-              <div className="text-xs text-gray-600">Profile</div>
-            </div>
-          </div>
+          
 
           {/* Sign Out */}
           <button
@@ -878,6 +876,12 @@ const SellerDashboard = () => {
                     className="bg-blue-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-blue-700 transition disabled:bg-gray-400"
                   >
                     Request Introductions ({selectedAdvisors.length})
+                  </button>
+                  <button
+                    onClick={handleGetDirectList}
+                    className="bg-green-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-green-700 transition"
+                  >
+                    Direct List
                   </button>
                   <select
                     value={sortBy}
