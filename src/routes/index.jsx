@@ -19,6 +19,7 @@ import AdvisorForm from "../pages/auth/Advisor/AdvisorForm.jsx";
 import AdvisorUpload from "../pages/auth/Advisor/AdvisorUpload.jsx";
 import ProtectedRoute from "../components/ProtectedRoute.jsx";
 import EditAdvisorProfile from "../pages/dashboard/EditAdvisorProfile.jsx";
+import AdvisorVerify from "../pages/auth/Advisor/AdvisorVerify.jsx";
 
 
 const AppRoutes = () => {
@@ -26,7 +27,7 @@ const AppRoutes = () => {
         <Routes>
             <Route path="/" element={<Option />} />
             <Route path="/auth" element={<Auth />} />
-            <Route path="/authRegister" element={<AuthRegister />} />
+            <Route path="/authRegister" element={<Option />} />
             <Route path="/seller-login" element={<SellerSignin />} />
             <Route path="/seller-register" element={<SellerRegister />} />
             <Route path="/verify-email" element={<VerifyEmail />} />
@@ -42,6 +43,7 @@ const AppRoutes = () => {
             } />
             <Route path="/advisor-login" element={<AdvisorSignin />} />
             <Route path="/advisor-register" element={<AdvisorRegister />} />
+            <Route path="/verify-email" element={<AdvisorVerify />} />
             <Route path="/adviser-payment" element={
                 <ProtectedRoute requiredRole="advisor">
                     <AdvisorPayments />

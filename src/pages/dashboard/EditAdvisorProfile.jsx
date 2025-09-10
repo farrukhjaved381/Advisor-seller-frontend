@@ -1,14 +1,28 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import toast from 'react-hot-toast';
-import { Formik, Form, Field, ErrorMessage, useFormikContext } from 'formik';
-import * as Yup from 'yup';
-import { FaBuilding, FaChartLine, FaDollarSign, FaFileAlt, FaCog, FaSignOutAlt, FaUser, FaBars, FaTimes, FaChevronDown, FaChevronRight } from 'react-icons/fa';
-import { rawIndustryData } from '../../components/Static/industryData';
-import { rawGeographyData } from '../../components/Static/geographyData';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import toast from "react-hot-toast";
+import { Formik, Form, Field, ErrorMessage, useFormikContext } from "formik";
+import * as Yup from "yup";
+import {
+  FaBuilding,
+  FaChartLine,
+  FaDollarSign,
+  FaFileAlt,
+  FaCog,
+  FaSignOutAlt,
+  FaUser,
+  FaBars,
+  FaTimes,
+  FaChevronDown,
+  FaChevronRight,
+  FaUpload,
+} from "react-icons/fa";
+import { rawIndustryData } from "../../components/Static/industryData";
+import { rawGeographyData } from "../../components/Static/geographyData";
 
-// Multi-select filter component for industries and geographies
+
+// ---------- MultiSelectFilter ----------
 const MultiSelectFilter = ({ title, data, fieldName }) => {
   const { values, setFieldValue } = useFormikContext();
   const [query, setQuery] = useState("");
@@ -58,16 +72,18 @@ const MultiSelectFilter = ({ title, data, fieldName }) => {
                   {isCollapsed ? <FaChevronRight /> : <FaChevronDown />}
                 </button>
               )}
-              <label className={`flex items-center text-sm font-medium cursor-pointer transition-colors duration-200 ${
-                isSelected ? "text-primary font-semibold" : "text-gray-700 hover:text-primary"
-              }`}>
+              <label
+                className={`flex items-center text-sm font-medium cursor-pointer transition-colors duration-200 ${
+                  isSelected ? "text-primary font-semibold" : "text-gray-700 hover:text-primary"
+                }`}
+              >
                 <input
                   type="checkbox"
                   checked={isSelected}
                   onChange={(e) => {
                     const newSelected = e.target.checked
                       ? [...selectedItems, item.label]
-                      : selectedItems.filter(i => i !== item.label);
+                      : selectedItems.filter((i) => i !== item.label);
                     setFieldValue(fieldName, newSelected);
                   }}
                   className="form-checkbox h-4 w-4 text-primary focus:ring-primary transition-colors duration-200"
@@ -76,7 +92,9 @@ const MultiSelectFilter = ({ title, data, fieldName }) => {
               </label>
             </div>
             {isItemParent && !isCollapsed && (
-              <ul className="mt-2 pl-4 border-l-2 border-primary/20">{renderCheckboxes(item.children)}</ul>
+              <ul className="mt-2 pl-4 border-l-2 border-primary/20">
+                {renderCheckboxes(item.children)}
+              </ul>
             )}
           </li>
         );
@@ -95,18 +113,11 @@ const MultiSelectFilter = ({ title, data, fieldName }) => {
           placeholder={`Search ${fieldName}`}
           className="w-full p-2 pr-10 rounded-xl border-[0.15rem] border-primary/30 focus:border-primary focus:outline-none transition"
         />
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
       </div>
       <div className="bg-white max-h-64 overflow-y-auto border border-gray-200 rounded-lg p-3">
-        {filteredData.length > 0 ? renderCheckboxes(filteredData) : (
+        {filteredData.length > 0 ? (
+          renderCheckboxes(filteredData)
+        ) : (
           <p className="text-gray-500 text-sm">No results found for "{query}".</p>
         )}
       </div>
@@ -115,12 +126,14 @@ const MultiSelectFilter = ({ title, data, fieldName }) => {
   );
 };
 
+// ---------- Main Component ----------
 const EditAdvisorProfile = () => {
   const [profile, setProfile] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [logoFile, setLogoFile] = useState(null);
+  const [testimonialFiles, setTestimonialFiles] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -129,56 +142,33 @@ const EditAdvisorProfile = () => {
 
   const fetchUserData = async () => {
     try {
-      const token = localStorage.getItem('access_token');
+      const token = localStorage.getItem("access_token");
       if (!token) {
-        navigate('/advisor-login');
+        navigate("/advisor-login");
         return;
       }
 
-      // Get user profile
-      const userRes = await axios.get('https://advisor-seller-backend.vercel.app/api/auth/profile', {
-        headers: { Authorization: `Bearer ${token}` }
+      const userRes = await axios.get("https://advisor-seller-backend.vercel.app/api/auth/profile", {
+        headers: { Authorization: `Bearer ${token}` },
       });
 
-      if (userRes.data.role !== 'advisor') {
-        navigate('/seller-login');
+      if (userRes.data.role !== "advisor") {
+        navigate("/seller-login");
         return;
       }
-
       setUser(userRes.data);
 
-      // Get advisor profile
-      const profileRes = await axios.get('https://advisor-seller-backend.vercel.app/api/advisors/profile', {
-        headers: { Authorization: `Bearer ${token}` }
+      const profileRes = await axios.get("https://advisor-seller-backend.vercel.app/api/advisors/profile", {
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       setProfile(profileRes.data);
     } catch (error) {
-      console.error('Error fetching profile:', error);
-      toast.error('Failed to load profile');
-      navigate('/advisor-dashboard');
+      console.error("Error fetching profile:", error);
+      toast.error("Failed to load profile");
+      navigate("/advisor-dashboard");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleLogout = async () => {
-    try {
-      const token = localStorage.getItem('access_token');
-      if (token) {
-        await axios.post('https://advisor-seller-backend.vercel.app/api/auth/logout', {}, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-      }
-    } catch (error) {
-      console.error('Logout error:', error);
-    } finally {
-      localStorage.clear();
-      sessionStorage.clear();
-      toast.success('Logged out successfully!');
-      setTimeout(() => {
-        navigate('/advisor-login');
-      }, 2000);
     }
   };
 
@@ -201,17 +191,34 @@ const EditAdvisorProfile = () => {
 
   const onSubmit = async (values, { setSubmitting }) => {
     try {
-      const token = localStorage.getItem('access_token');
-      
-      await axios.patch('https://advisor-seller-backend.vercel.app/api/advisors/profile', values, {
-        headers: { Authorization: `Bearer ${token}` }
+      const token = localStorage.getItem("access_token");
+      const formData = new FormData();
+
+      // append text fields
+      Object.keys(values).forEach((key) => {
+        if (typeof values[key] === "object") {
+          formData.append(key, JSON.stringify(values[key]));
+        } else {
+          formData.append(key, values[key]);
+        }
       });
 
-      toast.success('Profile updated successfully!');
-      navigate('/advisor-dashboard');
+      // append files
+      if (logoFile) formData.append("logo", logoFile);
+      testimonialFiles.forEach((file) => formData.append("testimonials", file));
+
+      await axios.patch("https://advisor-seller-backend.vercel.app/api/advisors/profile", formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      toast.success("Profile updated successfully!");
+      navigate("/advisor-dashboard");
     } catch (error) {
-      console.error('Error updating profile:', error);
-      toast.error('Failed to update profile');
+      console.error("Error updating profile:", error);
+      toast.error("Failed to update profile");
     } finally {
       setSubmitting(false);
     }
@@ -231,7 +238,7 @@ const EditAdvisorProfile = () => {
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Profile Not Found</h2>
           <button
-            onClick={() => navigate('/advisor-dashboard')}
+            onClick={() => navigate("/advisor-dashboard")}
             className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
           >
             Back to Dashboard
@@ -243,179 +250,82 @@ const EditAdvisorProfile = () => {
 
   return (
     <div className="flex h-screen bg-gray-50">
-      {/* Mobile backdrop */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      {/* Sidebar */}
-      <aside className={`
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-        fixed lg:static inset-y-0 left-0 z-30 w-72 bg-white flex flex-col border-r border-gray-200 shadow-sm transition-transform duration-300 ease-in-out
-      `}>
-        {/* Header */}
-        <div className="px-6 py-6 border-b border-gray-100">
-          <div className="flex items-center justify-between lg:justify-center mb-4">
-            <img
-              src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=768,fit=crop,q=95/mk3JaNVZEltBD9g4/logo-transparency-mnlJLXr4jxIOR470.png"
-              alt="Advisor Chooser"
-              className="h-8 w-auto object-contain"
-            />
-            <button
-              onClick={() => setSidebarOpen(false)}
-              className="lg:hidden p-2 rounded-md hover:bg-gray-100"
-            >
-              <FaTimes className="w-5 h-5 text-gray-600" />
-            </button>
-          </div>
-        </div>
-
-        {/* Navigation */}
-        <nav className="flex-1 px-6 py-6">
-          <div className="space-y-6">
-            {/* Main Menu */}
-            <div className="space-y-1">
-              <p className="px-3 text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">Main Menu</p>
-
-              <button
-                className="w-full text-left px-4 py-3 rounded-lg transition-all duration-200 flex items-center justify-between text-gray-700 hover:bg-gray-100"
-                onClick={() => navigate('/advisor-dashboard')}
-              >
-                <div className="flex items-center space-x-3">
-                  <FaUser className="w-5 h-5" />
-                  <div>
-                    <span className="font-medium text-sm">Profile Overview</span>
-                    <p className="text-xs opacity-70">View your profile details</p>
-                  </div>
-                </div>
-              </button>
-            </div>
-
-            {/* Settings */}
-            <div className="space-y-1">
-              <p className="px-3 text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">Settings</p>
-
-              <button
-                className="w-full text-left px-4 py-3 rounded-lg transition-all duration-200 flex items-center space-x-3 bg-gradient-to-r from-third to-primary text-white shadow-sm"
-              >
-                <FaCog className="w-5 h-5" />
-                <div>
-                  <span className="font-medium text-sm">Profile Settings</span>
-                  <p className="text-xs opacity-70">Update your information</p>
-                </div>
-              </button>
-            </div>
-          </div>
-        </nav>
-
-        {/* Bottom Section */}
-        <div className="p-6 border-t border-gray-100 space-y-4">
-          <button
-            className="w-full px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 transition-colors duration-200 flex items-center justify-center space-x-2 border border-red-200 hover:border-red-300"
-            onClick={handleLogout}
-          >
-            <FaSignOutAlt className="w-4 h-4" />
-            <span className="font-medium text-sm">Sign Out</span>
-          </button>
-        </div>
-      </aside>
-
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0">
-        {/* Topbar */}
         <header className="flex items-center justify-between bg-white shadow-sm border-b border-gray-200 px-4 lg:px-8 py-4">
-          <div className="flex items-center space-x-4">
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="lg:hidden p-2 rounded-md hover:bg-gray-100"
-            >
-              <FaBars className="w-5 h-5 text-gray-600" />
-            </button>
-            <h1 className="text-xl lg:text-2xl font-bold text-gray-900">Edit Profile</h1>
-          </div>
-          
-          <div className="relative">
-            <button
-              className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 transition-all duration-200"
-              onClick={() => setProfileDropdownOpen(prev => !prev)}
-            >
-              <div className="text-right hidden sm:block">
-                <span className="block font-semibold text-gray-900 text-sm">
-                  {user?.name || "Loading..."}
-                </span>
-                <span className="block text-xs text-gray-500">Advisor Account</span>
-              </div>
-              <div className="w-10 h-10 flex items-center justify-center bg-gradient-to-br from-primary to-third rounded-full text-white font-bold text-sm shadow-md">
-                {(user?.name || "A").charAt(0)}
-              </div>
-            </button>
-          </div>
+          <h1 className="text-xl lg:text-2xl font-bold text-gray-900">Edit Profile</h1>
         </header>
 
-        {/* Form Content */}
         <div className="flex-1 overflow-y-auto p-6">
           <div className="max-w-6xl mx-auto">
-        <Formik
-          initialValues={{
-            companyName: profile.companyName || "",
-            phone: profile.phone || "",
-            website: profile.website || "",
-            industries: profile.industries || [],
-            geographies: profile.geographies || [],
-            yearsExperience: profile.yearsExperience || "",
-            numberOfTransactions: profile.numberOfTransactions || "",
-            currency: profile.currency || "USD",
-            description: profile.description || "",
-            licensing: profile.licensing || "",
-            revenueRange: {
-              min: profile.revenueRange?.min || "",
-              max: profile.revenueRange?.max || "",
-            },
-          }}
-          validationSchema={validationSchema}
-          onSubmit={onSubmit}
-        >
-          {({ isSubmitting, setFieldValue, values }) => (
-            <Form className="space-y-8">
-              {/* Company Information */}
-              <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                <h3 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
-                  <FaBuilding className="mr-3 text-primary" />
-                  Company Information
-                </h3>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Company Name</label>
-                    <Field
-                      name="companyName"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                    />
-                    <ErrorMessage name="companyName" component="div" className="text-red-500 text-sm mt-1" />
+            <Formik
+              initialValues={{
+                companyName: profile.companyName || "",
+                phone: profile.phone || "",
+                website: profile.website || "",
+                industries: profile.industries || [],
+                geographies: profile.geographies || [],
+                yearsExperience: profile.yearsExperience || "",
+                numberOfTransactions: profile.numberOfTransactions || "",
+                currency: profile.currency || "USD",
+                description: profile.description || "",
+                licensing: profile.licensing || "",
+                revenueRange: {
+                  min: profile.revenueRange?.min || "",
+                  max: profile.revenueRange?.max || "",
+                },
+              }}
+              validationSchema={validationSchema}
+              onSubmit={onSubmit}
+            >
+              {({ isSubmitting }) => (
+                <Form className="space-y-8">
+                  {/* Company Info */}
+                  <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                    <h3 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                      <FaBuilding className="mr-3 text-primary" /> Company Information
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label>Company Name</label>
+                        <Field name="companyName" className="w-full px-3 py-2 border rounded-lg" />
+                        <ErrorMessage name="companyName" component="div" className="text-red-500 text-sm" />
+                      </div>
+                      <div>
+                        <label>Phone</label>
+                        <Field name="phone" className="w-full px-3 py-2 border rounded-lg" />
+                        <ErrorMessage name="phone" component="div" className="text-red-500 text-sm" />
+                      </div>
+                      <div className="md:col-span-2">
+                        <label>Website</label>
+                        <Field name="website" className="w-full px-3 py-2 border rounded-lg" />
+                        <ErrorMessage name="website" component="div" className="text-red-500 text-sm" />
+                      </div>
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
-                    <Field
-                      name="phone"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                    />
-                    <ErrorMessage name="phone" component="div" className="text-red-500 text-sm mt-1" />
+                  {/* File Uploads */}
+                  <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                    <h3 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                      <FaUpload className="mr-3 text-primary" /> Uploads
+                    </h3>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block mb-2">Upload Logo (Image)</label>
+                        <input type="file" accept="image/*" onChange={(e) => setLogoFile(e.target.files[0])} />
+                      </div>
+                      <div>
+                        <label className="block mb-2">Upload Testimonials (PDF, max 5)</label>
+                        <input
+                          type="file"
+                          accept="application/pdf"
+                          multiple
+                          onChange={(e) => setTestimonialFiles(Array.from(e.target.files))}
+                        />
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Website</label>
-                    <Field
-                      name="website"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                    />
-                    <ErrorMessage name="website" component="div" className="text-red-500 text-sm mt-1" />
-                  </div>
-                </div>
-              </div>
 
               {/* Industries & Geographies */}
               <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
