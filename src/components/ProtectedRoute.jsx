@@ -86,19 +86,21 @@ const ProtectedRoute = ({ children, requiredRole, requiresPayment = false }) => 
   if (user.role === 'advisor') {
     const { pathname } = window.location;
 
-
+    // Only check payment verification for non-dashboard routes
     if (!user.isPaymentVerified) {
       if (pathname !== '/advisor-payments' && pathname !== '/adviser-payment') {
         return <Navigate to="/advisor-payments" replace />;
       }
-    } else if (user.isProfileComplete === true) {
-      sessionStorage.removeItem('advisor-profile');
-      if (pathname !== '/advisor-dashboard') {
-        return <Navigate to="/advisor-dashboard" replace />;
-      }
     } else {
-      if (pathname !== '/advisor-form') {
-        return <Navigate to="/advisor-form" replace />;
+      // Payment verified - let individual components handle their own flow
+      // Dashboard will check profile completion internally
+      if (pathname === '/advisor-dashboard' || pathname === '/edit-advisor-profile') {
+        return children;
+      }
+      
+      // For form route, allow access
+      if (pathname === '/advisor-form') {
+        return children;
       }
     }
   }
