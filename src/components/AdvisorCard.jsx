@@ -1,20 +1,25 @@
 import React from 'react';
 import axios from 'axios';
-import toast from 'react-hot-toast';
+import toast, { Toaster } from 'react-hot-toast';
 import { FaBuilding, FaUser, FaGlobe, FaPhone, FaMapMarkerAlt, FaIndustry, FaDollarSign, FaAward, FaQuoteLeft, FaExternalLinkAlt, FaFilePdf, FaChartLine } from 'react-icons/fa';
 
 const AdvisorCard = ({ advisor, onSelect, isSelected }) => {
+  const [loading, setLoading] = React.useState(false);
+  
   const handleRequestIntroduction = async () => {
     try {
+      setLoading(true);
       const token = localStorage.getItem('access_token');
       await axios.post(
         'https://advisor-seller-backend.vercel.app/api/connections/introduction',
         { advisorIds: [advisor.id] },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      toast.success('Introduction request sent!');
+      toast.success(`📧 Introduction email sent to ${advisor.companyName}!`);
     } catch (error) {
       toast.error('Failed to send introduction request');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -191,10 +196,23 @@ const AdvisorCard = ({ advisor, onSelect, isSelected }) => {
         <div className="flex space-x-3">
           <button
             onClick={handleRequestIntroduction}
-            className="flex-1 bg-gradient-to-r from-primary to-third text-white py-3 px-4 rounded-lg font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center space-x-2"
+            disabled={loading}
+            className="flex-1 bg-gradient-to-r from-primary to-third text-white py-3 px-4 rounded-lg font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
           >
-            <FaUser className="w-4 h-4" />
-            <span>Request Introduction</span>
+            {loading ? (
+              <>
+                <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>Sending...</span>
+              </>
+            ) : (
+              <>
+                <FaUser className="w-4 h-4" />
+                <span>Request Introduction</span>
+              </>
+            )}
           </button>
         </div>
       </div>
