@@ -17,10 +17,34 @@ const AdvisorDashboard = () => {
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [leads, setLeads] = useState([]);
 
   useEffect(() => {
     fetchUserData();
   }, []);
+
+  useEffect(() => {
+    if (activeTab === 'leads' && user) {
+      fetchLeadsData();
+    }
+  }, [activeTab, user]);
+
+  const fetchLeadsData = async () => {
+    try {
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        navigate('/advisor-login');
+        return;
+      }
+      const leadsRes = await axios.get('https://advisor-seller-backend.vercel.app/api/advisors/leads', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setLeads(leadsRes.data);
+    } catch (error) {
+      console.error('Error fetching leads data:', error);
+      toast.error('Failed to fetch leads');
+    }
+  };
 
   const fetchUserData = async () => {
     try {
@@ -694,7 +718,7 @@ const AdvisorDashboard = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-500 mb-1">Total Leads</p>
-                      <p className="text-3xl font-bold text-gray-900">0</p>
+                      <p className="text-3xl font-bold text-gray-900">{leads.length}</p>
                       <p className="text-sm text-gray-500 mt-1">All time</p>
                     </div>
                     <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -712,7 +736,9 @@ const AdvisorDashboard = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-500 mb-1">This Month</p>
-                      <p className="text-3xl font-bold text-gray-900">0</p>
+                      <p className="text-3xl font-bold text-gray-900">
+                        {leads.filter(lead => new Date(lead.createdAt).getMonth() === new Date().getMonth()).length}
+                      </p>
                       <p className="text-sm text-green-600 mt-1">+0% from last month</p>
                     </div>
                     <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
@@ -730,7 +756,7 @@ const AdvisorDashboard = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-500 mb-1">Response Rate</p>
-                      <p className="text-3xl font-bold text-gray-900">0%</p>
+                      <p className="text-3xl font-bold text-gray-900">{leads.length > 0 ? '100%' : '0%'}</p>
                       <p className="text-sm text-gray-500 mt-1">Average response time</p>
                     </div>
                     <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
@@ -747,44 +773,89 @@ const AdvisorDashboard = () => {
                   <p className="text-gray-600 text-sm mt-1">Your latest lead opportunities</p>
                 </div>
                 <div className="p-6">
-                  <div className="text-center py-12">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <FaUser className="w-8 h-8 text-gray-400" />
+                  {leads.length > 0 ? (
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Company Name</th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Industry</th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Geography</th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Revenue Range</th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Connection Type</th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {leads.map((lead) => (
+                            <tr key={lead._id}>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                {lead.sellerId.companyName}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {lead.sellerId.industry}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {lead.sellerId.geography}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                ${lead.sellerId.annualRevenue?.toLocaleString()}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                  lead.type === 'introduction' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'
+                                }`}>
+                                  {lead.type}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {new Date(lead.createdAt).toLocaleDateString()}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
                     </div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">No leads yet</h3>
-                    <p className="text-gray-500 mb-6 max-w-md mx-auto">
-                      When sellers match your expertise and criteria, their leads will appear here. Make sure your profile is complete and lead reception is enabled.
-                    </p>
-                    <div className="flex justify-center space-x-4">
-                      <button
-                        onClick={() => setActiveTab('settings')}
-                        className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors font-medium"
-                      >
-                        Update Profile
-                      </button>
-                      {profile && !profile.sendLeads && (
+                  ) : (
+                    <div className="text-center py-12">
+                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <FaUser className="w-8 h-8 text-gray-400" />
+                      </div>
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">No leads yet</h3>
+                      <p className="text-gray-500 mb-6 max-w-md mx-auto">
+                        When sellers match your expertise and criteria, their leads will appear here. Make sure your profile is complete and lead reception is enabled.
+                      </p>
+                      <div className="flex justify-center space-x-4">
                         <button
-                          onClick={async () => {
-                            try {
-                              const token = localStorage.getItem('access_token');
-                              await axios.patch(
-                                'https://advisor-seller-backend.vercel.app/api/advisors/profile/pause-leads',
-                                { sendLeads: true },
-                                { headers: { Authorization: `Bearer ${token}` } }
-                              );
-                              toast.success('Lead reception enabled!');
-                              fetchUserData();
-                            } catch (error) {
-                              toast.error('Failed to enable leads');
-                            }
-                          }}
-                          className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                          onClick={() => setActiveTab('settings')}
+                          className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors font-medium"
                         >
-                          Enable Leads
+                          Update Profile
                         </button>
-                      )}
+                        {profile && !profile.sendLeads && (
+                          <button
+                            onClick={async () => {
+                              try {
+                                const token = localStorage.getItem('access_token');
+                                await axios.patch(
+                                  'https://advisor-seller-backend.vercel.app/api/advisors/profile/pause-leads',
+                                  { sendLeads: true },
+                                  { headers: { Authorization: `Bearer ${token}` } }
+                                );
+                                toast.success('Lead reception enabled!');
+                                fetchUserData();
+                              } catch (error) {
+                                toast.error('Failed to enable leads');
+                              }
+                            }}
+                            className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                          >
+                            Enable Leads
+                          </button>
+                        )}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
             </motion.div>

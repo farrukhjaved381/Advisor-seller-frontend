@@ -35,13 +35,13 @@ const AdvisorCard = ({ advisor, onSelect, isSelected }) => {
   return (
     <div className="bg-white rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 overflow-hidden group">
       {/* Header Section */}
-      <div className="relative bg-gradient-to-r from-primary/5 to-third/5 p-6 border-b border-gray-100">
+      <div className="relative bg-gradient-to-r from-primary/5 to-third/5 p-4 sm:p-6 border-b border-gray-100">
         <div className="flex items-start justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="relative">
+          <div className="flex items-center space-x-3 sm:space-x-4 flex-1 min-w-0">
+            <div className="relative flex-shrink-0">
               {advisor.logoUrl ? (
                 <img 
-                  className="h-16 w-16 rounded-xl object-cover border-2 border-white shadow-md" 
+                  className="h-12 w-12 sm:h-16 sm:w-16 rounded-xl object-cover border-2 border-white shadow-md" 
                   src={advisor.logoUrl} 
                   alt={advisor.companyName}
                   onError={(e) => {
@@ -50,55 +50,55 @@ const AdvisorCard = ({ advisor, onSelect, isSelected }) => {
                   }}
                 />
               ) : null}
-              <div className={`h-16 w-16 rounded-xl bg-gradient-to-br from-primary to-third flex items-center justify-center text-white font-bold text-xl shadow-md ${advisor.logoUrl ? 'hidden' : 'flex'}`}>
+              <div className={`h-12 w-12 sm:h-16 sm:w-16 rounded-xl bg-gradient-to-br from-primary to-third flex items-center justify-center text-white font-bold text-lg sm:text-xl shadow-md ${advisor.logoUrl ? 'hidden' : 'flex'}`}>
                 {advisor.companyName?.charAt(0) || 'A'}
               </div>
             </div>
-            <div className="flex-1">
-              <h3 className="text-xl font-bold text-gray-900 mb-1">{advisor.companyName}</h3>
+            <div className="flex-1 min-w-0">
+              <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-1 truncate">{advisor.companyName}</h3>
               <div className="flex items-center text-gray-600 mb-2">
-                <FaUser className="w-4 h-4 mr-2" />
-                <span className="font-medium">{advisor.advisorName}</span>
+                <FaUser className="w-3 h-3 sm:w-4 sm:h-4 mr-2 flex-shrink-0" />
+                <span className="font-medium text-sm sm:text-base truncate">{advisor.advisorName}</span>
               </div>
-              <div className="flex items-center space-x-4 text-sm text-gray-500">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 text-xs sm:text-sm text-gray-500 space-y-1 sm:space-y-0">
                 <div className="flex items-center">
-                  <FaAward className="w-4 h-4 mr-1" />
+                  <FaAward className="w-3 h-3 sm:w-4 sm:h-4 mr-1 flex-shrink-0" />
                   <span>{advisor.yearsExperience} years</span>
                 </div>
                 <div className="flex items-center">
-                  <FaChartLine className="w-4 h-4 mr-1" />
+                  <FaChartLine className="w-3 h-3 sm:w-4 sm:h-4 mr-1 flex-shrink-0" />
                   <span>{advisor.numberOfTransactions} deals</span>
                 </div>
               </div>
             </div>
           </div>
-          <div className="flex items-center space-x-3">
+          <div className="flex items-start pt-1 flex-shrink-0">
             <input
               type="checkbox"
               checked={isSelected}
               onChange={onSelect}
-              className="form-checkbox h-5 w-5 text-primary focus:ring-primary border-gray-300 rounded transition-colors"
+              className="form-checkbox h-4 w-4 sm:h-5 sm:w-5 text-primary focus:ring-primary border-gray-300 rounded transition-colors"
             />
           </div>
         </div>
       </div>
 
       {/* Content Section */}
-      <div className="p-6 space-y-6">
+      <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
         {/* Description */}
         <div>
           <p className="text-gray-700 leading-relaxed">{advisor.description}</p>
         </div>
 
         {/* Revenue Range */}
-        <div className="bg-green-50 rounded-lg p-4 border border-green-200">
-          <div className="flex items-center justify-between">
+        <div className="bg-green-50 rounded-lg p-3 sm:p-4 border border-green-200">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
             <div className="flex items-center">
-              <FaDollarSign className="w-5 h-5 text-green-600 mr-2" />
-              <span className="font-semibold text-green-800">Revenue Range</span>
+              <FaDollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 mr-2 flex-shrink-0" />
+              <span className="font-semibold text-green-800 text-sm sm:text-base">Revenue Range</span>
             </div>
-            <div className="text-right">
-              <div className="text-lg font-bold text-green-900">
+            <div className="text-left sm:text-right">
+              <div className="text-base sm:text-lg font-bold text-green-900 break-words">
                 {formatCurrency(advisor.revenueRange?.min, advisor.currency)} - {formatCurrency(advisor.revenueRange?.max, advisor.currency)}
               </div>
             </div>
@@ -107,13 +107,13 @@ const AdvisorCard = ({ advisor, onSelect, isSelected }) => {
 
         {/* Industries */}
         <div>
-          <div className="flex items-center mb-3">
-            <FaIndustry className="w-4 h-4 text-primary mr-2" />
-            <h4 className="font-semibold text-gray-900">Industries</h4>
+          <div className="flex items-center mb-2 sm:mb-3">
+            <FaIndustry className="w-3 h-3 sm:w-4 sm:h-4 text-primary mr-2 flex-shrink-0" />
+            <h4 className="font-semibold text-gray-900 text-sm sm:text-base">Industries</h4>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-1.5 sm:gap-2">
             {advisor.industries?.map((industry, index) => (
-              <span key={index} className="px-3 py-1 text-sm font-medium text-blue-800 bg-blue-100 rounded-full border border-blue-200">
+              <span key={index} className="px-2 sm:px-3 py-1 text-xs sm:text-sm font-medium text-blue-800 bg-blue-100 rounded-full border border-blue-200">
                 {industry}
               </span>
             ))}
@@ -122,13 +122,13 @@ const AdvisorCard = ({ advisor, onSelect, isSelected }) => {
 
         {/* Geographies */}
         <div>
-          <div className="flex items-center mb-3">
-            <FaMapMarkerAlt className="w-4 h-4 text-primary mr-2" />
-            <h4 className="font-semibold text-gray-900">Geographies</h4>
+          <div className="flex items-center mb-2 sm:mb-3">
+            <FaMapMarkerAlt className="w-3 h-3 sm:w-4 sm:h-4 text-primary mr-2 flex-shrink-0" />
+            <h4 className="font-semibold text-gray-900 text-sm sm:text-base">Geographies</h4>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-1.5 sm:gap-2">
             {advisor.geographies?.map((geography, index) => (
-              <span key={index} className="px-3 py-1 text-sm font-medium text-green-800 bg-green-100 rounded-full border border-green-200">
+              <span key={index} className="px-2 sm:px-3 py-1 text-xs sm:text-sm font-medium text-green-800 bg-green-100 rounded-full border border-green-200">
                 {geography}
               </span>
             ))}
@@ -147,19 +147,19 @@ const AdvisorCard = ({ advisor, onSelect, isSelected }) => {
         )}
 
         {/* Contact Information */}
-        <div className="grid grid-cols-1 gap-3">
+        <div className="space-y-2 sm:space-y-3">
           {advisor.phone && (
             <div className="flex items-center text-gray-600">
-              <FaPhone className="w-4 h-4 mr-3 text-primary" />
-              <span className="text-sm">{advisor.phone}</span>
+              <FaPhone className="w-3 h-3 sm:w-4 sm:h-4 mr-2 sm:mr-3 text-primary flex-shrink-0" />
+              <span className="text-xs sm:text-sm break-all">{advisor.phone}</span>
             </div>
           )}
           {advisor.website && (
             <div className="flex items-center text-gray-600">
-              <FaGlobe className="w-4 h-4 mr-3 text-primary" />
-              <a href={advisor.website} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:text-third transition-colors flex items-center">
-                {advisor.website}
-                <FaExternalLinkAlt className="w-3 h-3 ml-1" />
+              <FaGlobe className="w-3 h-3 sm:w-4 sm:h-4 mr-2 sm:mr-3 text-primary flex-shrink-0" />
+              <a href={advisor.website} target="_blank" rel="noopener noreferrer" className="text-xs sm:text-sm text-primary hover:text-third transition-colors flex items-center break-all">
+                <span className="truncate">{advisor.website}</span>
+                <FaExternalLinkAlt className="w-2 h-2 sm:w-3 sm:h-3 ml-1 flex-shrink-0" />
               </a>
             </div>
           )}
@@ -192,29 +192,28 @@ const AdvisorCard = ({ advisor, onSelect, isSelected }) => {
       </div>
 
       {/* Footer Actions */}
-      <div className="px-6 py-4 bg-gray-50 border-t border-gray-100">
-        <div className="flex space-x-3">
-          <button
-            onClick={handleRequestIntroduction}
-            disabled={loading}
-            className="flex-1 bg-gradient-to-r from-primary to-third text-white py-3 px-4 rounded-lg font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-          >
-            {loading ? (
-              <>
-                <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                <span>Sending...</span>
-              </>
-            ) : (
-              <>
-                <FaUser className="w-4 h-4" />
-                <span>Request Introduction</span>
-              </>
-            )}
-          </button>
-        </div>
+      <div className="px-4 sm:px-6 py-3 sm:py-4 bg-gray-50 border-t border-gray-100">
+        <button
+          onClick={handleRequestIntroduction}
+          disabled={loading}
+          className="w-full bg-gradient-to-r from-primary to-third text-white py-2.5 sm:py-3 px-4 rounded-lg font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-sm sm:text-base"
+        >
+          {loading ? (
+            <>
+              <svg className="animate-spin h-3 w-3 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span>Sending...</span>
+            </>
+          ) : (
+            <>
+              <FaUser className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">Request Introduction</span>
+              <span className="sm:hidden">Request Intro</span>
+            </>
+          )}
+        </button>
       </div>
     </div>
   );

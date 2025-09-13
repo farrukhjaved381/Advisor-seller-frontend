@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import axios from "axios"
 import AdvisorCard from "../../components/AdvisorCard"
-import toast from "react-hot-toast"
+import toast, { Toaster } from "react-hot-toast"
 import { useFormik } from "formik"
 import * as Yup from "yup"
 import { Formik, Form, Field, ErrorMessage, useFormikContext } from "formik"
@@ -284,6 +284,9 @@ const SellerDashboard = () => {
   const [introductionRequests, setIntroductionRequests] = useState([])
   const [directContactList, setDirectContactList] = useState([])
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [introductionLoading, setIntroductionLoading] = useState(false)
+  const [directListLoading, setDirectListLoading] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const handleSelectAdvisor = (advisorId) => {
     setSelectedAdvisors((prevSelected) => {
@@ -296,32 +299,44 @@ const SellerDashboard = () => {
   }
 
   const handleBulkIntroduction = async () => {
+    if (selectedAdvisors.length === 0) return
+    
     try {
+      setIntroductionLoading(true)
       const token = localStorage.getItem("access_token")
-      await axios.post(
+      
+      const response = await axios.post(
         "https://advisor-seller-backend.vercel.app/api/connections/introduction",
         { advisorIds: selectedAdvisors },
         { headers: { Authorization: `Bearer ${token}` } },
       )
-      toast.success(`Introduction requests sent to ${selectedAdvisors.length} advisors!`)
+      
+      toast.success(`📧 Introduction emails sent to ${selectedAdvisors.length} advisors!`)
       setIntroductionRequests([...introductionRequests, ...selectedAdvisors])
       setSelectedAdvisors([])
     } catch (error) {
       toast.error("Failed to send introduction requests")
+    } finally {
+      setIntroductionLoading(false)
     }
   }
 
   const handleGetDirectList = async () => {
     try {
+      setDirectListLoading(true)
       const token = localStorage.getItem("access_token")
       const response = await axios.post(
         "https://advisor-seller-backend.vercel.app/api/connections/direct-list",
         {},
         { headers: { Authorization: `Bearer ${token}` } },
       )
-      
-      if (response.status === 200) {
-        toast.success(response.data.message || `Direct contact list sent! ${response.data.advisorCount} advisors notified.`)
+      if (response.status === 200 || response.status === 201) {
+        const msg = response.data?.message || `Direct contact list sent! ${response.data?.advisorCount || ''} advisors notified.`;
+        const sellerEmail = userProfile?.email || profile?.email || "your email";
+        toast.success(
+          `📧 ${msg}\nCheck your email (${sellerEmail}) for the contact list.`,
+          { duration: 5000, id: "direct-list-success" }
+        );
       }
     } catch (error) {
       if (error.response?.status === 404) {
@@ -331,6 +346,8 @@ const SellerDashboard = () => {
       } else {
         toast.error(error.response?.data?.message || "Failed to request direct list")
       }
+    } finally {
+      setDirectListLoading(false)
     }
   }
 
@@ -646,15 +663,34 @@ const SellerDashboard = () => {
 
   return (
     <div className="flex h-screen bg-gray-50">
-      <aside className="w-72 bg-white flex flex-col border-r border-gray-200 shadow-sm">
+      {/* Mobile backdrop */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+      
+      <aside className={`
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        fixed lg:static inset-y-0 left-0 z-30 w-72 bg-white flex flex-col border-r border-gray-200 shadow-sm transition-transform duration-300 ease-in-out
+      `}>
         {/* Header */}
         <div className="px-6 py-6 border-b border-gray-100">
-          <div className="flex items-center justify-center mb-4">
+          <div className="flex items-center justify-between lg:justify-center mb-4">
             <img
-              src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=768,fit=crop,q=95/mk3JaNVZEltBD9g4/logo-transparency-mnlJLXr4jxIOR470.png"
+              src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w-768,fit=crop,q=95/mk3JaNVZEltBD9g4/logo-transparency-mnlJLXr4jxIOR470.png"
               alt="Advisor Chooser"
               className="h-8 w-auto object-contain"
             />
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="lg:hidden p-2 rounded-md hover:bg-gray-100"
+            >
+              <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
         </div>
 
@@ -671,7 +707,10 @@ const SellerDashboard = () => {
                     ? "bg-gradient-to-r from-third to-primary text-white shadow-sm"
                     : "text-gray-700 hover:bg-gray-100"
                 }`}
-                onClick={() => setActiveTab("pending")}
+                onClick={() => {
+                  setActiveTab("pending");
+                  setSidebarOpen(false);
+                }}
               >
                 <div className="flex items-center space-x-3">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -709,7 +748,10 @@ const SellerDashboard = () => {
                     ? "bg-gradient-to-r from-third to-primary text-white shadow-sm"
                     : "text-gray-700 hover:bg-gray-100"
                 }`}
-                onClick={() => setActiveTab("company")}
+                onClick={() => {
+                  setActiveTab("company");
+                  setSidebarOpen(false);
+                }}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
@@ -759,33 +801,46 @@ const SellerDashboard = () => {
       {/* Main Content */}
       <main className="flex-1 flex flex-col">
         {/* Topbar */}
-        <header className="flex items-center justify-between bg-white/95 backdrop-blur-sm shadow-lg border-b border-primary/10 px-8 py-6 relative overflow-hidden">
+        <header className="flex items-center justify-between bg-white/95 backdrop-blur-sm shadow-lg border-b border-primary/10 px-4 lg:px-8 py-4 lg:py-6 relative overflow-hidden">
           {/* Background Accent */}
           <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-third/5"></div>
-          {/* Search Section */}
-          <div className="flex items-center w-1/2 relative z-10">{/* Search removed for cleaner look */}</div>
+          
+          {/* Left Section */}
+          <div className="flex items-center space-x-4 relative z-10">
+            {/* Mobile menu button */}
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="lg:hidden p-2 rounded-md hover:bg-gray-100"
+            >
+              <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            <h1 className="text-lg lg:text-xl font-bold text-gray-900">Seller Dashboard</h1>
+          </div>
+          
           {/* Profile Section */}
           <div className="relative z-10">
             <button
-              className="flex items-center gap-4 px-4 py-2 rounded-xl hover:bg-primary/10 transition-all duration-300 group"
+              className="flex items-center gap-2 lg:gap-4 px-2 lg:px-4 py-2 rounded-xl hover:bg-primary/10 transition-all duration-300 group"
               onClick={() => setProfileDropdownOpen((prev) => !prev)}
             >
-              <div className="text-right">
-                <span className="block font-semibold text-secondary group-hover:text-primary transition-colors">
+              <div className="text-right hidden sm:block">
+                <span className="block font-semibold text-secondary group-hover:text-primary transition-colors text-sm lg:text-base">
                   {userProfile.name || "Loading..."}
                 </span>
-                <span className="block text-sm text-gray-500">Seller Account</span>
+                <span className="block text-xs lg:text-sm text-gray-500">Seller Account</span>
               </div>
               <div className="relative">
-                <div className="w-12 h-12 flex items-center justify-center bg-gradient-to-br from-primary to-third rounded-full text-white font-bold shadow-lg ring-2 ring-primary/20">
+                <div className="w-8 h-8 lg:w-12 lg:h-12 flex items-center justify-center bg-gradient-to-br from-primary to-third rounded-full text-white font-bold text-sm lg:text-base shadow-lg ring-2 ring-primary/20">
                   {(userProfile.name || "A").charAt(0)}
                 </div>
-                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
+                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 lg:w-4 lg:h-4 bg-green-500 border-2 border-white rounded-full"></div>
               </div>
             </button>
             {/* Enhanced Profile Dropdown */}
             {profileDropdownOpen && (
-              <div className="absolute right-0 mt-4 w-80 bg-white/95 backdrop-blur-sm border border-primary/20 rounded-2xl shadow-2xl p-6 z-50 animate-fadeIn">
+              <div className="absolute right-0 mt-4 w-72 sm:w-80 bg-white/95 backdrop-blur-sm border border-primary/20 rounded-2xl shadow-2xl p-4 sm:p-6 z-50 animate-fadeIn">
                 <div className="flex flex-col gap-4">
                   {/* Profile Header */}
                   <div className="flex items-center gap-4 pb-4 border-b border-gray-100">
@@ -864,32 +919,59 @@ const SellerDashboard = () => {
         </header>
 
         {/* Tabs Content */}
-        <div className="px-6 py-4 overflow-y-auto">
+        <div className="px-4 lg:px-6 py-4 overflow-y-auto flex-1">
           {activeTab === "pending" && (
             <div className="bg-gray-50 p-4 rounded-lg border">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold">Matched Advisors</h3>
-                <div className="flex items-center space-x-4">
-                  <button
-                    onClick={handleBulkIntroduction}
-                    disabled={selectedAdvisors.length === 0}
-                    className="bg-blue-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-blue-700 transition disabled:bg-gray-400"
-                  >
-                    Request Introductions ({selectedAdvisors.length})
-                  </button>
-                  <button
-                    onClick={handleGetDirectList}
-                    className="bg-green-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-green-700 transition"
-                  >
-                    Direct List
-                  </button>
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 flex-1">
+                    <button
+                      onClick={handleBulkIntroduction}
+                      disabled={selectedAdvisors.length === 0 || introductionLoading}
+                      className="px-6 py-3 rounded-xl text-base font-semibold bg-gradient-to-r from-primary to-third text-white shadow-lg hover:from-primary/80 hover:to-third/80 hover:scale-105 hover:shadow-xl active:scale-100 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 min-w-0"
+                    >
+                      {introductionLoading ? (
+                        <>
+                          <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          <span className="hidden sm:inline">Sending...</span>
+                          <span className="sm:hidden">Sending</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="hidden sm:inline">Request Introductions ({selectedAdvisors.length})</span>
+                          <span className="sm:hidden">Introductions ({selectedAdvisors.length})</span>
+                        </>
+                      )}
+                    </button>
+                    <button
+                      onClick={handleGetDirectList}
+                      disabled={directListLoading}
+                      className="px-6 py-3 rounded-xl text-base font-semibold bg-gradient-to-r from-primary to-third text-white shadow-lg hover:from-primary/80 hover:to-third/80 hover:scale-105 hover:shadow-xl active:scale-100 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 min-w-0"
+                    >
+                      {directListLoading ? (
+                        <>
+                          <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          <span>Sending...</span>
+                        </>
+                      ) : (
+                        <span>Direct List</span>
+                      )}
+                    </button>
+                  </div>
                   <select
                     value={sortBy}
                     onChange={(e) => {
                       setSortBy(e.target.value)
                       fetchMatches(e.target.value)
                     }}
-                    className="border rounded px-2 py-1"
+                    className="border rounded px-3 py-2 text-sm w-full sm:w-auto"
                   >
                     <option value="newest">Newest</option>
                     <option value="years">Years</option>
@@ -916,7 +998,7 @@ const SellerDashboard = () => {
                   </button>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6">
                   {matches.map((advisor) => (
                     <AdvisorCard
                       key={advisor.id}
@@ -1220,6 +1302,31 @@ const SellerDashboard = () => {
           />
         </div>
       </main>
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: '#fff',
+            color: '#333',
+            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)',
+            borderRadius: '12px',
+            padding: '16px',
+          },
+          success: {
+            iconTheme: {
+              primary: '#10B981',
+              secondary: '#fff',
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: '#EF4444',
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
     </div>
   )
 }

@@ -17,7 +17,6 @@ const AdvisorRegister = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [passwordStrength, setPasswordStrength] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -26,29 +25,10 @@ const AdvisorRegister = () => {
         ...prev,
         [name]: value,
       }));
-      
-      // Update password strength if password field changes
-      if (name === 'password') {
-        setPasswordStrength(checkPasswordStrength(value));
-      }
     }
   };
 
-  // Password Strength Checker
-  const checkPasswordStrength = (value) => {
-    if (!value) return '';
-    let strength = 0;
-    if (value.length >= 8) strength++;
-    if (/[A-Z]/.test(value)) strength++;
-    if (/[a-z]/.test(value)) strength++;
-    if (/[0-9]/.test(value)) strength++;
-    if (/[!@#$%^&*(),.?":{}|<>]/.test(value)) strength++;
 
-    if (strength <= 2) return 'Weak';
-    if (strength === 3 || strength === 4) return 'Medium';
-    if (strength === 5) return 'Strong';
-    return '';
-  };
 
   const validateForm = () => {
     if (!formData.firstName.trim()) {
@@ -108,11 +88,8 @@ const AdvisorRegister = () => {
       );
 
       if (res.data) {
-        localStorage.setItem("access_token", res.data.access_token);
-        localStorage.setItem("refresh_token", res.data.refresh_token);
-        localStorage.setItem("user", JSON.stringify(res.data.user));
-
-        toast.success("Registration successful! Please check your email to verify.");
+        // Don't store tokens immediately - user needs to verify email first
+        toast.success("Registration successful! Please check your email to verify your account.");
         setTimeout(() => {
           navigate("/continue");
         }, 1500);
@@ -129,7 +106,7 @@ const AdvisorRegister = () => {
   };
 
   return (
-    <div className="w-screen min-h-screen bg-gradient-to-br from-gray-50 to-white flex flex-col overflow-x-hidden">
+  <div className="w-screen min-h-screen bg-gradient-to-br from-gray-50 to-white flex flex-col overflow-x-hidden">
       <ToastContainer 
         position="top-center" 
         autoClose={3000}
@@ -146,57 +123,56 @@ const AdvisorRegister = () => {
      
      <Header />
       {/* Main Content */}
-      <div className="flex-grow w-full flex items-stretch pt-20">
+      <div className="flex-grow w-full flex flex-col md:flex-row items-stretch pt-10 md:pt-20">
         {/* Left Side - Image */}
-        <div className="w-[45%] relative overflow-hidden">
+        <div className="w-full md:w-[45%] relative overflow-hidden min-h-[260px] md:min-h-0 h-64 md:h-auto">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-third/30 z-10"></div>
           <img 
-        src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
-
+            src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
             alt="Professional advisor consultation workspace" 
             className="object-cover h-full w-full transform hover:scale-105 transition-transform duration-700" 
           />
           
           {/* Floating Welcome Card */}
-          <div className="absolute top-8 left-8 z-20">
-            <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-xl max-w-sm">
+          <div className="absolute top-4 left-4 md:top-8 md:left-8 z-20 w-[90%] md:w-auto">
+            <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 md:p-6 shadow-xl max-w-sm">
               <div className="flex items-center space-x-3 mb-3">
                 <div className="w-4 h-4 bg-gradient-to-r from-primary to-third rounded-full animate-pulse"></div>
-                <span className="text-secondary font-bold text-lg">Join Our Advisors!</span>
+                <span className="text-secondary font-bold text-base md:text-lg">Join Our Advisors!</span>
               </div>
-              <p className="text-gray-600 text-sm leading-relaxed">
+              <p className="text-gray-600 text-xs md:text-sm leading-relaxed">
                 Share your expertise and help clients make informed decisions across various industries.
               </p>
             </div>
           </div>
           
           {/* Features Badge */}
-          <div className="absolute bottom-8 right-8 z-20">
-            <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 shadow-xl">
+          <div className="absolute bottom-4 right-4 md:bottom-8 md:right-8 z-20">
+            <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-2 md:p-4 shadow-xl">
               <div className="flex items-center space-x-2">
-                <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="w-4 h-4 md:w-5 md:h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span className="text-secondary font-semibold text-sm">Expert Network</span>
+                <span className="text-secondary font-semibold text-xs md:text-sm">Expert Network</span>
               </div>
             </div>
           </div>
           
           {/* Decorative Pattern */}
-          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-secondary/10 to-transparent z-10"></div>
+          <div className="absolute bottom-0 left-0 right-0 h-16 md:h-32 bg-gradient-to-t from-secondary/10 to-transparent z-10"></div>
         </div>
         
         {/* Right Side - Form */}
-        <div className="w-[55%] flex justify-center items-center min-h-screen bg-gradient-to-bl from-white to-gray-50/50 relative">
+        <div className="w-full md:w-[55%] flex justify-center items-center min-h-[340px] md:min-h-screen bg-gradient-to-bl from-white to-gray-50/50 relative">
           {/* Background Pattern */}
           <div className="absolute inset-0 opacity-5">
-            <div className="absolute top-32 right-32 w-40 h-40 bg-primary rounded-full blur-3xl"></div>
-            <div className="absolute bottom-32 left-20 w-56 h-56 bg-third rounded-full blur-3xl"></div>
+            <div className="absolute top-16 md:top-32 right-8 md:right-32 w-24 md:w-40 h-24 md:h-40 bg-primary rounded-full blur-3xl"></div>
+            <div className="absolute bottom-16 md:bottom-32 left-8 md:left-20 w-32 md:w-56 h-32 md:h-56 bg-third rounded-full blur-3xl"></div>
           </div>
           
           <form
             onSubmit={handleSubmit}
-            className="relative z-10 w-[85%] max-w-2xl bg-white/70 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-white/20"
+            className="relative z-10 w-full sm:w-[90%] md:w-[85%] max-w-2xl bg-white/70 backdrop-blur-sm rounded-3xl p-4 sm:p-6 md:p-8 shadow-2xl border border-white/20"
           >
             {/* Header Section */}
             <div className="text-center mb-8">
@@ -315,7 +291,7 @@ const AdvisorRegister = () => {
               </div>
 
               {/* Password Strength Indicator */}
-              {formData.password && passwordStrength && (
+              {/* {formData.password && passwordStrength && (
                 <div className="flex items-center mt-3">
                   <div className="flex space-x-1 mr-3">
                     {[...Array(3)].map((_, i) => (
@@ -347,7 +323,7 @@ const AdvisorRegister = () => {
                     {passwordStrength} Password
                   </span>
                 </div>
-              )}
+              )} */}
             </div>
 
             {/* Submit Button */}
