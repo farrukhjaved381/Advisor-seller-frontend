@@ -212,7 +212,7 @@ const VerifyEmail = () => {
             <p className="text-gray-600 leading-relaxed">
               Thank you for registering! Please check your email for a verification message from{' '}
               <span className="font-medium text-teal-600">deals@amp-ven.com</span>.
-              Clicking on the link in the email will conclude the verification and bring you back to CIM Amplify to complete your profile.
+              Clicking on the link in the email will conclude the verification and bring you back to Advisor Chooser to complete your profile.
             </p>
 
             <div className="flex items-center justify-center space-x-2 text-sm text-teal-600">
@@ -272,7 +272,7 @@ const VerifyEmail = () => {
             <div className="w-6 h-6 bg-teal-500 rounded-full flex items-center justify-center">
               <span className="text-white text-xs font-bold">C</span>
             </div>
-            <span>© 2025 CIM Amplify</span>
+            <span>© 2025 Advisor Chooser</span>
             <span>•</span>
             <span>All rights reserved</span>
           </div>

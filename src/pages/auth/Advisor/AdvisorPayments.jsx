@@ -114,7 +114,6 @@ const PaymentSchema = Yup.object().shape({
   firstName: Yup.string().matches(/^[A-Za-z]+$/, "Only alphabets allowed").min(2).max(20).required("First name is required"),
   lastName: Yup.string().matches(/^[A-Za-z]+$/, "Only alphabets allowed").min(2).max(20).required("Last name is required"),
   country: Yup.string().required("Country is required"),
-  postalCode: Yup.string().matches(/^[0-9]{4,10}$/, "Invalid postal code").required("Postal code is required"),
   coupon: Yup.string().matches(/^[A-Za-z0-9]*$/, "Only letters & numbers allowed").notRequired(),
 });
 
@@ -123,17 +122,39 @@ const AdvisorPaymentForm = () => {
   const stripe = useStripe();
   const elements = useElements();
 
+
   const [amount, setAmount] = useState(500000); // Amount in cents ($5000)
   const [couponApplied, setCouponApplied] = useState(false);
   const [originalAmount] = useState(500000);
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
   const [cardReady, setCardReady] = useState(false);
 
-  // You might want to get the user's email from a global auth context
-  // For now, assuming a placeholder or a way to pass it down
-  const userEmail = "test@example.com"; // TODO: Replace with actual user email from context
+  // Autofill user info from localStorage if available
+  let userEmail = "test@example.com";
+  let defaultFirstName = "";
+  let defaultLastName = "";
+  try {
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      const user = JSON.parse(userStr);
+      if (user.email) userEmail = user.email;
+      if (user.name) {
+        const [first, ...rest] = user.name.split(' ');
+        defaultFirstName = first || "";
+        defaultLastName = rest.join(' ') || "";
+      } else {
+        if (user.firstName) defaultFirstName = user.firstName;
+        if (user.lastName) defaultLastName = user.lastName;
+      }
+    }
+  } catch (e) {
+    // ignore
+  }
 
-  // Apply coupon (CSRF handled by SecureAPI.secureRequest)
+  // Helper to format amount with commas
+  const formatAmount = (amt) => {
+    return amt.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
   const handleApplyCoupon = async (coupon) => {
     if (!coupon?.trim()) {
       toast.error("Please enter a coupon code");
@@ -229,8 +250,7 @@ const AdvisorPaymentForm = () => {
               name: `${values.firstName} ${values.lastName}`,
               email: userEmail, // IMPORTANT: Ensure this is the actual logged-in user's email
               address: {
-                  country: values.country,
-                  postal_code: values.postalCode,
+                  country: values.country
               }
           } 
         },
@@ -292,7 +312,7 @@ const AdvisorPaymentForm = () => {
         </div>
         <div>
           <h1 className="text-3xl font-bold text-gray-800 mb-2">Advisor Membership</h1>
-          <p className="text-gray-600">Join our exclusive network of professional advisors</p>
+          <p className="text-gray-600">Help us to get in front of "Off Market" and convince sellers to use you</p>
         </div>
         
         {/* Pricing Display */}
@@ -300,12 +320,12 @@ const AdvisorPaymentForm = () => {
           <div className="flex items-center justify-center space-x-4">
             {couponApplied && (
               <div className="text-right">
-                <p className="text-sm text-gray-500 line-through">${(originalAmount / 100).toFixed(2)}</p>
+                <p className="text-sm text-gray-500 line-through">${formatAmount(originalAmount / 100)} USD</p>
               </div>
             )}
             <div className="text-center">
-              <p className="text-4xl font-bold text-gray-800">${(amount / 100).toFixed(2)}</p>
-              <p className="text-sm text-gray-500">One-time setup fee</p>
+              <p className="text-4xl font-bold text-gray-800">${formatAmount(amount / 100)} USD</p>
+              <p className="text-sm text-gray-500">Yearly Subscription</p>
             </div>
             {couponApplied && (
               <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
@@ -318,7 +338,12 @@ const AdvisorPaymentForm = () => {
       </div>
 
       <Formik
-        initialValues={{ firstName: "", lastName: "", country: "", postalCode: "", coupon: "" }}
+        initialValues={{
+          firstName: defaultFirstName,
+          lastName: defaultLastName,
+          country: "",
+          coupon: ""
+        }}
         validationSchema={PaymentSchema}
         onSubmit={handleSubmitPayment}
       >
@@ -386,14 +411,14 @@ const AdvisorPaymentForm = () => {
               </h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
+                <div className="space-y-2 col-span-1 md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700">Country</label>
                   <div className={`relative border-2 rounded-lg transition-colors ${
                     errors.country && touched.country 
                       ? 'border-red-300 bg-red-50' 
                       : 'border-gray-200 hover:border-blue-300 focus-within:border-blue-500'
                   }`}>
-                    <div className="flex items-center px-4 py-3">
+                    <div className="flex items-center px-4 py-3 w-full">
                       <FaGlobe className="mr-3 text-gray-400" />
                       <Field as="select" name="country" className="w-full outline-none bg-transparent text-gray-800">
                         <option value="">Select your country</option>
@@ -408,28 +433,6 @@ const AdvisorPaymentForm = () => {
                   <ErrorMessage name="country" component="p" className="text-red-500 text-sm flex items-center">
                     <span className="ml-1">⚠️</span>
                     <span className="ml-1">{errors.country}</span>
-                  </ErrorMessage>
-                </div>
-                
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Postal Code</label>
-                  <div className={`relative border-2 rounded-lg transition-colors ${
-                    errors.postalCode && touched.postalCode 
-                      ? 'border-red-300 bg-red-50' 
-                      : 'border-gray-200 hover:border-blue-300 focus-within:border-blue-500'
-                  }`}>
-                    <div className="flex items-center px-4 py-3">
-                      <FaMapMarkerAlt className="mr-3 text-gray-400" />
-                      <Field 
-                        name="postalCode" 
-                        placeholder="Enter postal code" 
-                        className="w-full outline-none bg-transparent text-gray-800"
-                      />
-                    </div>
-                  </div>
-                  <ErrorMessage name="postalCode" component="p" className="text-red-500 text-sm flex items-center">
-                    <span className="ml-1">⚠️</span>
-                    <span className="ml-1">{errors.postalCode}</span>
                   </ErrorMessage>
                 </div>
               </div>
@@ -543,14 +546,27 @@ const AdvisorPaymentForm = () => {
                 ) : (
                   <>
                     <FaLock className="mr-3" />
-                    Complete Payment • ${(amount / 100).toFixed(2)}
+                    Complete Payment • {formatAmount(amount / 100)} USD
                   </>
                 )}
               </button>
             </div>
 
+            {/* Next Step - Complete Profile */}
+            <div className="mt-5 flex flex-col items-center justify-center">
+              <div className="w-full max-w-md bg-blue-50 border border-blue-100 rounded-xl shadow p-3 flex flex-col items-center">
+                <div className="flex items-center mb-1">
+                  <FaCheckCircle className="text-green-500 text-lg mr-1" />
+                  <span className="text-base font-semibold text-blue-900">Next step</span>
+                </div>
+                <span className="text-base font-bold text-secondary">Complete your profile</span>
+                <span className="text-xs text-gray-500 mt-1 text-center">After payment, you'll finish your advisor profile to activate your account.</span>
+                <span className="inline-block bg-blue-100 text-blue-700 text-[11px] font-semibold px-2 py-1 rounded mt-2">Profile setup required</span>
+              </div>
+            </div>
+
             {/* Trust Indicators */}
-            <div className="text-center space-y-2 pt-4 border-t border-gray-200">
+            {/* <div className="text-center space-y-2 pt-4 border-t border-gray-200">
               <div className="flex items-center justify-center space-x-4 text-sm text-gray-500">
                 <div className="flex items-center">
                   <FaShieldAlt className="mr-1" />
@@ -564,7 +580,7 @@ const AdvisorPaymentForm = () => {
               <p className="text-xs text-gray-400">
                 Powered by Stripe • Your payment information is never stored on our servers
               </p>
-            </div>
+            </div> */}
           </Form>
         )}
       </Formik>
@@ -677,7 +693,7 @@ const AdvisorPayments = () => {
           </div>
           
           {/* Additional Trust Signals */}
-          <div className="mt-8 text-center space-y-4">
+          {/* <div className="mt-8 text-center space-y-4">
             <div className="flex items-center justify-center space-x-6 text-sm text-gray-500">
               <div className="flex items-center space-x-2">
                 <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
@@ -699,7 +715,7 @@ const AdvisorPayments = () => {
               </div>
             </div>
             
-          </div>
+          </div> */}
         </div>
       </div>
     </Elements>

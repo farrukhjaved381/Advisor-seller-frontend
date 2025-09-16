@@ -5,9 +5,9 @@ import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import { Formik, Form, Field, ErrorMessage, useFormikContext } from 'formik';
 import * as Yup from 'yup';
-import { FaUser, FaBuilding, FaPhone, FaGlobe, FaCalendarAlt, FaChartLine, FaDollarSign, FaMapMarkerAlt, FaIndustry, FaCog, FaSignOutAlt, FaEdit, FaToggleOn, FaToggleOff, FaBars, FaTimes, FaChevronDown, FaChevronRight, FaFileAlt } from 'react-icons/fa';
-import { rawIndustryData } from '../../components/Static/industryData';
-import { rawGeographyData } from '../../components/Static/geographyData';
+import { FaUser, FaBuilding, FaPhone, FaGlobe, FaCalendarAlt, FaQuoteLeft, FaFilePdf, FaChartLine, FaDollarSign, FaMapMarkerAlt, FaIndustry, FaCog, FaSignOutAlt, FaEdit, FaToggleOn, FaToggleOff, FaBars, FaTimes, FaChevronDown, FaChevronRight, FaFileAlt, FaSearch } from 'react-icons/fa';
+import { getIndustryData } from '../../components/Static/newIndustryData';
+import { Country, State } from 'country-state-city';
 
 const AdvisorDashboard = () => {
   const [user, setUser] = useState(null);
@@ -17,34 +17,10 @@ const AdvisorDashboard = () => {
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [leads, setLeads] = useState([]);
 
   useEffect(() => {
     fetchUserData();
   }, []);
-
-  useEffect(() => {
-    if (activeTab === 'leads' && user) {
-      fetchLeadsData();
-    }
-  }, [activeTab, user]);
-
-  const fetchLeadsData = async () => {
-    try {
-      const token = localStorage.getItem('access_token');
-      if (!token) {
-        navigate('/advisor-login');
-        return;
-      }
-      const leadsRes = await axios.get('https://advisor-seller-backend.vercel.app/api/advisors/leads', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setLeads(leadsRes.data);
-    } catch (error) {
-      console.error('Error fetching leads data:', error);
-      toast.error('Failed to fetch leads');
-    }
-  };
 
   const fetchUserData = async () => {
     try {
@@ -111,117 +87,309 @@ const AdvisorDashboard = () => {
     }
   };
 
-  // Multi-select filter component for industries and geographies
-  const MultiSelectFilter = ({ title, data, fieldName }) => {
-    const { values, setFieldValue } = useFormikContext();
+  // =================== Industry Chooser ===================
+  const IndustryChooser = ({ selected, onChange }) => {
     const [query, setQuery] = useState("");
-    const [collapsedParents, setCollapsedParents] = useState(new Set(data.map((item) => item.id)));
+    const [expandedSectors, setExpandedSectors] = useState({});
+    const industryData = getIndustryData();
 
-    const handleToggleCollapse = (item) => {
-      setCollapsedParents((prev) => {
-        const newSet = new Set(prev);
-        if (newSet.has(item.id)) newSet.delete(item.id);
-        else newSet.add(item.id);
-        return newSet;
-      });
-    };
-
-    const filterData = (items, currentQuery) => {
-      if (!currentQuery) return items;
+    const filterSectors = (sectors, currentQuery) => {
+      if (!currentQuery) return sectors;
       const lowerCaseQuery = currentQuery.toLowerCase();
-      return items.filter((item) => {
-        const itemMatches = item.label.toLowerCase().includes(lowerCaseQuery);
-        if (item.children) {
-          const filteredChildren = filterData(item.children, currentQuery);
-          if (itemMatches || filteredChildren.length > 0) return true;
-        }
-        return itemMatches;
+      return sectors.filter(sector => {
+        const sectorMatches = sector.name.toLowerCase().includes(lowerCaseQuery);
+        const groupMatches = sector.industryGroups.some(group => 
+          group.name.toLowerCase().includes(lowerCaseQuery)
+        );
+        return sectorMatches || groupMatches;
       });
     };
 
-    const filteredData = filterData(data, query);
-    const selectedItems = values[fieldName] || [];
+    const filteredSectors = filterSectors(industryData.sectors, query);
 
-    const renderCheckboxes = (items) => (
-      <ul className="list-none space-y-2">
-        {items.map((item) => {
-          const isItemParent = item.children && item.children.length > 0;
-          const isCollapsed = collapsedParents.has(item.id);
-          const isSelected = selectedItems.includes(item.label);
+    // Handler for sector checkbox
+    const handleSectorToggle = (sector) => {
+      const sectorName = sector.name;
+      const allGroupNames = sector.industryGroups.map(group => group.name);
+      const isSelected = selected.includes(sectorName);
+      
+      let newSelected;
+      if (isSelected) {
+        newSelected = selected.filter(
+          item => item !== sectorName && !allGroupNames.includes(item)
+        );
+      } else {
+        newSelected = [
+          ...selected.filter(
+            item => item !== sectorName && !allGroupNames.includes(item)
+          ),
+          sectorName,
+          ...allGroupNames,
+        ];
+      }
+      onChange([...new Set(newSelected)]);
+    };
 
-          return (
-            <li key={item.id} className="ml-4">
-              <div className="flex items-center space-x-2">
-                {isItemParent && (
-                  <button
-                    type="button"
-                    onClick={() => handleToggleCollapse(item)}
-                    className="p-1 text-gray-500 hover:text-gray-700 transition"
-                  >
-                    {isCollapsed ? <FaChevronRight /> : <FaChevronDown />}
-                  </button>
-                )}
-                <label className={`flex items-center text-sm font-medium cursor-pointer transition-colors duration-200 ${
-                  isSelected ? "text-primary font-semibold" : "text-gray-700 hover:text-primary"
-                }`}>
-                  <input
-                    type="checkbox"
-                    checked={isSelected}
-                    onChange={(e) => {
-                      const newSelected = e.target.checked
-                        ? [...selectedItems, item.label]
-                        : selectedItems.filter(i => i !== item.label);
-                      setFieldValue(fieldName, newSelected);
-                    }}
-                    className="form-checkbox h-4 w-4 text-primary focus:ring-primary transition-colors duration-200"
-                  />
-                  <span className="ml-2">{item.label}</span>
-                </label>
-              </div>
-              {isItemParent && !isCollapsed && (
-                <ul className="mt-2 pl-4 border-l-2 border-primary/20">{renderCheckboxes(item.children)}</ul>
-              )}
-            </li>
-          );
-        })}
-      </ul>
-    );
+    // Handler for industry group checkbox
+    const handleGroupToggle = (group) => {
+      const groupName = group.name;
+      const isSelected = selected.includes(groupName);
+      
+      let newSelected;
+      if (isSelected) {
+        newSelected = selected.filter(item => item !== groupName);
+      } else {
+        newSelected = [...selected, groupName];
+      }
+      onChange([...new Set(newSelected)]);
+    };
 
     return (
       <div className="w-full">
-        {title && <h3 className="block text-sm font-medium mb-2">{title}</h3>}
-        <div className="relative mb-2">
+        <div className="relative mb-3">
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder={`Search ${fieldName}`}
-            className="w-full p-2 pr-10 rounded-xl border-[0.15rem] border-primary/30 focus:border-primary focus:outline-none transition"
+            placeholder="Search Industry Sectors"
+            className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-gray-700"
           />
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
+          <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
         </div>
-        <div className="bg-white max-h-64 overflow-y-auto border border-gray-200 rounded-lg p-3">
-          {filteredData.length > 0 ? renderCheckboxes(filteredData) : (
-            <p className="text-gray-500 text-sm">No results found for "{query}".</p>
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 h-64 overflow-y-auto">
+          {filteredSectors.length > 0 ? (
+            <div className="space-y-2">
+              {filteredSectors.map((sector) => (
+                <div key={sector.id} className="border-b border-gray-100 pb-1">
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id={`sector-${sector.id}`}
+                      checked={selected.includes(sector.name)}
+                      onChange={() => handleSectorToggle(sector)}
+                      className="mr-2 h-4 w-4 text-primary focus:ring-primary form-checkbox border-gray-300 rounded transition-colors duration-200"
+                    />
+                    <div
+                      className="flex items-center cursor-pointer flex-1"
+                      onClick={() =>
+                        setExpandedSectors(prev => ({
+                          ...prev,
+                          [sector.id]: !prev[sector.id],
+                        }))
+                      }
+                    >
+                      {expandedSectors[sector.id] ? (
+                        <FaChevronDown className="h-4 w-4 mr-1 text-gray-600" />
+                      ) : (
+                        <FaChevronRight className="h-4 w-4 mr-1 text-gray-600" />
+                      )}
+                      <label htmlFor={`sector-${sector.id}`} className="text-gray-700 cursor-pointer font-medium">
+                        {sector.name}
+                      </label>
+                    </div>
+                  </div>
+                  {expandedSectors[sector.id] && (
+                    <div className="ml-6 mt-1 space-y-1">
+                      {sector.industryGroups.map((group) => (
+                        <div key={group.id} className="pl-2">
+                          <div className="flex items-center">
+                            <input
+                              type="checkbox"
+                              id={`group-${group.id}`}
+                              checked={selected.includes(group.name)}
+                              onChange={() => handleGroupToggle(group)}
+                              className="mr-2 h-4 w-4 text-primary focus:ring-primary form-checkbox border-gray-300 rounded transition-colors duration-200"
+                            />
+                            <label
+                              htmlFor={`group-${group.id}`}
+                              className="text-gray-700 cursor-pointer text-sm"
+                            >
+                              {group.name}
+                            </label>
+                          </div>
+                          {group.description && (
+                            <div className="text-xs text-gray-500 italic mt-1 ml-6">
+                              {group.description}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500 text-sm text-center py-4">
+              No results found for "{query}".
+            </p>
           )}
         </div>
-        <ErrorMessage name={fieldName} component="p" className="text-red-500 text-sm mt-1" />
+      </div>
+    );
+  };
+
+  // =================== Geography Chooser ===================
+  const GeographyChooser = ({ selected, onChange }) => {
+    const [query, setQuery] = useState("");
+    const [expandedCountries, setExpandedCountries] = useState({});
+
+    // Get all countries and filter based on search
+    let allCountries = Country.getAllCountries().filter((country) => {
+      const countryMatch = country.name.toLowerCase().includes(query.toLowerCase());
+      const states = State.getStatesOfCountry(country.isoCode);
+      const stateMatch = states.some(state => state.name.toLowerCase().includes(query.toLowerCase()));
+      return countryMatch || stateMatch;
+    });
+
+    // Priority countries (United States, Canada, Mexico)
+    const priorityCountries = ["United States", "Canada", "Mexico"];
+    const priority = allCountries.filter(c => priorityCountries.includes(c.name));
+    const rest = allCountries.filter(c => !priorityCountries.includes(c.name));
+    allCountries = [...priority, ...rest];
+
+    // Handler for country checkbox
+    const handleCountryToggle = (country) => {
+      const countryName = country.name;
+      const states = State.getStatesOfCountry(country.isoCode);
+      const allStateNames = states.map(state => `${country.name} > ${state.name}`);
+      const isSelected = selected.includes(countryName);
+      
+      let newSelected;
+      if (isSelected) {
+        newSelected = selected.filter(
+          item => item !== countryName && !allStateNames.includes(item)
+        );
+      } else {
+        newSelected = [
+          ...selected.filter(
+            item => item !== countryName && !allStateNames.includes(item)
+          ),
+          countryName,
+          ...allStateNames,
+        ];
+      }
+      onChange([...new Set(newSelected)]);
+    };
+
+    // Handler for state checkbox
+    const handleStateToggle = (country, state) => {
+      const stateName = `${country.name} > ${state.name}`;
+      const isSelected = selected.includes(stateName);
+      
+      let newSelected;
+      if (isSelected) {
+        newSelected = selected.filter(item => item !== stateName);
+      } else {
+        newSelected = [...selected, stateName];
+      }
+      onChange([...new Set(newSelected)]);
+    };
+
+    return (
+      <div className="w-full">
+        <div className="relative mb-3">
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search Geographies"
+            className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-gray-700"
+          />
+          <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+        </div>
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 h-64 overflow-y-auto">
+          <div className="space-y-2">
+            {allCountries.map((country) => {
+              let states = State.getStatesOfCountry(country.isoCode);
+              
+              // Filter US states to exclude territories
+              if (country.name === "United States") {
+                const contiguous = [
+                  "Alabama","Arizona","Arkansas","California","Colorado","Connecticut","Delaware","Florida","Georgia","Idaho","Illinois","Indiana","Iowa","Kansas","Kentucky","Louisiana","Maine","Maryland","Massachusetts","Michigan","Minnesota","Mississippi","Missouri","Montana","Nebraska","Nevada","New Hampshire","New Jersey","New Mexico","New York","North Carolina","North Dakota","Ohio","Oklahoma","Oregon","Pennsylvania","Rhode Island","South Carolina","South Dakota","Tennessee","Texas","Utah","Vermont","Virginia","Washington","West Virginia","Wisconsin","Wyoming"
+                ];
+                states = states.filter(state => contiguous.includes(state.name) || ["Hawaii","Alaska"].includes(state.name));
+              }
+              
+              return (
+                <div key={country.isoCode} className="border-b border-gray-100 pb-1">
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id={`geo-${country.isoCode}`}
+                      checked={selected.includes(country.name)}
+                      onChange={() => handleCountryToggle(country)}
+                      className="mr-2 h-4 w-4 text-primary focus:ring-primary form-checkbox border-gray-300 rounded transition-colors duration-200"
+                    />
+                    <div
+                      className="flex items-center cursor-pointer flex-1"
+                      onClick={() =>
+                        setExpandedCountries(prev => ({
+                          ...prev,
+                          [country.isoCode]: !prev[country.isoCode],
+                        }))
+                      }
+                    >
+                      {expandedCountries[country.isoCode] ? (
+                        <FaChevronDown className="h-4 w-4 mr-1 text-gray-600" />
+                      ) : (
+                        <FaChevronRight className="h-4 w-4 mr-1 text-gray-600" />
+                      )}
+                      <label htmlFor={`geo-${country.isoCode}`} className="text-gray-700 cursor-pointer font-medium">
+                        {country.name}
+                      </label>
+                    </div>
+                  </div>
+                  {expandedCountries[country.isoCode] && (
+                    <div className="ml-6 mt-1 space-y-1">
+                      {states
+                        .filter(state =>
+                          query.trim() === '' ||
+                          country.name.toLowerCase().includes(query.toLowerCase()) ||
+                          state.name.toLowerCase().includes(query.toLowerCase())
+                        )
+                        .map((state) => (
+                          <div key={state.isoCode} className="pl-2">
+                            <div className="flex items-center">
+                              <input
+                                type="checkbox"
+                                id={`geo-${country.isoCode}-${state.isoCode}`}
+                                checked={selected.includes(`${country.name} > ${state.name}`)}
+                                onChange={() => handleStateToggle(country, state)}
+                                className="mr-2 h-4 w-4 text-primary focus:ring-primary form-checkbox border-gray-300 rounded transition-colors duration-200"
+                              />
+                              <label
+                                htmlFor={`geo-${country.isoCode}-${state.isoCode}`}
+                                className="text-gray-700 cursor-pointer text-sm"
+                              >
+                                {state.name}
+                              </label>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
     );
   };
 
   const validationSchema = Yup.object().shape({
+    name: Yup.string().required("Name is required"),
     companyName: Yup.string().required("Company name is required"),
     phone: Yup.string().required("Phone is required"),
-    website: Yup.string().url("Invalid URL").required("Website is required"),
+    website: Yup.string()
+      .required("Website is required")
+      .test('url', 'Invalid URL format', function(value) {
+        if (!value) return false;
+        // Allow various URL formats
+        const urlPattern = /^(https?:\/\/)?(www\.)?[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.[a-zA-Z]{2,}(\.[a-zA-Z]{2,})?(\/.*)?(\?.*)?(#.*)?$/;
+        return urlPattern.test(value);
+      }),
     industries: Yup.array().min(1, "Select at least one industry"),
     geographies: Yup.array().min(1, "Select at least one geography"),
     yearsExperience: Yup.number().min(1).required("Years of experience is required"),
@@ -235,12 +403,33 @@ const AdvisorDashboard = () => {
     }),
   });
 
+  const [logoFile, setLogoFile] = useState(null);
+
   const onSubmit = async (values, { setSubmitting }) => {
     try {
       const token = localStorage.getItem('access_token');
       
-      await axios.patch('https://advisor-seller-backend.vercel.app/api/advisors/profile', values, {
-        headers: { Authorization: `Bearer ${token}` }
+      const formData = new FormData();
+      formData.append('name', values.name);
+      formData.append('industries', values.industries.join(','));
+      
+      if (logoFile) {
+        formData.append('logo', logoFile);
+      }
+      
+      // Handle testimonials array
+      values.testimonials?.forEach((testimonial, index) => {
+        if (testimonial.clientName && testimonial.testimonial) {
+          formData.append(`testimonials[${index}][clientName]`, testimonial.clientName);
+          formData.append(`testimonials[${index}][testimonial]`, testimonial.testimonial);
+        }
+      });
+      
+      await axios.patch('https://advisor-seller-backend.vercel.app/api/advisors/profile', formData, {
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
       });
 
       toast.success('Profile updated successfully!');
@@ -303,26 +492,6 @@ const AdvisorDashboard = () => {
 
               <button
                 className={`w-full text-left px-4 py-3 rounded-lg transition-all duration-200 flex items-center justify-between ${
-                  activeTab === "overview"
-                    ? "bg-gradient-to-r from-third to-primary text-white shadow-sm"
-                    : "text-gray-700 hover:bg-gray-100"
-                }`}
-                onClick={() => {
-                  setActiveTab("overview");
-                  setSidebarOpen(false);
-                }}
-              >
-                <div className="flex items-center space-x-3">
-                  <FaUser className="w-5 h-5" />
-                  <div>
-                    <span className="font-medium text-sm">Profile Overview</span>
-                    <p className="text-xs opacity-70">View your profile details</p>
-                  </div>
-                </div>
-              </button>
-
-              <button
-                className={`w-full text-left px-4 py-3 rounded-lg transition-all duration-200 flex items-center justify-between ${
                   activeTab === "leads"
                     ? "bg-gradient-to-r from-third to-primary text-white shadow-sm"
                     : "text-gray-700 hover:bg-gray-100"
@@ -340,11 +509,26 @@ const AdvisorDashboard = () => {
                   </div>
                 </div>
               </button>
-            </div>
 
-            {/* Settings */}
-            <div className="space-y-1">
-              <p className="px-3 text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">Settings</p>
+              <button
+                className={`w-full text-left px-4 py-3 rounded-lg transition-all duration-200 flex items-center justify-between ${
+                  activeTab === "overview"
+                    ? "bg-gradient-to-r from-third to-primary text-white shadow-sm"
+                    : "text-gray-700 hover:bg-gray-100"
+                }`}
+                onClick={() => {
+                  setActiveTab("overview");
+                  setSidebarOpen(false);
+                }}
+              >
+                <div className="flex items-center space-x-3">
+                  <FaUser className="w-5 h-5" />
+                  <div>
+                    <span className="font-medium text-sm">Profile Overview</span>
+                    <p className="text-xs opacity-70">View your profile details</p>
+                  </div>
+                </div>
+              </button>
 
               <button
                 className={`w-full text-left px-4 py-3 rounded-lg transition-all duration-200 flex items-center space-x-3 ${
@@ -426,13 +610,23 @@ const AdvisorDashboard = () => {
               <div className="bg-gradient-to-r from-primary via-primary/90 to-third rounded-2xl p-8 text-white">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h1 className="text-3xl font-bold mb-2">Welcome back, {user?.name}!</h1>
+                    <h1 className="text-3xl font-bold mb-2">Hey! {user?.name}!</h1>
                     <p className="text-primary-100 text-lg">Here's your advisor dashboard overview</p>
                   </div>
                   <div className="hidden md:block">
-                    <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center">
-                      <FaUser className="w-10 h-10 text-white" />
-                    </div>
+                    {profile?.logoUrl ? (
+                      <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center p-2">
+                        <img
+                          src={profile.logoUrl}
+                          alt="Company Logo"
+                          className="w-full h-full object-contain rounded-full"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center">
+                        <FaUser className="w-10 h-10 text-white" />
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -566,7 +760,7 @@ const AdvisorDashboard = () => {
                   >
                     <h3 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
                       <FaDollarSign className="mr-3 text-primary" />
-                      Revenue & Performance
+                     Revenue Range and Performance
                     </h3>
                     <div className="space-y-4">
                       <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
@@ -631,6 +825,46 @@ const AdvisorDashboard = () => {
                     </div>
                   </motion.div>
                 </div>
+              )}
+
+              {/* Testimonials */}
+              {profile?.testimonials && profile.testimonials.length > 0 && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.9 }}
+                  className="bg-white rounded-xl shadow-sm border border-gray-100 p-6"
+                >
+                  <h3 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                    <FaQuoteLeft className="mr-3 text-primary" />
+                    Client Testimonials
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {profile.testimonials.map((testimonial, index) => (
+                      <div key={index} className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                        <div className="flex items-start space-x-3">
+                          <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                            <FaUser className="w-5 h-5 text-primary" />
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="font-semibold text-gray-900 mb-2">{testimonial.clientName}</h4>
+                            <p className="text-gray-600 text-sm italic mb-3">"{testimonial.testimonial}"</p>
+                            {testimonial.pdfUrl && (
+                              <a 
+                                href={testimonial.pdfUrl} 
+                                download
+                                className="inline-flex items-center px-3 py-1 bg-primary text-white text-xs rounded hover:bg-primary/90 transition-colors"
+                              >
+                                <FaFilePdf className="mr-1" />
+                                Download PDF
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
               )}
             </motion.div>
           )}
@@ -718,7 +952,7 @@ const AdvisorDashboard = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-500 mb-1">Total Leads</p>
-                      <p className="text-3xl font-bold text-gray-900">{leads.length}</p>
+                      <p className="text-3xl font-bold text-gray-900">0</p>
                       <p className="text-sm text-gray-500 mt-1">All time</p>
                     </div>
                     <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -736,9 +970,7 @@ const AdvisorDashboard = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-500 mb-1">This Month</p>
-                      <p className="text-3xl font-bold text-gray-900">
-                        {leads.filter(lead => new Date(lead.createdAt).getMonth() === new Date().getMonth()).length}
-                      </p>
+                      <p className="text-3xl font-bold text-gray-900">0</p>
                       <p className="text-sm text-green-600 mt-1">+0% from last month</p>
                     </div>
                     <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
@@ -756,7 +988,7 @@ const AdvisorDashboard = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-500 mb-1">Response Rate</p>
-                      <p className="text-3xl font-bold text-gray-900">{leads.length > 0 ? '100%' : '0%'}</p>
+                      <p className="text-3xl font-bold text-gray-900">0%</p>
                       <p className="text-sm text-gray-500 mt-1">Average response time</p>
                     </div>
                     <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
@@ -773,89 +1005,44 @@ const AdvisorDashboard = () => {
                   <p className="text-gray-600 text-sm mt-1">Your latest lead opportunities</p>
                 </div>
                 <div className="p-6">
-                  {leads.length > 0 ? (
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                          <tr>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Company Name</th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Industry</th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Geography</th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Revenue Range</th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Connection Type</th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                          </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                          {leads.map((lead) => (
-                            <tr key={lead._id}>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                {lead.sellerId.companyName}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {lead.sellerId.industry}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {lead.sellerId.geography}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                ${lead.sellerId.annualRevenue?.toLocaleString()}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                  lead.type === 'introduction' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'
-                                }`}>
-                                  {lead.type}
-                                </span>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {new Date(lead.createdAt).toLocaleDateString()}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                  <div className="text-center py-12">
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <FaUser className="w-8 h-8 text-gray-400" />
                     </div>
-                  ) : (
-                    <div className="text-center py-12">
-                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <FaUser className="w-8 h-8 text-gray-400" />
-                      </div>
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">No leads yet</h3>
-                      <p className="text-gray-500 mb-6 max-w-md mx-auto">
-                        When sellers match your expertise and criteria, their leads will appear here. Make sure your profile is complete and lead reception is enabled.
-                      </p>
-                      <div className="flex justify-center space-x-4">
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">No leads yet</h3>
+                    <p className="text-gray-500 mb-6 max-w-md mx-auto">
+                      When sellers match your expertise and criteria, their leads will appear here. Make sure your profile is complete and lead reception is enabled.
+                    </p>
+                    <div className="flex justify-center space-x-4">
+                      <button
+                        onClick={() => setActiveTab('settings')}
+                        className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors font-medium"
+                      >
+                        Update Profile
+                      </button>
+                      {profile && !profile.sendLeads && (
                         <button
-                          onClick={() => setActiveTab('settings')}
-                          className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors font-medium"
+                          onClick={async () => {
+                            try {
+                              const token = localStorage.getItem('access_token');
+                              await axios.patch(
+                                'https://advisor-seller-backend.vercel.app/api/advisors/profile/pause-leads',
+                                { sendLeads: true },
+                                { headers: { Authorization: `Bearer ${token}` } }
+                              );
+                              toast.success('Lead reception enabled!');
+                              fetchUserData();
+                            } catch (error) {
+                              toast.error('Failed to enable leads');
+                            }
+                          }}
+                          className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
                         >
-                          Update Profile
+                          Enable Leads
                         </button>
-                        {profile && !profile.sendLeads && (
-                          <button
-                            onClick={async () => {
-                              try {
-                                const token = localStorage.getItem('access_token');
-                                await axios.patch(
-                                  'https://advisor-seller-backend.vercel.app/api/advisors/profile/pause-leads',
-                                  { sendLeads: true },
-                                  { headers: { Authorization: `Bearer ${token}` } }
-                                );
-                                toast.success('Lead reception enabled!');
-                                fetchUserData();
-                              } catch (error) {
-                                toast.error('Failed to enable leads');
-                              }
-                            }}
-                            className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
-                          >
-                            Enable Leads
-                          </button>
-                        )}
-                      </div>
+                      )}
                     </div>
-                  )}
+                  </div>
                 </div>
               </div>
             </motion.div>
@@ -865,6 +1052,7 @@ const AdvisorDashboard = () => {
             <div className="max-w-6xl mx-auto">
               <Formik
                 initialValues={{
+                  name: profile.name || user?.name || "",
                   companyName: profile.companyName || "",
                   phone: profile.phone || "",
                   website: profile.website || "",
@@ -875,6 +1063,12 @@ const AdvisorDashboard = () => {
                   currency: profile.currency || "USD",
                   description: profile.description || "",
                   licensing: profile.licensing || "",
+                  testimonials: profile.testimonials?.map(t => ({
+                    clientName: t.clientName || "",
+                    testimonial: t.testimonial || "",
+                    pdfFile: null,
+                    existingPdfUrl: t.pdfUrl || null
+                  })) || [{ clientName: "", testimonial: "", pdfFile: null }],
                   revenueRange: {
                     min: profile.revenueRange?.min || "",
                     max: profile.revenueRange?.max || "",
@@ -883,8 +1077,27 @@ const AdvisorDashboard = () => {
                 validationSchema={validationSchema}
                 onSubmit={onSubmit}
               >
-                {({ isSubmitting }) => (
+                {({ isSubmitting, values, setFieldValue }) => (
                   <Form className="space-y-8">
+                    {/* Personal Information */}
+                    <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                      <h3 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                        <FaUser className="mr-3 text-primary" />
+                        Personal Information
+                      </h3>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                          <Field
+                            name="name"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                          />
+                          <ErrorMessage name="name" component="div" className="text-red-500 text-sm mt-1" />
+                        </div>
+                      </div>
+                    </div>
+
                     {/* Company Information */}
                     <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
                       <h3 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
@@ -927,17 +1140,27 @@ const AdvisorDashboard = () => {
                       <h3 className="text-xl font-semibold text-gray-900 mb-6">Expertise Areas</h3>
                       
                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        <MultiSelectFilter
-                          title="Industries"
-                          data={rawIndustryData}
-                          fieldName="industries"
-                        />
-                        
-                        <MultiSelectFilter
-                          title="Geographies"
-                          data={rawGeographyData}
-                          fieldName="geographies"
-                        />
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-3">
+                            Industries
+                          </label>
+                          <IndustryChooser
+                            selected={values.industries}
+                            onChange={(val) => setFieldValue("industries", val)}
+                          />
+                          <ErrorMessage name="industries" component="div" className="text-red-500 text-sm mt-2" />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-3">
+                            Geographies
+                          </label>
+                          <GeographyChooser
+                            selected={values.geographies}
+                            onChange={(val) => setFieldValue("geographies", val)}
+                          />
+                          <ErrorMessage name="geographies" component="div" className="text-red-500 text-sm mt-2" />
+                        </div>
                       </div>
                     </div>
 
@@ -985,10 +1208,26 @@ const AdvisorDashboard = () => {
                                 {...field}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                               >
-                                <option value="USD">USD</option>
-                                <option value="PKR">PKR</option>
-                                <option value="EUR">EUR</option>
-                                <option value="GBP">GBP</option>
+                                <option value="USD">US Dollar (USD)</option>
+                                <option value="EUR">Euro (EUR)</option>
+                                <option value="JPY">Japanese Yen (JPY)</option>
+                                <option value="GBP">British Pound Sterling (GBP)</option>
+                                <option value="CNY">Chinese Yuan/Renminbi (CNY)</option>
+                                <option value="AUD">Australian Dollar (AUD)</option>
+                                <option value="CAD">Canadian Dollar (CAD)</option>
+                                <option value="CHF">Swiss Franc (CHF)</option>
+                                <option value="HKD">Hong Kong Dollar (HKD)</option>
+                                <option value="SGD">Singapore Dollar (SGD)</option>
+                                <option value="SEK">Swedish Krona (SEK)</option>
+                                <option value="NOK">Norwegian Krone (NOK)</option>
+                                <option value="NZD">New Zealand Dollar (NZD)</option>
+                                <option value="MXN">Mexican Peso (MXN)</option>
+                                <option value="ZAR">South African Rand (ZAR)</option>
+                                <option value="TRY">Turkish Lira (TRY)</option>
+                                <option value="BRL">Brazilian Real (BRL)</option>
+                                <option value="KRW">South Korean Won (KRW)</option>
+                                <option value="INR">Indian Rupee (INR)</option>
+                                <option value="RUB">Russian Ruble (RUB)</option>
                               </select>
                             )}
                           </Field>
@@ -998,21 +1237,43 @@ const AdvisorDashboard = () => {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">Minimum Revenue</label>
-                          <Field
-                            name="revenueRange.min"
-                            type="number"
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                          />
+                          <Field name="revenueRange.min">
+                            {({ field, form }) => (
+                              <input
+                                {...field}
+                                type="text"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                onChange={(e) => {
+                                  const value = e.target.value.replace(/,/g, '');
+                                  if (value === '' || /^\d+$/.test(value)) {
+                                    form.setFieldValue(field.name, value);
+                                  }
+                                }}
+                                value={field.value ? Number(field.value).toLocaleString() : ''}
+                              />
+                            )}
+                          </Field>
                           <ErrorMessage name="revenueRange.min" component="div" className="text-red-500 text-sm mt-1" />
                         </div>
                         
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">Maximum Revenue</label>
-                          <Field
-                            name="revenueRange.max"
-                            type="number"
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                          />
+                          <Field name="revenueRange.max">
+                            {({ field, form }) => (
+                              <input
+                                {...field}
+                                type="text"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                onChange={(e) => {
+                                  const value = e.target.value.replace(/,/g, '');
+                                  if (value === '' || /^\d+$/.test(value)) {
+                                    form.setFieldValue(field.name, value);
+                                  }
+                                }}
+                                value={field.value ? Number(field.value).toLocaleString() : ''}
+                              />
+                            )}
+                          </Field>
                           <ErrorMessage name="revenueRange.max" component="div" className="text-red-500 text-sm mt-1" />
                         </div>
                       </div>
@@ -1061,6 +1322,172 @@ const AdvisorDashboard = () => {
                           </div>
                           <ErrorMessage name="licensing" component="div" className="text-red-500 text-sm mt-2" />
                         </div>
+                      </div>
+                    </div>
+
+                    {/* Logo Upload */}
+                    <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                      <h3 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                        <FaFileAlt className="mr-3 text-primary" />
+                        Company Logo
+                      </h3>
+                      
+                      <div className="flex flex-col items-center justify-center">
+                        <div className="w-full max-w-md">
+                          {/* Show existing logo if available */}
+                          {profile.logoUrl && !logoFile && (
+                            <div className="mb-4">
+                              <div className="flex justify-center mb-2">
+                                <img
+                                  src={profile.logoUrl}
+                                  alt="Current Logo"
+                                  className="max-w-32 max-h-32 object-contain rounded-lg border border-gray-200 shadow-sm"
+                                />
+                              </div>
+                              <p className="text-sm text-gray-600 text-center">Current Logo</p>
+                            </div>
+                          )}
+                          
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                              const file = e.target.files[0];
+                              if (file) {
+                                setLogoFile(file);
+                              }
+                            }}
+                            className="hidden"
+                            id="logo-upload"
+                          />
+                          <label
+                            htmlFor="logo-upload"
+                            className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-primary/30 rounded-lg cursor-pointer bg-white hover:bg-primary/5 transition-all duration-200"
+                          >
+                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                              <FaFileAlt className="w-8 h-8 mb-4 text-primary" />
+                              <p className="mb-2 text-sm text-gray-700">
+                                <span className="font-semibold">Click to {profile.logoUrl ? 'change' : 'upload'}</span> company logo
+                              </p>
+                              <p className="text-xs text-gray-500">PNG, JPG or JPEG (MAX. 5MB)</p>
+                            </div>
+                          </label>
+                          
+                          {logoFile && (
+                            <div className="mt-4 space-y-3">
+                              <div className="flex justify-center">
+                                <img
+                                  src={URL.createObjectURL(logoFile)}
+                                  alt="New Logo Preview"
+                                  className="max-w-32 max-h-32 object-contain rounded-lg border border-gray-200 shadow-sm"
+                                />
+                              </div>
+                              <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                                <div className="flex items-center">
+                                  <FaUser className="text-green-500 mr-2" />
+                                  <span className="text-sm text-green-700 font-medium">
+                                    {logoFile.name}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Testimonials */}
+                    <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                      <h3 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                        <FaQuoteLeft className="mr-3 text-primary" />
+                        Client Testimonials
+                      </h3>
+                      
+                      <div className="space-y-4">
+                        {values.testimonials.map((testimonial, index) => (
+                          <div key={index} className="p-4 border border-gray-200 rounded-lg">
+                            <div className="flex items-center justify-between mb-3">
+                              <h4 className="text-sm font-semibold text-gray-700">Testimonial {index + 1}</h4>
+                              {values.testimonials.length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const newTestimonials = values.testimonials.filter((_, i) => i !== index);
+                                    setFieldValue('testimonials', newTestimonials);
+                                  }}
+                                  className="text-red-500 hover:text-red-700 text-sm"
+                                >
+                                  Remove
+                                </button>
+                              )}
+                            </div>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Client Name</label>
+                                <Field
+                                  name={`testimonials[${index}].clientName`}
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                />
+                              </div>
+                              
+                              <div className="md:col-span-2">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Testimonial</label>
+                                <Field
+                                  as="textarea"
+                                  name={`testimonials[${index}].testimonial`}
+                                  rows={3}
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
+                                />
+                              </div>
+                              
+                              <div className="md:col-span-2">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">PDF Document</label>
+                                {testimonial.existingPdfUrl && (
+                                  <div className="mb-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                    <div className="flex items-center justify-between">
+                                      <div className="flex items-center">
+                                        <FaFilePdf className="text-blue-600 mr-2" />
+                                        <span className="text-sm text-blue-800 font-medium">Current PDF</span>
+                                      </div>
+                                      <a 
+                                        href={testimonial.existingPdfUrl} 
+                                        download
+                                        className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition-colors"
+                                      >
+                                        Download PDF
+                                      </a>
+                                    </div>
+                                  </div>
+                                )}
+                                <input
+                                  type="file"
+                                  accept="application/pdf"
+                                  onChange={(e) => {
+                                    const file = e.target.files[0];
+                                    if (file) {
+                                      setFieldValue(`testimonials[${index}].pdfFile`, file);
+                                    }
+                                  }}
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-primary focus:outline-none"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                        
+                        {values.testimonials.length < 5 && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newTestimonials = [...values.testimonials, { clientName: "", testimonial: "", pdfFile: null }];
+                              setFieldValue('testimonials', newTestimonials);
+                            }}
+                            className="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-primary hover:text-primary transition-colors"
+                          >
+                            + Add Testimonial
+                          </button>
+                        )}
                       </div>
                     </div>
 

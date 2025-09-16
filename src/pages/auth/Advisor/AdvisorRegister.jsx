@@ -184,10 +184,11 @@ const AdvisorRegister = () => {
               </div>
               
               <h2 className="text-3xl font-black text-secondary mb-2">
-                Become an Advisor
+                Become an Advisor of Choice
+
               </h2>
               <p className="text-gray-600 font-medium">
-                Share your expertise and grow your professional network
+                Help us to educate sellers about using and Advisor
               </p>
             </div>
 

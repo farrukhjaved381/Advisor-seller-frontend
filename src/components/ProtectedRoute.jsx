@@ -23,7 +23,23 @@ const ProtectedRoute = ({ children, requiredRole, requiresPayment = false }) => 
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      const userData = response.data;
+      let userData = response.data;
+
+      if (userData.role === 'seller' && !userData.isProfileComplete) {
+        try {
+          const profileResponse = await axios.get(
+            'https://advisor-seller-backend.vercel.app/api/sellers/profile',
+            { headers: { Authorization: `Bearer ${token}` }, validateStatus: () => true }
+          );
+
+          if (profileResponse.status >= 200 && profileResponse.status < 300 && profileResponse.data) {
+            userData = { ...userData, isProfileComplete: true };
+          }
+        } catch (sellerProfileError) {
+          console.error('Failed to verify seller profile completion:', sellerProfileError);
+        }
+      }
+
       setUser(userData);
       
       // Clear old form data if profile is incomplete to start fresh

@@ -7,117 +7,65 @@ import { motion } from "framer-motion";
 import { FaChevronDown, FaChevronRight, FaSearch, FaBuilding, FaPhone, FaGlobe, FaCalendarAlt, FaChartLine, FaDollarSign, FaFileAlt, FaCertificate, FaUpload, FaCheckCircle, FaImage, FaQuoteLeft, FaUser, FaPlus, FaTrash, FaFilePdf } from "react-icons/fa";
 
 // ✅ Use named imports for static data
-import { rawIndustryData } from "../../../components/Static/industryData";
-import { rawGeographyData } from "../../../components/Static/geographyData";
+import { getIndustryData } from "../../../components/Static/newIndustryData";
+import { Country, State } from "country-state-city";
 
 // =================== Industry Chooser ===================
-const IndustryChooser = ({ options, selected, onChange }) => {
+const IndustryChooser = ({ selected, onChange }) => {
   const [query, setQuery] = useState("");
-  const [collapsedParents, setCollapsedParents] = useState(
-    new Set(options.map((item) => item.id))
-  );
+  const [expandedSectors, setExpandedSectors] = useState({});
+  const industryData = getIndustryData();
 
-  const handleToggleCollapse = (item) => {
-    setCollapsedParents((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(item.id)) newSet.delete(item.id);
-      else newSet.add(item.id);
-      return newSet;
-    });
-  };
-
-  const filterData = (items, currentQuery) => {
-    if (!currentQuery) return items;
+  const filterSectors = (sectors, currentQuery) => {
+    if (!currentQuery) return sectors;
     const lowerCaseQuery = currentQuery.toLowerCase();
-    return items.filter((item) => {
-      const itemMatches = item.label.toLowerCase().includes(lowerCaseQuery);
-      if (item.children) {
-        const filteredChildren = filterData(item.children, currentQuery);
-        if (itemMatches || filteredChildren.length > 0) return true;
-      }
-      return itemMatches;
+    return sectors.filter(sector => {
+      const sectorMatches = sector.name.toLowerCase().includes(lowerCaseQuery);
+      const groupMatches = sector.industryGroups.some(group => 
+        group.name.toLowerCase().includes(lowerCaseQuery)
+      );
+      return sectorMatches || groupMatches;
     });
   };
 
-  const filteredData = filterData(options, query);
+  const filteredSectors = filterSectors(industryData.sectors, query);
 
-  const renderItems = (items) => (
-    <ul className="list-none space-y-1">
-      {items.map((item) => {
-        const isItemParent = item.children && item.children.length > 0;
-        const isCollapsed = collapsedParents.has(item.id);
+  // Handler for sector checkbox
+  const handleSectorToggle = (sector) => {
+    const sectorName = sector.name;
+    const allGroupNames = sector.industryGroups.map(group => group.name);
+    const isSelected = selected.includes(sectorName);
+    
+    let newSelected;
+    if (isSelected) {
+      newSelected = selected.filter(
+        item => item !== sectorName && !allGroupNames.includes(item)
+      );
+    } else {
+      newSelected = [
+        ...selected.filter(
+          item => item !== sectorName && !allGroupNames.includes(item)
+        ),
+        sectorName,
+        ...allGroupNames,
+      ];
+    }
+    onChange([...new Set(newSelected)]);
+  };
 
-        return (
-          <li key={item.id} className="ml-2">
-            <div className="flex items-center space-x-2 py-1">
-              {isItemParent && (
-                <button
-                  type="button"
-                  onClick={() => handleToggleCollapse(item)}
-                  className="p-1 text-secondary/60 hover:text-primary transition-colors duration-200"
-                >
-                  {isCollapsed ? (
-                    <FaChevronRight size={12} />
-                  ) : (
-                    <FaChevronDown size={12} />
-                  )}
-                </button>
-              )}
-              <label className="flex items-center text-sm cursor-pointer text-secondary hover:text-primary transition-colors duration-200">
-                <input
-                  type="checkbox"
-                  checked={selected.includes(item.label)}
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      onChange([...selected, item.label]);
-                    } else {
-                      onChange(selected.filter((i) => i !== item.label));
-                    }
-                  }}
-                  className="form-checkbox h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded transition-colors duration-200"
-                />
-                <span className="ml-2 select-none flex items-center">
-                  {item.label}
-                  {item.shortDescription && (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setCollapsedParents((prev) => {
-                          const newSet = new Set(prev);
-                          if (newSet.has(`desc-${item.id}`)) newSet.delete(`desc-${item.id}`);
-                          else newSet.add(`desc-${item.id}`);
-                          return newSet;
-                        })
-                      }
-                      className="ml-2 text-secondary/60 hover:text-primary transform transition-transform"
-                    >
-                      {collapsedParents.has(`desc-${item.id}`) ? (
-                        <FaChevronDown size={12} />
-                      ) : (
-                        <FaChevronRight size={12} />
-                      )}
-                    </button>
-                  )}
-                </span>
-                {item.shortDescription &&
-                  collapsedParents.has(`desc-${item.id}`) && (
-                    <div className="ml-6 mt-1 text-xs text-secondary/70 italic">
-                      {item.shortDescription}
-                    </div>
-                  )}
-
-              </label>
-            </div>
-            {isItemParent && !isCollapsed && (
-              <div className="ml-6 border-l border-primary/20 pl-4 mt-1">
-                {renderItems(item.children)}
-              </div>
-            )}
-          </li>
-        );
-      })}
-    </ul>
-  );
+  // Handler for industry group checkbox
+  const handleGroupToggle = (group) => {
+    const groupName = group.name;
+    const isSelected = selected.includes(groupName);
+    
+    let newSelected;
+    if (isSelected) {
+      newSelected = selected.filter(item => item !== groupName);
+    } else {
+      newSelected = [...selected, groupName];
+    }
+    onChange([...new Set(newSelected)]);
+  };
 
   return (
     <div className="w-full">
@@ -132,8 +80,68 @@ const IndustryChooser = ({ options, selected, onChange }) => {
         <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-secondary/50" />
       </div>
       <div className="bg-brand-light border border-primary/20 rounded-lg p-4 h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-gray-100 shadow-inner">
-        {filteredData.length > 0 ? (
-          renderItems(filteredData)
+        {filteredSectors.length > 0 ? (
+          <div className="space-y-2">
+            {filteredSectors.map((sector) => (
+              <div key={sector.id} className="border-b border-gray-100 pb-1">
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id={`sector-${sector.id}`}
+                    checked={selected.includes(sector.name)}
+                    onChange={() => handleSectorToggle(sector)}
+                    className="mr-2 h-4 w-4 text-primary focus:ring-primary form-checkbox border-gray-300 rounded transition-colors duration-200"
+                  />
+                  <div
+                    className="flex items-center cursor-pointer flex-1"
+                    onClick={() =>
+                      setExpandedSectors(prev => ({
+                        ...prev,
+                        [sector.id]: !prev[sector.id],
+                      }))
+                    }
+                  >
+                    {expandedSectors[sector.id] ? (
+                      <FaChevronDown className="h-4 w-4 mr-1 text-secondary/60" />
+                    ) : (
+                      <FaChevronRight className="h-4 w-4 mr-1 text-secondary/60" />
+                    )}
+                    <label htmlFor={`sector-${sector.id}`} className="text-secondary cursor-pointer font-medium">
+                      {sector.name}
+                    </label>
+                  </div>
+                </div>
+                {expandedSectors[sector.id] && (
+                  <div className="ml-6 mt-1 space-y-1">
+                    {sector.industryGroups.map((group) => (
+                      <div key={group.id} className="pl-2">
+                        <div className="flex items-center">
+                          <input
+                            type="checkbox"
+                            id={`group-${group.id}`}
+                            checked={selected.includes(group.name)}
+                            onChange={() => handleGroupToggle(group)}
+                            className="mr-2 h-4 w-4 text-primary focus:ring-primary form-checkbox border-gray-300 rounded transition-colors duration-200"
+                          />
+                          <label
+                            htmlFor={`group-${group.id}`}
+                            className="text-secondary cursor-pointer text-sm"
+                          >
+                            {group.name}
+                          </label>
+                        </div>
+                        {group.description && (
+                          <div className="text-xs text-secondary/70 italic mt-1 ml-6">
+                            {group.description}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         ) : (
           <p className="text-secondary/60 text-sm text-center py-4">
             No results found for "{query}".
@@ -145,84 +153,61 @@ const IndustryChooser = ({ options, selected, onChange }) => {
 };
 
 // =================== Geography Chooser ===================
-const GeographyChooser = ({ options, selected, onChange }) => {
+const GeographyChooser = ({ selected, onChange }) => {
   const [query, setQuery] = useState("");
-  const [collapsedParents, setCollapsedParents] = useState(
-    new Set(options.map((item) => item.id))
-  );
+  const [expandedCountries, setExpandedCountries] = useState({});
 
-  const handleToggleCollapse = (item) => {
-    setCollapsedParents((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(item.id)) newSet.delete(item.id);
-      else newSet.add(item.id);
-      return newSet;
-    });
+  // Get all countries and filter based on search
+  let allCountries = Country.getAllCountries().filter((country) => {
+    const countryMatch = country.name.toLowerCase().includes(query.toLowerCase());
+    const states = State.getStatesOfCountry(country.isoCode);
+    const stateMatch = states.some(state => state.name.toLowerCase().includes(query.toLowerCase()));
+    return countryMatch || stateMatch;
+  });
+
+  // Priority countries (United States, Canada, Mexico)
+  const priorityCountries = ["United States", "Canada", "Mexico"];
+  const priority = allCountries.filter(c => priorityCountries.includes(c.name));
+  const rest = allCountries.filter(c => !priorityCountries.includes(c.name));
+  allCountries = [...priority, ...rest];
+
+  // Handler for country checkbox
+  const handleCountryToggle = (country) => {
+    const countryName = country.name;
+    const states = State.getStatesOfCountry(country.isoCode);
+    const allStateNames = states.map(state => `${country.name} > ${state.name}`);
+    const isSelected = selected.includes(countryName);
+    
+    let newSelected;
+    if (isSelected) {
+      newSelected = selected.filter(
+        item => item !== countryName && !allStateNames.includes(item)
+      );
+    } else {
+      newSelected = [
+        ...selected.filter(
+          item => item !== countryName && !allStateNames.includes(item)
+        ),
+        countryName,
+        ...allStateNames,
+      ];
+    }
+    onChange([...new Set(newSelected)]);
   };
 
-  const filterData = (items, currentQuery) => {
-    if (!currentQuery) return items;
-    const lowerCaseQuery = currentQuery.toLowerCase();
-    return items.filter((item) => {
-      const itemMatches = item.label.toLowerCase().includes(lowerCaseQuery);
-      if (item.children) {
-        const filteredChildren = filterData(item.children, currentQuery);
-        if (itemMatches || filteredChildren.length > 0) return true;
-      }
-      return itemMatches;
-    });
+  // Handler for state checkbox
+  const handleStateToggle = (country, state) => {
+    const stateName = `${country.name} > ${state.name}`;
+    const isSelected = selected.includes(stateName);
+    
+    let newSelected;
+    if (isSelected) {
+      newSelected = selected.filter(item => item !== stateName);
+    } else {
+      newSelected = [...selected, stateName];
+    }
+    onChange([...new Set(newSelected)]);
   };
-
-  const filteredData = filterData(options, query);
-
-  const renderItems = (items) => (
-    <ul className="list-none space-y-1">
-      {items.map((item) => {
-        const isItemParent = item.children && item.children.length > 0;
-        const isCollapsed = collapsedParents.has(item.id);
-
-        return (
-          <li key={item.id} className="ml-2">
-            <div className="flex items-center space-x-2 py-1">
-              {isItemParent && (
-                <button
-                  type="button"
-                  onClick={() => handleToggleCollapse(item)}
-                  className="p-1 text-secondary/60 hover:text-primary transition-colors duration-200"
-                >
-                  {isCollapsed ? (
-                    <FaChevronRight size={12} />
-                  ) : (
-                    <FaChevronDown size={12} />
-                  )}
-                </button>
-              )}
-              <label className="flex items-center text-sm cursor-pointer text-secondary hover:text-primary transition-colors duration-200">
-                <input
-                  type="checkbox"
-                  checked={selected.includes(item.label)}
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      onChange([...selected, item.label]);
-                    } else {
-                      onChange(selected.filter((i) => i !== item.label));
-                    }
-                  }}
-                  className="form-checkbox h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded transition-colors duration-200"
-                />
-                <span className="ml-2 select-none">{item.label}</span>
-              </label>
-            </div>
-            {isItemParent && !isCollapsed && (
-              <div className="ml-6 border-l border-primary/20 pl-4 mt-1">
-                {renderItems(item.children)}
-              </div>
-            )}
-          </li>
-        );
-      })}
-    </ul>
-  );
 
   return (
     <div className="w-full">
@@ -237,13 +222,80 @@ const GeographyChooser = ({ options, selected, onChange }) => {
         <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-secondary/50" />
       </div>
       <div className="bg-brand-light border border-primary/20 rounded-lg p-4 h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-gray-100 shadow-inner">
-        {filteredData.length > 0 ? (
-          renderItems(filteredData)
-        ) : (
-          <p className="text-secondary/60 text-sm text-center py-4">
-            No results found for "{query}".
-          </p>
-        )}
+        <div className="space-y-2">
+          {allCountries.map((country) => {
+            let states = State.getStatesOfCountry(country.isoCode);
+            
+            // Filter US states to exclude territories
+            if (country.name === "United States") {
+              const contiguous = [
+                "Alabama","Arizona","Arkansas","California","Colorado","Connecticut","Delaware","Florida","Georgia","Idaho","Illinois","Indiana","Iowa","Kansas","Kentucky","Louisiana","Maine","Maryland","Massachusetts","Michigan","Minnesota","Mississippi","Missouri","Montana","Nebraska","Nevada","New Hampshire","New Jersey","New Mexico","New York","North Carolina","North Dakota","Ohio","Oklahoma","Oregon","Pennsylvania","Rhode Island","South Carolina","South Dakota","Tennessee","Texas","Utah","Vermont","Virginia","Washington","West Virginia","Wisconsin","Wyoming"
+              ];
+              states = states.filter(state => contiguous.includes(state.name) || ["Hawaii","Alaska"].includes(state.name));
+            }
+            
+            return (
+              <div key={country.isoCode} className="border-b border-gray-100 pb-1">
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id={`geo-${country.isoCode}`}
+                    checked={selected.includes(country.name)}
+                    onChange={() => handleCountryToggle(country)}
+                    className="mr-2 h-4 w-4 text-primary focus:ring-primary form-checkbox border-gray-300 rounded transition-colors duration-200"
+                  />
+                  <div
+                    className="flex items-center cursor-pointer flex-1"
+                    onClick={() =>
+                      setExpandedCountries(prev => ({
+                        ...prev,
+                        [country.isoCode]: !prev[country.isoCode],
+                      }))
+                    }
+                  >
+                    {expandedCountries[country.isoCode] ? (
+                      <FaChevronDown className="h-4 w-4 mr-1 text-secondary/60" />
+                    ) : (
+                      <FaChevronRight className="h-4 w-4 mr-1 text-secondary/60" />
+                    )}
+                    <label htmlFor={`geo-${country.isoCode}`} className="text-secondary cursor-pointer font-medium">
+                      {country.name}
+                    </label>
+                  </div>
+                </div>
+                {expandedCountries[country.isoCode] && (
+                  <div className="ml-6 mt-1 space-y-1">
+                    {states
+                      .filter(state =>
+                        query.trim() === '' ||
+                        country.name.toLowerCase().includes(query.toLowerCase()) ||
+                        state.name.toLowerCase().includes(query.toLowerCase())
+                      )
+                      .map((state) => (
+                        <div key={state.isoCode} className="pl-2">
+                          <div className="flex items-center">
+                            <input
+                              type="checkbox"
+                              id={`geo-${country.isoCode}-${state.isoCode}`}
+                              checked={selected.includes(`${country.name} > ${state.name}`)}
+                              onChange={() => handleStateToggle(country, state)}
+                              className="mr-2 h-4 w-4 text-primary focus:ring-primary form-checkbox border-gray-300 rounded transition-colors duration-200"
+                            />
+                            <label
+                              htmlFor={`geo-${country.isoCode}-${state.isoCode}`}
+                              className="text-secondary cursor-pointer text-sm"
+                            >
+                              {state.name}
+                            </label>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
@@ -277,7 +329,14 @@ const AdvisorForm = () => {
   const validationSchema = Yup.object().shape({
     companyName: Yup.string().required("Required"),
     phone: Yup.string().required("Required"),
-    website: Yup.string().url("Invalid URL").required("Required"),
+    website: Yup.string()
+      .required("Required")
+      .test('url', 'Invalid URL format', function(value) {
+        if (!value) return false;
+        // Allow various URL formats
+        const urlPattern = /^(https?:\/\/)?(www\.)?[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.[a-zA-Z]{2,}(\.[a-zA-Z]{2,})?(\/.*)?(\?.*)?(#.*)?$/;
+        return urlPattern.test(value);
+      }),
     industries: Yup.array().min(1, "Pick at least one industry"),
     geographies: Yup.array().min(1, "Pick at least one geography"),
     yearsExperience: Yup.number().min(1).required("Required"),
@@ -362,7 +421,10 @@ const AdvisorForm = () => {
         currency: values.currency,
         description: values.description,
         licensing: values.licensing,
-        revenueRange: values.revenueRange,
+        revenueRange: {
+          min: Number(values.revenueRange.min),
+          max: Number(values.revenueRange.max)
+        },
         logoUrl,
         testimonials: filteredTestimonials,
       };
@@ -400,7 +462,7 @@ const AdvisorForm = () => {
       >
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-secondary mb-2">Advisor Profile</h1>
-          <p className="text-secondary/70 text-lg">Create your professional advisor profile</p>
+        
           <div className="w-24 h-1 bg-gradient-to-r from-primary to-third mx-auto mt-4 rounded-full"></div>
         </div>
 
@@ -464,7 +526,6 @@ const AdvisorForm = () => {
                     Industries
                   </label>
                   <IndustryChooser
-                    options={rawIndustryData}
                     selected={values.industries}
                     onChange={(val) => setFieldValue("industries", val)}
                   />
@@ -476,7 +537,6 @@ const AdvisorForm = () => {
                     Geographies
                   </label>
                   <GeographyChooser
-                    options={rawGeographyData}
                     selected={values.geographies}
                     onChange={(val) => setFieldValue("geographies", val)}
                   />
@@ -544,10 +604,26 @@ const AdvisorForm = () => {
                         {...field}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white text-secondary"
                       >
-                        <option value="USD">USD</option>
-                        <option value="PKR">PKR</option>
-                        <option value="EUR">EUR</option>
-                        <option value="GBP">GBP</option>
+                        <option value="USD">US Dollar (USD)</option>
+                        <option value="EUR">Euro (EUR)</option>
+                        <option value="JPY">Japanese Yen (JPY)</option>
+                        <option value="GBP">British Pound Sterling (GBP)</option>
+                        <option value="CNY">Chinese Yuan/Renminbi (CNY)</option>
+                        <option value="AUD">Australian Dollar (AUD)</option>
+                        <option value="CAD">Canadian Dollar (CAD)</option>
+                        <option value="CHF">Swiss Franc (CHF)</option>
+                        <option value="HKD">Hong Kong Dollar (HKD)</option>
+                        <option value="SGD">Singapore Dollar (SGD)</option>
+                        <option value="SEK">Swedish Krona (SEK)</option>
+                        <option value="NOK">Norwegian Krone (NOK)</option>
+                        <option value="NZD">New Zealand Dollar (NZD)</option>
+                        <option value="MXN">Mexican Peso (MXN)</option>
+                        <option value="ZAR">South African Rand (ZAR)</option>
+                        <option value="TRY">Turkish Lira (TRY)</option>
+                        <option value="BRL">Brazilian Real (BRL)</option>
+                        <option value="KRW">South Korean Won (KRW)</option>
+                        <option value="INR">Indian Rupee (INR)</option>
+                        <option value="RUB">Russian Ruble (RUB)</option>
                       </select>
                     )}
                   </Field>
@@ -557,23 +633,45 @@ const AdvisorForm = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-secondary mb-2">Minimum Revenue</label>
-                  <Field
-                    name="revenueRange.min"
-                    type="number"
-                    placeholder="Enter minimum amount"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary"
-                  />
+                  <Field name="revenueRange.min">
+                    {({ field, form }) => (
+                      <input
+                        {...field}
+                        type="text"
+                        placeholder="Enter minimum amount"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary"
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/,/g, '');
+                          if (value === '' || /^\d+$/.test(value)) {
+                            form.setFieldValue(field.name, value);
+                          }
+                        }}
+                        value={field.value ? Number(field.value).toLocaleString() : ''}
+                      />
+                    )}
+                  </Field>
                   <ErrorMessage name="revenueRange.min" component="div" className="text-red-500 text-sm mt-1" />
                 </div>
                 
                 <div>
                   <label className="block text-sm font-medium text-secondary mb-2">Maximum Revenue</label>
-                  <Field
-                    name="revenueRange.max"
-                    type="number"
-                    placeholder="Enter maximum amount"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary"
-                  />
+                  <Field name="revenueRange.max">
+                    {({ field, form }) => (
+                      <input
+                        {...field}
+                        type="text"
+                        placeholder="Enter maximum amount"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary"
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/,/g, '');
+                          if (value === '' || /^\d+$/.test(value)) {
+                            form.setFieldValue(field.name, value);
+                          }
+                        }}
+                        value={field.value ? Number(field.value).toLocaleString() : ''}
+                      />
+                    )}
+                  </Field>
                   <ErrorMessage name="revenueRange.max" component="div" className="text-red-500 text-sm mt-1" />
                 </div>
               </div>
@@ -695,12 +793,21 @@ const AdvisorForm = () => {
                       </div>
                       
                       {logoFile && (
-                        <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-                          <div className="flex items-center">
-                            <FaCheckCircle className="text-green-500 mr-2" />
-                            <span className="text-sm text-green-700 font-medium">
-                              {logoFile.name}
-                            </span>
+                        <div className="mt-4 space-y-3">
+                          <div className="flex justify-center">
+                            <img
+                              src={URL.createObjectURL(logoFile)}
+                              alt="Logo Preview"
+                              className="max-w-32 max-h-32 object-contain rounded-lg border border-gray-200 shadow-sm"
+                            />
+                          </div>
+                          <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                            <div className="flex items-center">
+                              <FaCheckCircle className="text-green-500 mr-2" />
+                              <span className="text-sm text-green-700 font-medium">
+                                {logoFile.name}
+                              </span>
+                            </div>
                           </div>
                         </div>
                       )}
