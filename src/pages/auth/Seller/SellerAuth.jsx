@@ -45,13 +45,15 @@ const SellerAuth = () => {
 
     setLoading(true);
     try {
+      console.log('[SellerAuth] Sending seller login request', email.trim());
       const response = await axios.post(
         'https://advisor-seller-backend.vercel.app/api/auth/seller-login',
         { email: email.trim() },
         { withCredentials: true, validateStatus: () => true },
       );
 
-      if (response.status !== 200) {
+      console.log('[SellerAuth] seller-login response status', response.status, response.data);
+      if (response.status < 200 || response.status >= 300) {
         toast.error(response.data?.message || 'Unable to authenticate email');
         return;
       }
@@ -65,11 +67,13 @@ const SellerAuth = () => {
       toast.success('Welcome back!');
 
       try {
+        console.log('[SellerAuth] Fetching auth profile after seller login');
         const profileResponse = await axios.get(
           'https://advisor-seller-backend.vercel.app/api/auth/profile',
           { headers: { Authorization: `Bearer ${accessToken}` } },
         );
 
+        console.log('[SellerAuth] profile response', profileResponse.status, profileResponse.data);
         const userData = profileResponse.data;
         localStorage.setItem('user', JSON.stringify(userData));
 

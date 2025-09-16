@@ -280,9 +280,33 @@ const SellerForm = () => {
 
       if (res.status === 201 || res.status === 200) {
         toast.success("Seller profile created successfully! Redirecting to dashboard...");
+
+        let updatedUser = null;
+
+        try {
+          const profileResponse = await axios.get(
+            "https://advisor-seller-backend.vercel.app/api/auth/profile",
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+
+          if (profileResponse.status >= 200 && profileResponse.status < 300) {
+            updatedUser = profileResponse.data;
+          }
+        } catch (profileError) {
+          console.error('Failed to refresh profile after seller form submit:', profileError);
+        }
+
+        if (!updatedUser) {
+          const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+          updatedUser = { ...storedUser, isProfileComplete: true };
+        } else {
+          updatedUser = { ...updatedUser, isProfileComplete: true };
+        }
+
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+
         resetForm();
-        // Direct redirect to seller dashboard
-        window.location.href = '/seller-dashboard';
+        navigate('/seller-dashboard', { replace: true });
       } else {
         toast.error(res.data?.message || "Failed to create profile. Please try again.");
       }
