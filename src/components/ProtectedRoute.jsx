@@ -109,6 +109,17 @@ const ProtectedRoute = ({ children, requiredRole, requiresPayment = false }) => 
     return <Navigate to="/" replace />;
   }
 
+  if (user.role === 'seller') {
+    const { pathname } = window.location;
+    if (!user.isProfileComplete && pathname !== '/seller-form') {
+      return <Navigate to="/seller-form" replace />;
+    }
+
+    if (user.isProfileComplete && pathname === '/seller-form') {
+      return <Navigate to="/seller-dashboard" replace />;
+    }
+  }
+
   return children;
 };
 

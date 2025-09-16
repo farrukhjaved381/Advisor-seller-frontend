@@ -1,7 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import Auth from "../pages/auth/auth.jsx";
 import SellerSignin from "../pages/auth/Seller/SellerAuth.jsx";
-import SellerRegister from "../pages/auth/Seller/SellerRegister.jsx";
 import AdvisorSignin from "../pages/auth/Advisor/AdvisorAuth.jsx";
 import AdvisorRegister from "../pages/auth/Advisor/AdvisorRegister.jsx";
 import Option from "../pages/Option";
@@ -26,7 +25,7 @@ const AppRoutes = () => {
             <Route path="/auth" element={<Auth />} />
             <Route path="/authRegister" element={<Option />} />
             <Route path="/seller-login" element={<SellerSignin />} />
-            <Route path="/seller-register" element={<SellerRegister />} />
+            <Route path="/seller-register" element={<SellerSignin />} />
             <Route path="/verify-email" element={<VerifyEmail />} />
             <Route path="/seller-form" element={
                 <ProtectedRoute requiredRole="seller">
