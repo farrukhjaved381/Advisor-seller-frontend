@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Formik, Form, Field, FieldArray, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { motion } from "framer-motion";
-import { FaChevronDown, FaChevronRight, FaSearch, FaBuilding, FaPhone, FaGlobe, FaCalendarAlt, FaChartLine, FaDollarSign, FaFileAlt, FaCertificate, FaUpload, FaCheckCircle, FaImage, FaQuoteLeft, FaUser, FaPlus, FaTrash, FaFilePdf } from "react-icons/fa";
+import { FaChevronDown, FaChevronRight, FaSearch, FaBuilding, FaPhone, FaGlobe, FaCalendarAlt, FaChartLine, FaDollarSign, FaFileAlt, FaCertificate, FaUpload, FaCheckCircle, FaImage, FaQuoteLeft, FaUser, FaPlus, FaTrash, FaFilePdf, FaVideo } from "react-icons/fa";
 
 // ✅ Use named imports for static data
 import { getIndustryData } from "../../../components/Static/newIndustryData";
@@ -304,7 +304,16 @@ const GeographyChooser = ({ selected, onChange }) => {
 // =================== Advisor Form ===================
 const AdvisorForm = () => {
   const [logoFile, setLogoFile] = useState(null);
-  const [currentStep, setCurrentStep] = useState(1);
+  const [introVideoFile, setIntroVideoFile] = useState(null);
+  const [introVideoPreview, setIntroVideoPreview] = useState('');
+
+  useEffect(() => {
+    return () => {
+      if (introVideoPreview) {
+        URL.revokeObjectURL(introVideoPreview);
+      }
+    };
+  }, [introVideoPreview]);
 
   const initialValues = {
     companyName: "",
@@ -316,7 +325,7 @@ const AdvisorForm = () => {
     numberOfTransactions: "",
     currency: "USD",
     description: "",
-    licensing: "",
+  // licensing: "",
     testimonials: [{
       clientName: "",
       testimonial: "",
@@ -339,11 +348,11 @@ const AdvisorForm = () => {
       }),
     industries: Yup.array().min(1, "Pick at least one industry"),
     geographies: Yup.array().min(1, "Pick at least one geography"),
-    yearsExperience: Yup.number().min(1).required("Required"),
-    numberOfTransactions: Yup.number().min(0).required("Required"),
+  yearsExperience: Yup.number().min(5, "Must be at least 5 years").required("Required"),
+  numberOfTransactions: Yup.number().min(20, "Must be at least 20").required("Required"),
     currency: Yup.string().required("Required"),
     description: Yup.string().required("Required"),
-    licensing: Yup.string().required("Required"),
+  // licensing: Yup.string().required("Required"),
     testimonials: Yup.array()
       .of(
         Yup.object().shape({
@@ -377,16 +386,17 @@ const AdvisorForm = () => {
 
 
   const onSubmit = async (values, { setSubmitting, resetForm }) => {
-    console.log('Form submitted:', { currentStep, values });
+    console.log('Form submitted:', values);
     try {
-      if (currentStep === 1) {
-        setCurrentStep(2);
-        return;
-      }
 
       let logoUrl = "";
       if (logoFile) {
         logoUrl = await handleFileUpload(logoFile, "https://advisor-seller-backend.vercel.app/api/upload/logo");
+      }
+
+      let introVideoUrl = "";
+      if (introVideoFile) {
+        introVideoUrl = await handleFileUpload(introVideoFile, "https://advisor-seller-backend.vercel.app/api/upload/video");
       }
 
       // Upload testimonial PDFs
@@ -420,13 +430,14 @@ const AdvisorForm = () => {
         numberOfTransactions: values.numberOfTransactions,
         currency: values.currency,
         description: values.description,
-        licensing: values.licensing,
+        licensing: "yes",
         revenueRange: {
           min: Number(values.revenueRange.min),
           max: Number(values.revenueRange.max)
         },
         logoUrl,
         testimonials: filteredTestimonials,
+        introVideoUrl,
       };
       
       console.log('Sending payload:', payload);
@@ -438,6 +449,8 @@ const AdvisorForm = () => {
       toast.success("Advisor profile created successfully!");
       resetForm();
       setLogoFile(null);
+      setIntroVideoFile(null);
+      setIntroVideoPreview('');
       
       // Wait for backend to update then redirect
       setTimeout(() => {
@@ -562,22 +575,26 @@ const AdvisorForm = () => {
                   <label className="block text-sm font-medium text-secondary mb-2 flex items-center">
                     <FaCalendarAlt className="mr-2 text-primary" />
                     Years of Experience
+                    <span className="ml-2 text-xs text-primary font-semibold">(Minimum 5)</span>
                   </label>
                   <Field
                     name="yearsExperience"
                     type="number"
+                    min={5}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary"
                   />
                   <ErrorMessage name="yearsExperience" component="div" className="text-red-500 text-sm mt-1" />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-secondary mb-2">
+                  <label className="block text-sm font-medium text-secondary mb-2 flex items-center">
                     Number of Transactions
+                    <span className="ml-2 text-xs text-primary font-semibold">(Minimum 20)</span>
                   </label>
                   <Field
                     name="numberOfTransactions"
                     type="number"
+                    min={20}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary"
                   />
                   <ErrorMessage name="numberOfTransactions" component="div" className="text-red-500 text-sm mt-1" />
@@ -595,35 +612,35 @@ const AdvisorForm = () => {
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-semibold text-secondary flex items-center">
                   <FaDollarSign className="mr-3 text-primary" />
-                  Revenue Size Range
+                Client Revenue Size Range
                 </h3>
-                <div className="w-28">
+                <div className="w-20">
                   <Field name="currency">
                     {({ field }) => (
                       <select
                         {...field}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white text-secondary"
+                        className="w-full px-2 py-2 border border-gray-300 rounded-lg text-xs focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white text-secondary"
                       >
-                        <option value="USD">US Dollar (USD)</option>
-                        <option value="EUR">Euro (EUR)</option>
-                        <option value="JPY">Japanese Yen (JPY)</option>
-                        <option value="GBP">British Pound Sterling (GBP)</option>
-                        <option value="CNY">Chinese Yuan/Renminbi (CNY)</option>
-                        <option value="AUD">Australian Dollar (AUD)</option>
-                        <option value="CAD">Canadian Dollar (CAD)</option>
-                        <option value="CHF">Swiss Franc (CHF)</option>
-                        <option value="HKD">Hong Kong Dollar (HKD)</option>
-                        <option value="SGD">Singapore Dollar (SGD)</option>
-                        <option value="SEK">Swedish Krona (SEK)</option>
-                        <option value="NOK">Norwegian Krone (NOK)</option>
-                        <option value="NZD">New Zealand Dollar (NZD)</option>
-                        <option value="MXN">Mexican Peso (MXN)</option>
-                        <option value="ZAR">South African Rand (ZAR)</option>
-                        <option value="TRY">Turkish Lira (TRY)</option>
-                        <option value="BRL">Brazilian Real (BRL)</option>
-                        <option value="KRW">South Korean Won (KRW)</option>
-                        <option value="INR">Indian Rupee (INR)</option>
-                        <option value="RUB">Russian Ruble (RUB)</option>
+                        <option value="USD">USD</option>
+                        <option value="EUR">EUR</option>
+                        <option value="GBP">GBP</option>
+                        <option value="JPY">JPY</option>
+                        <option value="CAD">CAD</option>
+                        <option value="AUD">AUD</option>
+                        <option value="CHF">CHF</option>
+                        <option value="CNY">CNY</option>
+                        <option value="HKD">HKD</option>
+                        <option value="SGD">SGD</option>
+                        <option value="INR">INR</option>
+                        <option value="BRL">BRL</option>
+                        <option value="KRW">KRW</option>
+                        <option value="MXN">MXN</option>
+                        <option value="SEK">SEK</option>
+                        <option value="NOK">NOK</option>
+                        <option value="NZD">NZD</option>
+                        <option value="ZAR">ZAR</option>
+                        <option value="TRY">TRY</option>
+                        <option value="RUB">RUB</option>
                       </select>
                     )}
                   </Field>
@@ -702,276 +719,311 @@ const AdvisorForm = () => {
                   <ErrorMessage name="description" component="div" className="text-red-500 text-sm mt-1" />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-secondary mb-4 flex items-center">
-                    <FaCertificate className="mr-2 text-primary" />
-                    Are you licensed?
-                  </label>
-                  <div className="flex space-x-8">
-                    <label className="flex items-center cursor-pointer group">
-                      <Field
-                        type="radio"
-                        name="licensing"
-                        value="yes"
-                        className="form-radio h-5 w-5 text-primary focus:ring-primary border-gray-300 transition-colors duration-200"
-                      />
-                      <span className="ml-3 text-secondary group-hover:text-primary transition-colors duration-200">Yes</span>
-                    </label>
-                    <label className="flex items-center cursor-pointer group">
-                      <Field
-                        type="radio"
-                        name="licensing"
-                        value="no"
-                        className="form-radio h-5 w-5 text-primary focus:ring-primary border-gray-300 transition-colors duration-200"
-                      />
-                      <span className="ml-3 text-secondary group-hover:text-primary transition-colors duration-200">No</span>
+                {/* Licensing field removed as per requirements */}
+              </div>
+            </motion.div>
+
+            {/* Logo Upload */}
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="bg-brand-light p-6 rounded-2xl border border-primary/10 shadow-sm"
+            >
+              <h3 className="text-xl font-semibold text-secondary mb-6 flex items-center">
+                <FaImage className="mr-3 text-primary" />
+                Company Logo
+              </h3>
+              
+              <div className="flex flex-col items-center justify-center">
+                <div className="w-full max-w-md">
+                  <div className="relative">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                          setLogoFile(file);
+                        }
+                      }}
+                      className="hidden"
+                      id="logo-upload"
+                    />
+                    <label
+                      htmlFor="logo-upload"
+                      className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-primary/30 rounded-lg cursor-pointer bg-white hover:bg-primary/5 transition-all duration-200"
+                    >
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                        <FaUpload className="w-8 h-8 mb-4 text-primary" />
+                        <p className="mb-2 text-sm text-secondary">
+                          <span className="font-semibold">Click to upload</span> your company logo
+                        </p>
+                        <p className="text-xs text-secondary/60">PNG, JPG or JPEG (MAX. 5MB)</p>
+                      </div>
                     </label>
                   </div>
-                  <ErrorMessage name="licensing" component="div" className="text-red-500 text-sm mt-2" />
+                  
+                  {logoFile && (
+                    <div className="mt-4 space-y-3">
+                      <div className="flex justify-center">
+                        <img
+                          src={URL.createObjectURL(logoFile)}
+                          alt="Logo Preview"
+                          className="max-w-32 max-h-32 object-contain rounded-lg border border-gray-200 shadow-sm"
+                        />
+                      </div>
+                      <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                        <div className="flex items-center">
+                          <FaCheckCircle className="text-green-500 mr-2" />
+                          <span className="text-sm text-green-700 font-medium">
+                            {logoFile.name}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </motion.div>
 
-            {currentStep === 1 && (
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
-                className="flex justify-center pt-6"
-              >
-                <button
-                  type="button"
-                  onClick={() => setCurrentStep(2)}
-                  className="px-8 py-4 bg-gradient-to-r from-primary to-third text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-primary/30"
-                >
-                  Continue to Upload Step
-                </button>
-              </motion.div>
-            )}
+            {/* Introduction Video Upload */}
+            <motion.div 
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.05 }}
+              className="bg-brand-light p-6 rounded-2xl border border-primary/10 shadow-sm"
+            >
+              <h3 className="text-xl font-semibold text-secondary mb-6 flex items-center">
+                <FaVideo className="mr-3 text-primary" />
+                Advisor Introduction Video <span className="ml-2 text-sm text-secondary/70 font-normal">(optional)</span>
+              </h3>
 
-            {/* Upload Step */}
-            {currentStep === 2 && (
-              <>
-                {/* Logo Upload */}
-                <motion.div 
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="bg-brand-light p-6 rounded-2xl border border-primary/10 shadow-sm"
-                >
-                  <h3 className="text-xl font-semibold text-secondary mb-6 flex items-center">
-                    <FaImage className="mr-3 text-primary" />
-                    Company Logo
-                  </h3>
-                  
-                  <div className="flex flex-col items-center justify-center">
-                    <div className="w-full max-w-md">
-                      <div className="relative">
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => {
-                            const file = e.target.files[0];
-                            if (file) {
-                              setLogoFile(file);
-                            }
-                          }}
-                          className="hidden"
-                          id="logo-upload"
-                        />
-                        <label
-                          htmlFor="logo-upload"
-                          className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-primary/30 rounded-lg cursor-pointer bg-white hover:bg-primary/5 transition-all duration-200"
-                        >
-                          <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                            <FaUpload className="w-8 h-8 mb-4 text-primary" />
-                            <p className="mb-2 text-sm text-secondary">
-                              <span className="font-semibold">Click to upload</span> your company logo
-                            </p>
-                            <p className="text-xs text-secondary/60">PNG, JPG or JPEG (MAX. 5MB)</p>
-                          </div>
-                        </label>
+              <div className="flex flex-col items-center justify-center">
+                <div className="w-full max-w-xl">
+                  <div className="relative">
+                    <input
+                      type="file"
+                      accept="video/mp4,video/quicktime,video/webm"
+                      id="intro-video-upload"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        if (!file.type.startsWith('video/')) {
+                          toast.error('Please select a valid video file (MP4, MOV, WEBM).');
+                          return;
+                        }
+                        if (file.size > 200 * 1024 * 1024) {
+                          toast.error('Video must be 200MB or smaller.');
+                          return;
+                        }
+                        if (introVideoPreview) {
+                          URL.revokeObjectURL(introVideoPreview);
+                        }
+                        setIntroVideoFile(file);
+                        setIntroVideoPreview(URL.createObjectURL(file));
+                      }}
+                    />
+                    <label
+                      htmlFor="intro-video-upload"
+                      className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-primary/30 rounded-lg cursor-pointer bg-white hover:bg-primary/5 transition-all duration-200"
+                    >
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                        <FaUpload className="w-8 h-8 mb-4 text-primary" />
+                        <p className="mb-2 text-sm text-secondary text-center">
+                          <span className="font-semibold">Click to upload</span> a short intro video (MP4, MOV, or WEBM)
+                        </p>
+                        <p className="text-xs text-secondary/60">Recommended under 90 seconds</p>
                       </div>
-                      
-                      {logoFile && (
-                        <div className="mt-4 space-y-3">
-                          <div className="flex justify-center">
-                            <img
-                              src={URL.createObjectURL(logoFile)}
-                              alt="Logo Preview"
-                              className="max-w-32 max-h-32 object-contain rounded-lg border border-gray-200 shadow-sm"
-                            />
-                          </div>
-                          <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                            <div className="flex items-center">
-                              <FaCheckCircle className="text-green-500 mr-2" />
-                              <span className="text-sm text-green-700 font-medium">
-                                {logoFile.name}
-                              </span>
-                            </div>
-                          </div>
+                    </label>
+                  </div>
+
+                  {introVideoFile && (
+                    <div className="mt-4 space-y-3">
+                      {introVideoPreview && (
+                        <div className="relative aspect-video bg-black rounded-lg overflow-hidden border border-gray-200 shadow-sm">
+                          <video
+                            src={introVideoPreview}
+                            controls
+                            className="w-full h-full object-contain bg-black"
+                          />
                         </div>
                       )}
-                    </div>
-                  </div>
-                </motion.div>
-
-                {/* Testimonials */}
-                <motion.div 
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.1 }}
-                  className="bg-brand-light p-6 rounded-2xl border border-primary/10 shadow-sm"
-                >
-                  <FieldArray name="testimonials">
-                    {({ push, remove }) => {
-                      const completedTestimonials = values.testimonials.filter(
-                        (t) => t.clientName && t.testimonial && t.pdfFile
-                      ).length;
-
-                      return (
-                        <div>
-                          <div className="flex items-center justify-between mb-6">
-                            <h3 className="text-xl font-semibold text-secondary flex items-center">
-                              <FaQuoteLeft className="mr-3 text-primary" />
-                              Client Testimonials
-                            </h3>
-                            <div className="flex items-center space-x-3">
-                              <div className="bg-primary/10 px-3 py-1 rounded-full">
-                                <span className="text-primary font-medium text-sm">
-                                  {completedTestimonials}/{values.testimonials.length} completed
-                                </span>
-                              </div>
-                              {values.testimonials.length < 5 && (
-                                <button
-                                  type="button"
-                                  onClick={() => push({ clientName: "", testimonial: "", pdfFile: null })}
-                                  className="flex items-center px-3 py-1 bg-primary text-white rounded-full hover:bg-primary/90 transition-all duration-200 text-sm"
-                                >
-                                  <FaPlus className="mr-1" />
-                                  Add Testimonial
-                                </button>
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {values.testimonials.map((testimonial, index) => {
-                              const isCompleted = testimonial.clientName && testimonial.testimonial && testimonial.pdfFile;
-                              
-                              return (
-                                <motion.div
-                                  key={`testimonial-${index}`}
-                                  initial={{ opacity: 0, y: 20 }}
-                                  animate={{ opacity: 1, y: 0 }}
-                                  transition={{ delay: index * 0.1 }}
-                                  className={`p-4 rounded-xl border-2 transition-all duration-200 ${
-                                    isCompleted 
-                                      ? 'border-green-200 bg-green-50' 
-                                      : 'border-gray-200 bg-white hover:border-primary/30'
-                                  }`}
-                                >
-                                  <div className="flex items-center justify-between mb-4">
-                                    <h4 className="text-sm font-semibold text-secondary flex items-center">
-                                      <FaUser className="mr-2 text-primary" />
-                                      Testimonial {index + 1}
-                                    </h4>
-                                    <div className="flex items-center space-x-2">
-                                      {isCompleted && (
-                                        <FaCheckCircle className="text-green-500" />
-                                      )}
-                                      {values.testimonials.length > 1 && (
-                                        <button
-                                          type="button"
-                                          onClick={() => remove(index)}
-                                          className="text-red-500 hover:text-red-700 transition-colors duration-200"
-                                        >
-                                          <FaTrash size={12} />
-                                        </button>
-                                      )}
-                                    </div>
-                                  </div>
-
-                                  <div className="space-y-3">
-                                    <Field
-                                      name={`testimonials[${index}].clientName`}
-                                      placeholder="Client Name"
-                                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 text-sm bg-white"
-                                    />
-                                    <Field
-                                      as="textarea"
-                                      name={`testimonials[${index}].testimonial`}
-                                      placeholder="Write the testimonial here..."
-                                      rows="3"
-                                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 text-sm bg-white resize-none"
-                                    />
-                                    <div>
-                                      <input
-                                        type="file"
-                                        accept="application/pdf"
-                                        onChange={(e) => {
-                                          const file = e.target.files[0];
-                                          if (file) {
-                                            setFieldValue(`testimonials[${index}].pdfFile`, file);
-                                          }
-                                        }}
-                                        className="hidden"
-                                        id={`pdf-upload-${index}`}
-                                      />
-                                      <label
-                                        htmlFor={`pdf-upload-${index}`}
-                                        className="flex items-center justify-center w-full py-2 px-3 border border-dashed border-primary/30 rounded-lg cursor-pointer bg-white hover:bg-primary/5 transition-all duration-200"
-                                      >
-                                        <FaFilePdf className="mr-2 text-primary" />
-                                        <span className="text-sm text-secondary">
-                                          {values.testimonials[index]?.pdfFile ? 'Change PDF' : 'Upload PDF'}
-                                        </span>
-                                      </label>
-                                      {values.testimonials[index]?.pdfFile && (
-                                        <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-lg">
-                                          <div className="flex items-center">
-                                            <FaFilePdf className="text-green-500 mr-2" />
-                                            <span className="text-xs text-green-700 truncate">
-                                              {values.testimonials[index].pdfFile.name}
-                                            </span>
-                                          </div>
-                                        </div>
-                                      )}
-                                    </div>
-                                  </div>
-                                </motion.div>
-                              );
-                            })}
-                          </div>
+                      <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between">
+                        <div className="flex items-center">
+                          <FaCheckCircle className="text-blue-500 mr-2" />
+                          <span className="text-sm text-blue-800 font-medium">
+                            {introVideoFile.name}
+                          </span>
                         </div>
-                      );
-                    }}
-                  </FieldArray>
-                </motion.div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (introVideoPreview) {
+                              URL.revokeObjectURL(introVideoPreview);
+                            }
+                            setIntroVideoFile(null);
+                            setIntroVideoPreview('');
+                          }}
+                          className="text-xs text-blue-700 hover:text-blue-900 font-semibold"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </motion.div>
 
-                {/* Final Submit */}
-                <motion.div 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="flex justify-between pt-6"
-                >
-                  <button
-                    type="button"
-                    onClick={() => setCurrentStep(1)}
-                    className="px-6 py-3 bg-gray-500 text-white font-semibold rounded-xl hover:bg-gray-600 transition-all duration-300"
-                  >
-                    Back to Form
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="px-8 py-4 bg-gradient-to-r from-primary to-third text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-primary/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-                  >
-                    {isSubmitting ? "Creating Profile..." : "Complete Profile Setup"}
-                  </button>
-                </motion.div>
-              </>
-            )}
+            {/* Testimonials */}
+            <motion.div 
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 }}
+              className="bg-brand-light p-6 rounded-2xl border border-primary/10 shadow-sm"
+            >
+              <FieldArray name="testimonials">
+                {({ push, remove }) => {
+                  const completedTestimonials = values.testimonials.filter(
+                    (t) => t.clientName && t.testimonial && t.pdfFile
+                  ).length;
+
+                  return (
+                    <div>
+                      <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-xl font-semibold text-secondary flex items-center">
+                          <FaQuoteLeft className="mr-3 text-primary" />
+                          Client Testimonials
+                        </h3>
+                        <div className="flex items-center space-x-3">
+                          <div className="bg-primary/10 px-3 py-1 rounded-full">
+                            <span className="text-primary font-medium text-sm">
+                              {completedTestimonials}/{values.testimonials.length} completed
+                            </span>
+                          </div>
+                          {values.testimonials.length < 5 && (
+                            <button
+                              type="button"
+                              onClick={() => push({ clientName: "", testimonial: "", pdfFile: null })}
+                              className="flex items-center px-3 py-1 bg-primary text-white rounded-full hover:bg-primary/90 transition-all duration-200 text-sm"
+                            >
+                              <FaPlus className="mr-1" />
+                              Add Testimonial
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {values.testimonials.map((testimonial, index) => {
+                          const isCompleted = testimonial.clientName && testimonial.testimonial && testimonial.pdfFile;
+                          
+                          return (
+                            <motion.div
+                              key={`testimonial-${index}`}
+                              initial={{ opacity: 0, y: 20 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: index * 0.1 }}
+                              className={`p-4 rounded-xl border-2 transition-all duration-200 ${
+                                isCompleted 
+                                  ? 'border-green-200 bg-green-50' 
+                                  : 'border-gray-200 bg-white hover:border-primary/30'
+                              }`}
+                            >
+                              <div className="flex items-center justify-between mb-4">
+                                <h4 className="text-sm font-semibold text-secondary flex items-center">
+                                  <FaUser className="mr-2 text-primary" />
+                                  Testimonial {index + 1}
+                                </h4>
+                                <div className="flex items-center space-x-2">
+                                  {isCompleted && (
+                                    <FaCheckCircle className="text-green-500" />
+                                  )}
+                                  {values.testimonials.length > 1 && (
+                                    <button
+                                      type="button"
+                                      onClick={() => remove(index)}
+                                      className="text-red-500 hover:text-red-700 transition-colors duration-200"
+                                    >
+                                      <FaTrash size={12} />
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+
+                              <div className="space-y-3">
+                                <Field
+                                  name={`testimonials[${index}].clientName`}
+                                  placeholder="Client Name"
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 text-sm bg-white"
+                                />
+                                <Field
+                                  as="textarea"
+                                  name={`testimonials[${index}].testimonial`}
+                                  placeholder="Write the testimonial here..."
+                                  rows="3"
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 text-sm bg-white resize-none"
+                                />
+                                <div>
+                                  <input
+                                    type="file"
+                                    accept="application/pdf"
+                                    onChange={(e) => {
+                                      const file = e.target.files[0];
+                                      if (file) {
+                                        setFieldValue(`testimonials[${index}].pdfFile`, file);
+                                      }
+                                    }}
+                                    className="hidden"
+                                    id={`pdf-upload-${index}`}
+                                  />
+                                  <label
+                                    htmlFor={`pdf-upload-${index}`}
+                                    className="flex items-center justify-center w-full py-2 px-3 border border-dashed border-primary/30 rounded-lg cursor-pointer bg-white hover:bg-primary/5 transition-all duration-200"
+                                  >
+                                    <FaFilePdf className="mr-2 text-primary" />
+                                    <span className="text-sm text-secondary">
+                                      {values.testimonials[index]?.pdfFile ? 'Change PDF' : 'Upload PDF'}
+                                    </span>
+                                  </label>
+                                  {values.testimonials[index]?.pdfFile && (
+                                    <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-lg">
+                                      <div className="flex items-center">
+                                        <FaFilePdf className="text-green-500 mr-2" />
+                                        <span className="text-xs text-green-700 truncate">
+                                          {values.testimonials[index].pdfFile.name}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </motion.div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                }}
+              </FieldArray>
+            </motion.div>
+
+            {/* Final Submit */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="flex justify-end pt-6"
+            >
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="px-8 py-4 bg-gradient-to-r from-primary to-third text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-primary/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              >
+                {isSubmitting ? "Creating Profile..." : "Complete Profile Setup"}
+              </button>
+            </motion.div>
 
 
           </Form>

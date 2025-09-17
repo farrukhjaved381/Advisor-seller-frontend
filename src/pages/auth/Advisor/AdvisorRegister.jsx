@@ -138,10 +138,10 @@ const AdvisorRegister = () => {
             <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 md:p-6 shadow-xl max-w-sm">
               <div className="flex items-center space-x-3 mb-3">
                 <div className="w-4 h-4 bg-gradient-to-r from-primary to-third rounded-full animate-pulse"></div>
-                <span className="text-secondary font-bold text-base md:text-lg">Join Our Advisors!</span>
+                <span className="text-secondary font-bold text-base md:text-lg">Expand Your Pipeline!</span>
               </div>
               <p className="text-gray-600 text-xs md:text-sm leading-relaxed">
-                Share your expertise and help clients make informed decisions across various industries.
+                Connect with business owners who are serious about selling and understand the value of professional M&A guidance.
               </p>
             </div>
           </div>
@@ -184,11 +184,11 @@ const AdvisorRegister = () => {
               </div>
               
               <h2 className="text-3xl font-black text-secondary mb-2">
-                Become an Advisor of Choice
+                Join the Only M&A Advisor Matching Service
 
               </h2>
               <p className="text-gray-600 font-medium">
-                Help us to educate sellers about using and Advisor
+               Get matched with business owners actively seeking M&A representation
               </p>
             </div>
 
@@ -344,7 +344,7 @@ const AdvisorRegister = () => {
                 </div>
               ) : (
                 <div className="flex items-center space-x-2">
-                  <span>Join as Advisor</span>
+                  <span>Continue to Verification</span>
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                   </svg>

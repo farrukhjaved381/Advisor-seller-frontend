@@ -506,7 +506,7 @@ const AdvisorPaymentForm = () => {
                       <FaGift className="mr-3 text-gray-400" />
                       <Field 
                         name="coupon" 
-                        placeholder="Enter promo code (optional)" 
+                        placeholder="Enter promo code" 
                         className="w-full outline-none bg-transparent text-gray-800"
                       />
                     </div>
@@ -561,7 +561,7 @@ const AdvisorPaymentForm = () => {
                 </div>
                 <span className="text-base font-bold text-secondary">Complete your profile</span>
                 <span className="text-xs text-gray-500 mt-1 text-center">After payment, you'll finish your advisor profile to activate your account.</span>
-                <span className="inline-block bg-blue-100 text-blue-700 text-[11px] font-semibold px-2 py-1 rounded mt-2">Profile setup required</span>
+                <span className="inline-block bg-blue-100 text-blue-700 text-[11px] font-semibold px-2 py-1 rounded mt-2"></span>
               </div>
             </div>
 

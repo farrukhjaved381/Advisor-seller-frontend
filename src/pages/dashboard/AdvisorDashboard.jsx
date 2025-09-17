@@ -17,10 +17,57 @@ const AdvisorDashboard = () => {
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [leadOverview, setLeadOverview] = useState(null);
+  const [leadsLoading, setLeadsLoading] = useState(false);
+  const [leadError, setLeadError] = useState('');
+  const [hasLoadedLeads, setHasLoadedLeads] = useState(false);
+
+  const leadStats = leadOverview?.stats;
+  const totalLeads = leadStats?.totalLeads ?? 0;
+  const leadsThisMonth = leadStats?.leadsThisMonth ?? 0;
+  const leadsLastMonth = leadStats?.leadsLastMonth ?? 0;
+  const leadsThisWeek = leadStats?.leadsThisWeek ?? 0;
+  const leadsByType = leadStats?.leadsByType ?? {};
+  const topLeadTypeEntry = Object.entries(leadsByType).sort((a, b) => b[1] - a[1])[0];
+  const topLeadType = topLeadTypeEntry
+    ? { label: topLeadTypeEntry[0], count: topLeadTypeEntry[1] }
+    : null;
+  const monthlyTrend = leadStats?.monthlyTrend ?? [];
+  const formatTitleCase = (value = '') =>
+    value
+      .split(/[-_\s]+/)
+      .map((chunk) => chunk.charAt(0).toUpperCase() + chunk.slice(1))
+      .join(' ');
+  const monthDelta = leadsLastMonth > 0
+    ? Math.round(((leadsThisMonth - leadsLastMonth) / leadsLastMonth) * 100)
+    : leadsThisMonth > 0
+      ? 100
+      : 0;
+  const monthDeltaLabel = leadsLastMonth > 0
+    ? `${monthDelta >= 0 ? '+' : ''}${monthDelta}% vs last month`
+    : leadsThisMonth > 0
+      ? 'First leads this month'
+      : 'No change from last month';
+  const monthDeltaColor = leadsLastMonth > 0
+    ? monthDelta >= 0
+      ? 'text-green-600'
+      : 'text-red-600'
+    : 'text-gray-500';
+  const recentLeads = leadOverview?.leads ?? [];
+  const lastLeadDate = recentLeads.length > 0 && recentLeads[0]?.createdAt
+    ? new Date(recentLeads[0].createdAt)
+    : null;
+  const topLeadTypeLabel = topLeadType ? formatTitleCase(topLeadType.label) : '';
 
   useEffect(() => {
     fetchUserData();
   }, []);
+
+  useEffect(() => {
+    if (activeTab === 'leads' && !hasLoadedLeads) {
+      fetchLeadOverview();
+    }
+  }, [activeTab, hasLoadedLeads]);
 
   const fetchUserData = async () => {
     try {
@@ -64,6 +111,26 @@ const AdvisorDashboard = () => {
       navigate('/advisor-login');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchLeadOverview = async (force = false) => {
+    if (leadsLoading && !force) return;
+    try {
+      const token = localStorage.getItem('access_token');
+      if (!token) return;
+      setLeadsLoading(true);
+      setLeadError('');
+      const response = await axios.get('https://advisor-seller-backend.vercel.app/api/advisors/leads', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setLeadOverview(response.data);
+      setHasLoadedLeads(true);
+    } catch (error) {
+      console.error('Error fetching lead overview:', error);
+      setLeadError(error.response?.data?.message || 'Unable to load leads right now.');
+    } finally {
+      setLeadsLoading(false);
     }
   };
 
@@ -870,27 +937,40 @@ const AdvisorDashboard = () => {
           )}
 
           {activeTab === 'leads' && (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="max-w-7xl mx-auto space-y-8"
             >
-              {/* Lead Management Header */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
                   <div>
                     <h2 className="text-2xl font-bold text-gray-900 flex items-center">
                       <FaChartLine className="mr-3 text-primary" />
                       Lead Management
                     </h2>
-                    <p className="text-gray-600 mt-1">Manage your lead preferences and status</p>
+                    <p className="text-gray-600 mt-1">
+                      Manage your lead preferences and keep an eye on performance.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {leadError && (
+                      <span className="text-sm text-red-600 bg-red-50 border border-red-200 px-3 py-1 rounded-lg">
+                        {leadError}
+                      </span>
+                    )}
+                    <button
+                      onClick={() => fetchLeadOverview(true)}
+                      className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-sm font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
+                      disabled={leadsLoading}
+                    >
+                      {leadsLoading ? 'Refreshing…' : 'Refresh'}
+                    </button>
                   </div>
                 </div>
-
-                {/* Lead Status Toggle */}
                 {profile && (
                   <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                       <div>
                         <h3 className="text-lg font-semibold text-gray-900 mb-2">Lead Reception Status</h3>
                         <p className="text-gray-600">
@@ -901,13 +981,11 @@ const AdvisorDashboard = () => {
                           )}
                         </p>
                         <p className="text-sm text-gray-500 mt-1">
-                          Toggle this setting to control whether you receive new lead notifications
+                          Toggle this setting to control whether you receive new lead notifications.
                         </p>
                       </div>
                       <div className="flex items-center space-x-4">
-                        <span className={`text-sm font-medium ${
-                          profile.sendLeads ? 'text-green-600' : 'text-gray-500'
-                        }`}>
+                        <span className={`text-sm font-medium ${profile.sendLeads ? 'text-green-600' : 'text-gray-500'}`}>
                           {profile.sendLeads ? 'Active' : 'Paused'}
                         </span>
                         <button
@@ -920,7 +998,9 @@ const AdvisorDashboard = () => {
                                 { headers: { Authorization: `Bearer ${token}` } }
                               );
                               toast.success(`Leads ${!profile.sendLeads ? 'resumed' : 'paused'} successfully!`);
-                              fetchUserData();
+                              await fetchUserData();
+                              setHasLoadedLeads(false);
+                              await fetchLeadOverview(true);
                             } catch (error) {
                               toast.error('Failed to update lead status');
                             }
@@ -930,8 +1010,8 @@ const AdvisorDashboard = () => {
                           }`}
                         >
                           <span
-                            className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform shadow-lg ${
-                              profile.sendLeads ? 'translate-x-7' : 'translate-x-1'
+                            className={`inline-block h-6 w-6 transform rounded-full bg-white transition ${
+                              profile.sendLeads ? 'translate-x-6' : 'translate-x-1'
                             }`}
                           />
                         </button>
@@ -940,10 +1020,26 @@ const AdvisorDashboard = () => {
                   </div>
                 )}
               </div>
-
-              {/* Lead Statistics */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <motion.div 
+              <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-white rounded-xl shadow-sm border border-gray-100 p-6"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-500 mb-1">Total Leads</p>
+                      <p className="text-3xl font-bold text-gray-900">{totalLeads}</p>
+                      <p className="text-sm text-gray-500 mt-1">
+                        {lastLeadDate ? `Last lead on ${lastLeadDate.toLocaleDateString()}` : 'Awaiting first lead'}
+                      </p>
+                    </div>
+                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <FaUser className="w-6 h-6 text-blue-600" />
+                    </div>
+                  </div>
+                </motion.div>
+                <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 }}
@@ -951,17 +1047,16 @@ const AdvisorDashboard = () => {
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-500 mb-1">Total Leads</p>
-                      <p className="text-3xl font-bold text-gray-900">0</p>
-                      <p className="text-sm text-gray-500 mt-1">All time</p>
+                      <p className="text-sm font-medium text-gray-500 mb-1">This Month</p>
+                      <p className="text-3xl font-bold text-gray-900">{leadsThisMonth}</p>
+                      <p className={`text-sm mt-1 ${monthDeltaColor}`}>{monthDeltaLabel}</p>
                     </div>
-                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <FaUser className="w-6 h-6 text-blue-600" />
+                    <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                      <FaChartLine className="w-6 h-6 text-green-600" />
                     </div>
                   </div>
                 </motion.div>
-
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 }}
@@ -969,27 +1064,11 @@ const AdvisorDashboard = () => {
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-500 mb-1">This Month</p>
-                      <p className="text-3xl font-bold text-gray-900">0</p>
-                      <p className="text-sm text-green-600 mt-1">+0% from last month</p>
-                    </div>
-                    <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                      <FaChartLine className="w-6 h-6 text-green-600" />
-                    </div>
-                  </div>
-                </motion.div>
-
-                <motion.div 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                  className="bg-white rounded-xl shadow-sm border border-gray-100 p-6"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-500 mb-1">Response Rate</p>
-                      <p className="text-3xl font-bold text-gray-900">0%</p>
-                      <p className="text-sm text-gray-500 mt-1">Average response time</p>
+                      <p className="text-sm font-medium text-gray-500 mb-1">This Week</p>
+                      <p className="text-3xl font-bold text-gray-900">{leadsThisWeek}</p>
+                      <p className="text-sm text-gray-500 mt-1">
+                        {topLeadType ? `${topLeadType.count} ${topLeadTypeLabel} leads overall` : 'No lead type data yet'}
+                      </p>
                     </div>
                     <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
                       <FaDollarSign className="w-6 h-6 text-purple-600" />
@@ -997,52 +1076,110 @@ const AdvisorDashboard = () => {
                   </div>
                 </motion.div>
               </div>
-
-              {/* Recent Leads Table */}
+              {monthlyTrend.length > 0 && (
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Monthly Lead Trend</h3>
+                  <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-6">
+                    {monthlyTrend.map((entry, index) => (
+                      <div key={index} className="bg-gray-50 rounded-lg p-3 border border-gray-200 text-center">
+                        <p className="text-xs text-gray-500 mb-1">{entry.month}</p>
+                        <p className="text-xl font-semibold text-gray-900">{entry.count}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-                <div className="p-6 border-b border-gray-100">
-                  <h3 className="text-lg font-semibold text-gray-900">Recent Leads</h3>
-                  <p className="text-gray-600 text-sm mt-1">Your latest lead opportunities</p>
+                <div className="p-6 border-b border-gray-100 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">Recent Leads</h3>
+                    <p className="text-gray-600 text-sm mt-1">Your latest lead opportunities</p>
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    Showing {Math.min(recentLeads.length, 10)} of {totalLeads} leads
+                  </div>
                 </div>
                 <div className="p-6">
-                  <div className="text-center py-12">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <FaUser className="w-8 h-8 text-gray-400" />
+                  {leadsLoading ? (
+                    <div className="py-12 text-center text-gray-500 text-sm">Loading leads…</div>
+                  ) : recentLeads.length > 0 ? (
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200 text-sm">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-4 py-3 text-left font-semibold text-gray-600">Seller</th>
+                            <th className="px-4 py-3 text-left font-semibold text-gray-600">Industry</th>
+                            <th className="px-4 py-3 text-left font-semibold text-gray-600">Geography</th>
+                            <th className="px-4 py-3 text-left font-semibold text-gray-600">Type</th>
+                            <th className="px-4 py-3 text-left font-semibold text-gray-600">Received</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                          {recentLeads.slice(0, 10).map((lead) => {
+                            const seller = lead.sellerId || {};
+                            return (
+                              <tr key={lead._id}>
+                                <td className="px-4 py-3 text-gray-900 font-medium">
+                                  {seller.companyName || 'Unknown seller'}
+                                </td>
+                                <td className="px-4 py-3 text-gray-600">{seller.industry || '—'}</td>
+                                <td className="px-4 py-3 text-gray-600">{seller.geography || '—'}</td>
+                                <td className="px-4 py-3">
+                                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary capitalize">
+                                    {formatTitleCase(lead.type || 'unknown')}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-3 text-gray-600">
+                                  {lead.createdAt ? new Date(lead.createdAt).toLocaleString() : '—'}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
                     </div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">No leads yet</h3>
-                    <p className="text-gray-500 mb-6 max-w-md mx-auto">
-                      When sellers match your expertise and criteria, their leads will appear here. Make sure your profile is complete and lead reception is enabled.
-                    </p>
-                    <div className="flex justify-center space-x-4">
-                      <button
-                        onClick={() => setActiveTab('settings')}
-                        className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors font-medium"
-                      >
-                        Update Profile
-                      </button>
-                      {profile && !profile.sendLeads && (
+                  ) : (
+                    <div className="text-center py-12">
+                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <FaUser className="w-8 h-8 text-gray-400" />
+                      </div>
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">No leads yet</h3>
+                      <p className="text-gray-500 mb-6 max-w-md mx-auto">
+                        When sellers match your expertise and criteria, their leads will appear here. Make sure your profile is complete and lead reception is enabled.
+                      </p>
+                      <div className="flex justify-center space-x-4">
                         <button
-                          onClick={async () => {
-                            try {
-                              const token = localStorage.getItem('access_token');
-                              await axios.patch(
-                                'https://advisor-seller-backend.vercel.app/api/advisors/profile/pause-leads',
-                                { sendLeads: true },
-                                { headers: { Authorization: `Bearer ${token}` } }
-                              );
-                              toast.success('Lead reception enabled!');
-                              fetchUserData();
-                            } catch (error) {
-                              toast.error('Failed to enable leads');
-                            }
-                          }}
-                          className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                          onClick={() => setActiveTab('settings')}
+                          className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors font-medium"
                         >
-                          Enable Leads
+                          Update Profile
                         </button>
-                      )}
+                        {profile && !profile.sendLeads && (
+                          <button
+                            onClick={async () => {
+                              try {
+                                const token = localStorage.getItem('access_token');
+                                await axios.patch(
+                                  'https://advisor-seller-backend.vercel.app/api/advisors/profile/pause-leads',
+                                  { sendLeads: true },
+                                  { headers: { Authorization: `Bearer ${token}` } }
+                                );
+                                toast.success('Lead reception enabled!');
+                                await fetchUserData();
+                                setHasLoadedLeads(false);
+                                await fetchLeadOverview(true);
+                              } catch (error) {
+                                toast.error('Failed to enable leads');
+                              }
+                            }}
+                            className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                          >
+                            Enable Leads
+                          </button>
+                        )}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
             </motion.div>

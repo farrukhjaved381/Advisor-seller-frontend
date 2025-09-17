@@ -274,7 +274,6 @@ const SellerDashboard = () => {
   const [loading, setLoading] = useState(false)
   const [matches, setMatches] = useState([])
   const [matchesLoading, setMatchesLoading] = useState(false)
-  const [sortBy, setSortBy] = useState("newest")
   const [profileRefreshTrigger, setProfileRefreshTrigger] = useState(0)
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
@@ -428,7 +427,7 @@ const SellerDashboard = () => {
     fetchProfile()
   }, [profileRefreshTrigger])
 
-  const fetchMatches = async (sort = "newest") => {
+  const fetchMatches = async () => {
     try {
       setMatchesLoading(true)
       const token = localStorage.getItem("access_token")
@@ -437,7 +436,7 @@ const SellerDashboard = () => {
         return
       }
 
-      const res = await axios.get(`https://advisor-seller-backend.vercel.app/api/sellers/matches?sortBy=${sort}`, {
+      const res = await axios.get(`https://advisor-seller-backend.vercel.app/api/sellers/matches`, {
         headers: { Authorization: `Bearer ${token}` },
       })
 
@@ -495,7 +494,7 @@ const SellerDashboard = () => {
 
   useEffect(() => {
     fetchSeller()
-    fetchMatches(sortBy)
+    fetchMatches()
   }, [profileRefreshTrigger])
 
   // Comprehensive validation schema with all fields required
@@ -723,7 +722,7 @@ const SellerDashboard = () => {
                   </svg>
                   <div>
                     <span className="font-medium text-sm">Dashboard</span>
-                    <p className="text-xs opacity-70">View matched advisors</p>
+                    <p className="text-xs opacity-70">Select Your Matched Advisors</p>
                   </div>
                 </div>
                 {matches.length > 0 && (
@@ -816,7 +815,7 @@ const SellerDashboard = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
-            <h1 className="text-lg lg:text-xl font-bold text-gray-900">Seller Dashboard</h1>
+            {/* <h1 className="text-lg lg:text-xl font-bold text-gray-900">Seller Dashboard</h1> */}
           </div>
           
           {/* Profile Section */}
@@ -826,9 +825,9 @@ const SellerDashboard = () => {
               onClick={() => setProfileDropdownOpen((prev) => !prev)}
             >
               <div className="text-right hidden sm:block">
-                <span className="block font-semibold text-secondary group-hover:text-primary transition-colors text-sm lg:text-base">
+                {/* <span className="block font-semibold text-secondary group-hover:text-primary transition-colors text-sm lg:text-base">
                   {userProfile.name || "Loading..."}
-                </span>
+                </span> */}
                 <span className="block text-xs lg:text-sm text-gray-500">Seller Account</span>
               </div>
               <div className="relative">
@@ -923,7 +922,25 @@ const SellerDashboard = () => {
           {activeTab === "pending" && (
             <div className="bg-gray-50 p-4 rounded-lg border">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold">Matched Advisors</h3>
+                <div className="flex items-center gap-4">
+                  <h3 className="text-lg font-semibold">Select Your Matched Advisors</h3>
+                  {matches.length > 0 && (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setSelectedAdvisors(matches.map(advisor => advisor.id))}
+                        className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
+                      >
+                        Select All
+                      </button>
+                      <button
+                        onClick={() => setSelectedAdvisors([])}
+                        className="px-3 py-1 text-xs bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                      >
+                        Deselect All
+                      </button>
+                    </div>
+                  )}
+                </div>
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
                   <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 flex-1">
                     <button
@@ -942,8 +959,8 @@ const SellerDashboard = () => {
                         </>
                       ) : (
                         <>
-                          <span className="hidden sm:inline">Request Introductions ({selectedAdvisors.length})</span>
-                          <span className="sm:hidden">Introductions ({selectedAdvisors.length})</span>
+                          <span className="hidden sm:inline">Request Advisor To Contact Me ({selectedAdvisors.length})</span>
+                          <span className="sm:hidden">Request Advisor To Contact Me ({selectedAdvisors.length})</span>
                         </>
                       )}
                     </button>
@@ -961,22 +978,10 @@ const SellerDashboard = () => {
                           <span>Sending...</span>
                         </>
                       ) : (
-                        <span>Direct List</span>
+                        <span>Email Me The List</span>
                       )}
                     </button>
                   </div>
-                  <select
-                    value={sortBy}
-                    onChange={(e) => {
-                      setSortBy(e.target.value)
-                      fetchMatches(e.target.value)
-                    }}
-                    className="border rounded px-3 py-2 text-sm w-full sm:w-auto"
-                  >
-                    <option value="newest">Newest</option>
-                    <option value="years">Years</option>
-                    <option value="company">Company</option>
-                  </select>
                 </div>
               </div>
 
@@ -991,7 +996,7 @@ const SellerDashboard = () => {
                     matches for you.
                   </p>
                   <button
-                    onClick={() => fetchMatches(sortBy)}
+                    onClick={() => fetchMatches()}
                     className="mt-2 px-5 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition"
                   >
                     Refresh Matches
