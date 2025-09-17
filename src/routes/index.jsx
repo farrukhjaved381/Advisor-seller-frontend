@@ -5,7 +5,7 @@ import AdvisorSignin from "../pages/auth/Advisor/AdvisorAuth.jsx";
 import AdvisorRegister from "../pages/auth/Advisor/AdvisorRegister.jsx";
 import Option from "../pages/Option";
 import AuthRegister from "../pages/auth/authRegister.jsx"
-import VerifyEmail from "../pages/auth/Seller/VerifyEmail.jsx";
+import VerifyEmailRouter from "../pages/auth/VerifyEmailRouter.jsx";
 import SellerForm from "../pages/auth/Seller/SellerForm.jsx";
 import SellerDashboard from "../pages/dashboard/SellerDashboard.jsx";
 import AdvisorDashboard from "../pages/dashboard/AdvisorDashboard.jsx";
@@ -17,7 +17,6 @@ import AdvisorForm from "../pages/auth/Advisor/AdvisorForm.jsx";
 import AdvisorUpload from "../pages/auth/Advisor/AdvisorUpload.jsx";
 import ProtectedRoute from "../components/ProtectedRoute.jsx";
 import EditAdvisorProfile from "../pages/dashboard/EditAdvisorProfile.jsx";
-import AdvisorVerify from "../pages/auth/Advisor/AdvisorVerify.jsx";
 const AppRoutes = () => {
     return (
         <Routes>
@@ -26,7 +25,7 @@ const AppRoutes = () => {
             <Route path="/authRegister" element={<Option />} />
             <Route path="/seller-login" element={<SellerSignin />} />
             <Route path="/seller-register" element={<SellerSignin />} />
-            <Route path="/verify-email" element={<VerifyEmail />} />
+            <Route path="/verify-email" element={<VerifyEmailRouter />} />
             <Route path="/seller-form" element={
                 <ProtectedRoute requiredRole="seller">
                     <SellerForm />
@@ -39,7 +38,6 @@ const AppRoutes = () => {
             } />
             <Route path="/advisor-login" element={<AdvisorSignin />} />
             <Route path="/advisor-register" element={<AdvisorRegister />} />
-            <Route path="/verify-email" element={<AdvisorVerify />} />
             <Route path="/adviser-payment" element={
                 <ProtectedRoute requiredRole="advisor">
                     <AdvisorPayments />

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -7,13 +7,56 @@ import { FaEnvelopeOpenText, FaShieldAlt } from 'react-icons/fa';
 const AdvisorVerify = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [status, setStatus] = useState<'verifying' | 'success' | 'error'>('verifying');
+  const [status, setStatus] = useState('verifying');
   const [userName, setUserName] = useState('');
   const [role, setRole] = useState('advisor');
+  const [loginStatus, setLoginStatus] = useState('idle');
+  const tokenRef = useRef(null);
+
+  const attemptSilentLogin = useCallback(
+    async (token) => {
+      setLoginStatus('pending');
+
+      try {
+        const loginRes = await axios.post(
+          'https://advisor-seller-backend.vercel.app/api/auth/login-with-token',
+          { token },
+          { validateStatus: () => true },
+        );
+
+        if (loginRes.status >= 200 && loginRes.status < 300) {
+          const { access_token, refresh_token, user } = loginRes.data;
+          localStorage.setItem('access_token', access_token);
+          localStorage.setItem('refresh_token', refresh_token);
+          localStorage.setItem('user', JSON.stringify(user));
+          setRole(user?.role || 'advisor');
+          setUserName((previous) => user?.name || previous || 'Advisor');
+          setLoginStatus('success');
+          return true;
+        }
+
+        setLoginStatus('error');
+        toast.error(
+          loginRes.data?.message ||
+            'We verified your email but could not sign you in automatically.',
+        );
+        return false;
+      } catch (error) {
+        console.error('Token login failed:', error);
+        setLoginStatus('error');
+        toast.error(
+          'We verified your email but could not sign you in automatically. Please login manually.',
+        );
+        return false;
+      }
+    },
+    [],
+  );
 
   useEffect(() => {
     const verifyEmail = async () => {
       const token = searchParams.get('token');
+      tokenRef.current = token;
 
       if (!token) {
         toast.error('Invalid verification link');
@@ -24,25 +67,57 @@ const AdvisorVerify = () => {
       try {
         const response = await axios.get(
           `https://advisor-seller-backend.vercel.app/api/auth/verify-email?token=${token}`,
+          { validateStatus: () => true },
         );
 
-        if (response.data.success || response.status === 200) {
+        if (response.status >= 200 && response.status < 300 && response.data.success) {
           const userInfo = response.data.user || {};
           setUserName(userInfo.name || 'Advisor');
           setRole(userInfo.role || 'advisor');
           setStatus('success');
+          toast.success(response.data.message || 'Email verified successfully!');
+          await attemptSilentLogin(token);
         } else {
-          throw new Error('Email verification failed');
+          throw new Error(response.data?.message || 'Email verification failed');
         }
       } catch (error) {
         console.error('Verification error:', error);
-        toast.error('Email verification failed. Please request a new link.');
+        const message =
+          error?.response?.data?.message ||
+          error?.message ||
+          'Email verification failed. Please request a new link.';
+        toast.error(message);
         setStatus('error');
       }
     };
 
     verifyEmail();
-  }, [searchParams]);
+  }, [attemptSilentLogin, searchParams]);
+
+  const handleProceed = useCallback(async () => {
+    if (role !== 'advisor') {
+      navigate('/');
+      return;
+    }
+
+    if (loginStatus !== 'success') {
+      const token = tokenRef.current;
+
+      if (!token) {
+        toast.error('Session expired. Please log in to continue.');
+        navigate('/advisor-login');
+        return;
+      }
+
+      const loginSucceeded = await attemptSilentLogin(token);
+      if (!loginSucceeded) {
+        navigate('/advisor-login');
+        return;
+      }
+    }
+
+    navigate('/advisor-payments');
+  }, [attemptSilentLogin, loginStatus, navigate, role]);
 
   const whitelistTips = useMemo(
     () => [
@@ -145,15 +220,28 @@ const AdvisorVerify = () => {
                 Your Advisor Chooser account is ready. Activate your membership with a quick payment and you&apos;ll be guided straight into your profile setup so sellers can discover you.
               </p>
             </div>
-            <button
-              onClick={() => navigate(role === 'advisor' ? '/advisor-payments' : '/')}
-              className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-white text-primary font-semibold shadow-lg shadow-black/20 hover:bg-white/90 transition"
-            >
-              Proceed to Membership Payment
-            </button>
-            <p className="text-white/70 text-sm md:text-base max-w-md">
-              Your advisor dashboard and profile form unlock immediately after payment confirmation.
-            </p>
+            <div className="flex flex-col items-center md:items-end gap-3">
+              <button
+                type="button"
+                onClick={handleProceed}
+                disabled={loginStatus === 'pending'}
+                className={`inline-flex items-center justify-center px-6 py-3 rounded-full bg-white text-primary font-semibold shadow-lg shadow-black/20 transition ${
+                  loginStatus === 'pending' ? 'opacity-70 cursor-not-allowed' : 'hover:bg-white/90'
+                }`}
+              >
+                {loginStatus === 'pending'
+                  ? 'Preparing your account…'
+                  : 'Proceed to Membership Payment'}
+              </button>
+              <p className="text-white/70 text-sm md:text-base max-w-md text-center md:text-right">
+                Your advisor dashboard and profile form unlock immediately after payment confirmation.
+              </p>
+              {loginStatus === 'error' && (
+                <p className="text-rose-200 text-sm md:text-base max-w-md text-center md:text-right">
+                  We verified your email but need you to sign in again. We will guide you through the login page if required.
+                </p>
+              )}
+            </div>
           </div>
 
           <div className="px-8 py-10 bg-white text-slate-900">
