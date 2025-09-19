@@ -9,7 +9,9 @@ import * as Yup from "yup"
 import { Formik, Form, Field, ErrorMessage, useFormikContext } from "formik"
 import { rawGeographyData } from "../../components/Static/geographyData"
 import { rawIndustryData } from "../../components/Static/industryData"
-import { FaChevronDown, FaChevronRight } from "react-icons/fa"
+import { getIndustryData } from "../../components/Static/newIndustryData"
+import { Country, State } from "country-state-city"
+import { FaChevronDown, FaChevronRight, FaSearch } from "react-icons/fa"
 import EditProfileModal from "../../components/EditProfileModal"
 
 // Map selected industry id to top-level industry label
@@ -73,165 +75,223 @@ const AnimatedInput = ({ name, type = "text", placeholder, readOnly = false, pre
   )
 }
 
-const RadioFilter = ({ title, data, fieldName, currentValue }) => {
-  const { values, setFieldValue } = useFormikContext()
+// Industry Radio Chooser Component from SellerForm
+const IndustryRadioChooser = ({ selected, onChange }) => {
   const [query, setQuery] = useState("")
-  const [collapsedParents, setCollapsedParents] = useState(new Set(data.map((item) => item.id)))
-  const [visibleDescriptions, setVisibleDescriptions] = useState(new Set())
+  const [expandedSectors, setExpandedSectors] = useState({})
+  const industryData = getIndustryData()
 
-  // Function to find the selected item ID from the current value
-  const findSelectedId = (searchValue) => {
-    if (!searchValue) return null
-
-    for (const category of data) {
-      // Check if current value matches this category
-      if (category.label === searchValue || category.id === searchValue) {
-        return category.id
-      }
-
-      // Check children
-      if (category.children) {
-        for (const child of category.children) {
-          if (child.label === searchValue || child.id === searchValue) {
-            return child.id
-          }
-        }
-      }
-    }
-    return null
-  }
-
-  const selectedId = findSelectedId(currentValue || values[fieldName])
-
-  const handleToggleCollapse = (item) => {
-    setCollapsedParents((prev) => {
-      const newSet = new Set(prev)
-      if (newSet.has(item.id)) newSet.delete(item.id)
-      else newSet.add(item.id)
-      return newSet
-    })
-  }
-
-  const handleToggleDescription = (itemId) => {
-    setVisibleDescriptions((prev) => {
-      const newSet = new Set(prev)
-      if (newSet.has(itemId)) newSet.delete(itemId)
-      else newSet.add(itemId)
-      return newSet
-    })
-  }
-
-  const filterData = (items, currentQuery) => {
-    if (!currentQuery) return items
+  const filterSectors = (sectors, currentQuery) => {
+    if (!currentQuery) return sectors
     const lowerCaseQuery = currentQuery.toLowerCase()
-    return items.filter((item) => {
-      const itemMatches = item.label.toLowerCase().includes(lowerCaseQuery)
-      if (item.children) {
-        const filteredChildren = filterData(item.children, currentQuery)
-        if (itemMatches || filteredChildren.length > 0) return true
-      }
-      return itemMatches
+    return sectors.filter(sector => {
+      const sectorMatches = sector.name.toLowerCase().includes(lowerCaseQuery)
+      const groupMatches = sector.industryGroups.some(group => 
+        group.name.toLowerCase().includes(lowerCaseQuery)
+      )
+      return sectorMatches || groupMatches
     })
   }
 
-  const filteredData = filterData(data, query)
-
-  const renderRadios = (items) => (
-    <ul className="list-none space-y-2">
-      {items.map((item) => {
-        const isItemParent = item.children && item.children.length > 0
-        const isCollapsed = collapsedParents.has(item.id)
-        const isDescriptionVisible = visibleDescriptions.has(item.id)
-        const isSelected = selectedId === item.id
-
-        return (
-          <li key={item.id} className="ml-4">
-            <div className="flex items-center space-x-2">
-              {isItemParent && (
-                <button
-                  type="button"
-                  onClick={() => handleToggleCollapse(item)}
-                  className="p-1 text-gray-500 hover:text-gray-700 transition"
-                >
-                  {isCollapsed ? <FaChevronRight /> : <FaChevronDown />}
-                </button>
-              )}
-              <label
-                className={`flex items-center text-sm font-medium cursor-pointer transition-colors duration-200 ${
-                  isSelected ? "text-primary font-semibold" : "text-gray-700 hover:text-primary"
-                }`}
-              >
-                <input
-                  type="radio"
-                  name={fieldName}
-                  value={item.id}
-                  checked={isSelected}
-                  onChange={() => setFieldValue(fieldName, item.id)}
-                  className="form-radio h-4 w-4 text-primary focus:ring-primary transition-colors duration-200"
-                />
-                <span className="ml-2">{item.label}</span>
-              </label>
-              {fieldName === "industry" && !isItemParent && item.description && (
-                <button
-                  type="button"
-                  onClick={() => handleToggleDescription(item.id)}
-                  className="p-1 text-gray-500 hover:text-gray-700 transition"
-                >
-                  {isDescriptionVisible ? <FaChevronDown /> : <FaChevronRight />}
-                </button>
-              )}
-            </div>
-            {fieldName === "industry" && isDescriptionVisible && item.description && (
-              <p className="text-xs text-gray-500 mt-1 ml-10 transition-all duration-300 ease-in-out">
-                {item.description}
-              </p>
-            )}
-            {isItemParent && !isCollapsed && (
-              <ul className="mt-2 pl-4 border-l-2 border-primary/20">{renderRadios(item.children)}</ul>
-            )}
-          </li>
-        )
-      })}
-    </ul>
-  )
+  const filteredSectors = filterSectors(industryData.sectors, query)
 
   return (
     <div className="w-full">
-      {title && <h3 className="block text-sm font-medium mb-2">{title}</h3>}
-      {data.length > 5 && (
-        <div className="relative mb-2">
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={`Search ${fieldName}`}
-            className="w-full p-2 pr-10 rounded-xl border-[0.15rem] border-primary/30 focus:border-primary focus:outline-none transition"
-          />
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-            />
-          </svg>
-        </div>
-      )}
-      <div className="bg-white max-h-64 overflow-y-auto">
-        {filteredData.length > 0 ? (
-          renderRadios(filteredData)
+      <div className="relative mb-3">
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search Industry Sectors"
+          className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary"
+        />
+        <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-secondary/50" />
+      </div>
+      <div className="bg-gray-50 border border-primary/20 rounded-lg p-4 h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-gray-100 shadow-inner">
+        {filteredSectors.length > 0 ? (
+          <div className="space-y-2">
+            {filteredSectors.map((sector) => (
+              <div key={sector.id} className="border-b border-gray-100 pb-1">
+                <div className="flex items-center">
+                  <input
+                    type="radio"
+                    name="industry"
+                    id={`sector-${sector.id}`}
+                    value={sector.name}
+                    checked={selected === sector.name}
+                    onChange={() => onChange(sector.name)}
+                    className="mr-2 h-4 w-4 text-primary focus:ring-primary form-radio border-gray-300 transition-colors duration-200"
+                  />
+                  <div
+                    className="flex items-center cursor-pointer flex-1"
+                    onClick={() =>
+                      setExpandedSectors(prev => ({
+                        ...prev,
+                        [sector.id]: !prev[sector.id],
+                      }))
+                    }
+                  >
+                    {expandedSectors[sector.id] ? (
+                      <FaChevronDown className="h-4 w-4 mr-1 text-secondary/60" />
+                    ) : (
+                      <FaChevronRight className="h-4 w-4 mr-1 text-secondary/60" />
+                    )}
+                    <label htmlFor={`sector-${sector.id}`} className="text-secondary cursor-pointer font-medium">
+                      {sector.name}
+                    </label>
+                  </div>
+                </div>
+                {expandedSectors[sector.id] && (
+                  <div className="ml-6 mt-1 space-y-1">
+                    {sector.industryGroups.map((group) => (
+                      <div key={group.id} className="pl-2">
+                        <div className="flex items-center">
+                          <input
+                            type="radio"
+                            name="industry"
+                            id={`group-${group.id}`}
+                            value={group.name}
+                            checked={selected === group.name}
+                            onChange={() => onChange(group.name)}
+                            className="mr-2 h-4 w-4 text-primary focus:ring-primary form-radio border-gray-300 transition-colors duration-200"
+                          />
+                          <label
+                            htmlFor={`group-${group.id}`}
+                            className="text-secondary cursor-pointer text-sm"
+                          >
+                            {group.name}
+                          </label>
+                        </div>
+                        {group.description && (
+                          <div className="text-xs text-secondary/70 italic mt-1 ml-6">
+                            {group.description}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         ) : (
-          <p className="text-gray-500 text-sm">No results found for "{query}".</p>
+          <p className="text-secondary/60 text-sm text-center py-4">
+            No results found for "{query}".
+          </p>
         )}
       </div>
+    </div>
+  )
+}
 
-      <ErrorMessage name={fieldName} component="p" className="text-red-500 text-sm mt-1" />
+// Geography Radio Chooser Component from SellerForm
+const GeographyRadioChooser = ({ selected, onChange }) => {
+  const [query, setQuery] = useState("")
+  const [expandedCountries, setExpandedCountries] = useState({})
+
+  let allCountries = Country.getAllCountries().filter((country) => {
+    const countryMatch = country.name.toLowerCase().includes(query.toLowerCase())
+    const states = State.getStatesOfCountry(country.isoCode)
+    const stateMatch = states.some(state => state.name.toLowerCase().includes(query.toLowerCase()))
+    return countryMatch || stateMatch
+  })
+
+  const priorityCountries = ["United States", "Canada", "Mexico"]
+  const priority = allCountries.filter(c => priorityCountries.includes(c.name))
+  const rest = allCountries.filter(c => !priorityCountries.includes(c.name))
+  allCountries = [...priority, ...rest]
+
+  return (
+    <div className="w-full">
+      <div className="relative mb-3">
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search Geographies"
+          className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary"
+        />
+        <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-secondary/50" />
+      </div>
+      <div className="bg-gray-50 border border-primary/20 rounded-lg p-4 h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-gray-100 shadow-inner">
+        <div className="space-y-2">
+          {allCountries.map((country) => {
+            let states = State.getStatesOfCountry(country.isoCode)
+            
+            if (country.name === "United States") {
+              const contiguous = [
+                "Alabama","Arizona","Arkansas","California","Colorado","Connecticut","Delaware","Florida","Georgia","Idaho","Illinois","Indiana","Iowa","Kansas","Kentucky","Louisiana","Maine","Maryland","Massachusetts","Michigan","Minnesota","Mississippi","Missouri","Montana","Nebraska","Nevada","New Hampshire","New Jersey","New Mexico","New York","North Carolina","North Dakota","Ohio","Oklahoma","Oregon","Pennsylvania","Rhode Island","South Carolina","South Dakota","Tennessee","Texas","Utah","Vermont","Virginia","Washington","West Virginia","Wisconsin","Wyoming"
+              ]
+              states = states.filter(state => contiguous.includes(state.name) || ["Hawaii","Alaska"].includes(state.name))
+            }
+            
+            return (
+              <div key={country.isoCode} className="border-b border-gray-100 pb-1">
+                <div className="flex items-center">
+                  <input
+                    type="radio"
+                    name="geography"
+                    id={`geo-${country.isoCode}`}
+                    value={country.name}
+                    checked={selected === country.name}
+                    onChange={() => onChange(country.name)}
+                    className="mr-2 h-4 w-4 text-primary focus:ring-primary form-radio border-gray-300 transition-colors duration-200"
+                  />
+                  <div
+                    className="flex items-center cursor-pointer flex-1"
+                    onClick={() =>
+                      setExpandedCountries(prev => ({
+                        ...prev,
+                        [country.isoCode]: !prev[country.isoCode],
+                      }))
+                    }
+                  >
+                    {expandedCountries[country.isoCode] ? (
+                      <FaChevronDown className="h-4 w-4 mr-1 text-secondary/60" />
+                    ) : (
+                      <FaChevronRight className="h-4 w-4 mr-1 text-secondary/60" />
+                    )}
+                    <label htmlFor={`geo-${country.isoCode}`} className="text-secondary cursor-pointer font-medium">
+                      {country.name}
+                    </label>
+                  </div>
+                </div>
+                {expandedCountries[country.isoCode] && (
+                  <div className="ml-6 mt-1 space-y-1">
+                    {states
+                      .filter(state =>
+                        query.trim() === '' ||
+                        country.name.toLowerCase().includes(query.toLowerCase()) ||
+                        state.name.toLowerCase().includes(query.toLowerCase())
+                      )
+                      .map((state) => (
+                        <div key={state.isoCode} className="pl-2">
+                          <div className="flex items-center">
+                            <input
+                              type="radio"
+                              name="geography"
+                              id={`geo-${country.isoCode}-${state.isoCode}`}
+                              value={`${country.name} > ${state.name}`}
+                              checked={selected === `${country.name} > ${state.name}`}
+                              onChange={() => onChange(`${country.name} > ${state.name}`)}
+                              className="mr-2 h-4 w-4 text-primary focus:ring-primary form-radio border-gray-300 transition-colors duration-200"
+                            />
+                            <label
+                              htmlFor={`geo-${country.isoCode}-${state.isoCode}`}
+                              className="text-secondary cursor-pointer text-sm"
+                            >
+                              {state.name}
+                            </label>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      </div>
     </div>
   )
 }
@@ -530,7 +590,7 @@ const SellerDashboard = () => {
       .required("Annual revenue is required")
       .typeError("Annual revenue must be a valid number"),
     currency: Yup.string()
-      .oneOf(["USD", "PKR", "EUR", "GBP"], "Please select a valid currency")
+      .oneOf(["USD", "EUR", "JPY", "GBP", "CNY", "AUD", "CAD", "CHF", "HKD", "SGD", "SEK", "NOK", "NZD", "MXN", "ZAR", "TRY", "BRL", "KRW", "INR", "RUB"], "Please select a valid currency")
       .required("Currency selection is required"),
     description: Yup.string()
       .min(20, "Description must be at least 20 characters")
@@ -1085,7 +1145,7 @@ const SellerDashboard = () => {
                   validationSchema={SellerSchema}
                   onSubmit={handleEnhancedSubmit}
                 >
-                  {({ isSubmitting, values }) => (
+                  {({ isSubmitting, values, setFieldValue }) => (
                     <Form className="p-8 space-y-8">
                       {/* Company Details Section */}
                       <div className="border-b border-gray-200 pb-8">
@@ -1156,10 +1216,26 @@ const SellerDashboard = () => {
                               name="currency"
                               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
                             >
-                              <option value="USD">USD - US Dollar</option>
-                              <option value="PKR">PKR - Pakistani Rupee</option>
-                              <option value="EUR">EUR - Euro</option>
-                              <option value="GBP">GBP - British Pound</option>
+                              <option value="USD">US Dollar (USD)</option>
+                              <option value="EUR">Euro (EUR)</option>
+                              <option value="JPY">Japanese Yen (JPY)</option>
+                              <option value="GBP">British Pound Sterling (GBP)</option>
+                              <option value="CNY">Chinese Yuan/Renminbi (CNY)</option>
+                              <option value="AUD">Australian Dollar (AUD)</option>
+                              <option value="CAD">Canadian Dollar (CAD)</option>
+                              <option value="CHF">Swiss Franc (CHF)</option>
+                              <option value="HKD">Hong Kong Dollar (HKD)</option>
+                              <option value="SGD">Singapore Dollar (SGD)</option>
+                              <option value="SEK">Swedish Krona (SEK)</option>
+                              <option value="NOK">Norwegian Krone (NOK)</option>
+                              <option value="NZD">New Zealand Dollar (NZD)</option>
+                              <option value="MXN">Mexican Peso (MXN)</option>
+                              <option value="ZAR">South African Rand (ZAR)</option>
+                              <option value="TRY">Turkish Lira (TRY)</option>
+                              <option value="BRL">Brazilian Real (BRL)</option>
+                              <option value="KRW">South Korean Won (KRW)</option>
+                              <option value="INR">Indian Rupee (INR)</option>
+                              <option value="RUB">Russian Ruble (RUB)</option>
                             </Field>
                             <ErrorMessage name="currency" component="p" className="text-red-500 text-sm" />
                           </div>
@@ -1205,16 +1281,20 @@ const SellerDashboard = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                           <div className="space-y-3">
                             <label className="block text-sm font-medium text-gray-700">Industry Sector *</label>
-                            <div className="border border-gray-300 rounded-lg p-4 bg-gray-50 max-h-80 overflow-y-auto">
-                              <RadioFilter title="" data={rawIndustryData} fieldName="industry" />
-                            </div>
+                            <IndustryRadioChooser
+                              selected={values.industry}
+                              onChange={(val) => setFieldValue("industry", val)}
+                            />
+                            <ErrorMessage name="industry" component="div" className="text-red-500 text-sm mt-2" />
                           </div>
 
                           <div className="space-y-3">
                             <label className="block text-sm font-medium text-gray-700">Geographic Region *</label>
-                            <div className="border border-gray-300 rounded-lg p-4 bg-gray-50 max-h-80 overflow-y-auto">
-                              <RadioFilter title="" data={rawGeographyData} fieldName="geography" />
-                            </div>
+                            <GeographyRadioChooser
+                              selected={values.geography}
+                              onChange={(val) => setFieldValue("geography", val)}
+                            />
+                            <ErrorMessage name="geography" component="div" className="text-red-500 text-sm mt-2" />
                           </div>
                         </div>
                       </div>

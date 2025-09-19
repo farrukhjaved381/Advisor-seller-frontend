@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast, Toaster } from 'react-hot-toast';
 import Header from '../../../components/common/Header';
-import Footer from '../../../components/common/Footer';
+
 
 const SellerAuth = () => {
   useEffect(() => {
@@ -202,7 +202,7 @@ const SellerAuth = () => {
         </div>
       </div>
 
-      <Footer />
+     
     </div>
   );
 };
