@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Formik, Form, Field, FieldArray, ErrorMessage } from "formik";
+import { Formik, Form, Field, FieldArray, ErrorMessage, useFormikContext } from "formik";
 import * as Yup from "yup";
 import axios from "axios";
 import toast from "react-hot-toast";
@@ -368,6 +368,44 @@ const AdvisorForm = () => {
       max: Yup.number().required("Required"),
     }),
   });
+
+  // Show all validation errors after submit and scroll to first
+  const ValidationEffects = () => {
+    const { submitCount, errors, setTouched, isSubmitting } = useFormikContext();
+    useEffect(() => {
+      if (submitCount > 0 && errors && Object.keys(errors).length) {
+        const all = {};
+        const walk = (o, p = '') => {
+          Object.keys(o).forEach(k => {
+            const path = p ? `${p}.${k}` : k;
+            if (o[k] && typeof o[k] === 'object') walk(o[k], path); else all[path] = true;
+          });
+        };
+        walk(errors);
+        setTouched(all, true);
+        const first = Object.keys(all)[0];
+        if (first && !isSubmitting) {
+          const el = document.querySelector(`[name="${first}"],[data-field="${first}"]`);
+          if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+    }, [submitCount]);
+    return null;
+  };
+
+  const ErrorBanner = () => {
+    const { submitCount, errors } = useFormikContext();
+    const count = (o) => { let c = 0; const walk = x => Object.values(x||{}).forEach(v=>{ if (v && typeof v==='object') walk(v); else c++; }); walk(o); return c; };
+    const ec = count(errors);
+    if (submitCount > 0 && ec > 0) {
+      return (
+        <div className="mb-4 p-3 rounded border border-red-200 bg-red-50 text-red-700">
+          Please fix {ec} highlighted field{ec>1?'s':''}.
+        </div>
+      );
+    }
+    return null;
+  };
   const handleFileUpload = async (file, endpoint) => {
     const formData = new FormData();
     formData.append("file", file);
@@ -499,6 +537,8 @@ const AdvisorForm = () => {
       >
         {({ isSubmitting, setFieldValue, values }) => (
           <Form className="space-y-8">
+            <ValidationEffects />
+            <ErrorBanner />
             {/* Company Information Section */}
             <motion.div 
               initial={{ opacity: 0, x: -20 }}

@@ -32,6 +32,24 @@ const mapGeography = (selectedId) => {
     return "North America"; // fallback
 };
 
+// Marks all error fields as touched after submit so messages render
+const ValidationTouched = ({ submitCount, errors, setTouched }) => {
+    React.useEffect(() => {
+        if (submitCount > 0 && errors && Object.keys(errors).length) {
+            const all = {};
+            const walk = (o, p = '') => {
+                Object.keys(o).forEach(k => {
+                    const path = p ? `${p}.${k}` : k;
+                    if (o[k] && typeof o[k] === 'object') walk(o[k], path); else all[path] = true;
+                });
+            };
+            walk(errors);
+            setTouched(all, true);
+        }
+    }, [submitCount]);
+    return null;
+};
+
 const SellerSchema = Yup.object().shape({
     companyName: Yup.string()
         .min(2, "Company name must be at least 2 characters")
@@ -288,8 +306,14 @@ const EditProfileModal = ({ isOpen, onClose, profile, onProfileUpdate }) => {
                             validationSchema={SellerSchema}
                             onSubmit={handleSubmit}
                         >
-                            {({ isSubmitting }) => (
+                            {({ isSubmitting, errors, submitCount, setTouched }) => (
                                 <Form className="flex flex-col gap-4">
+                                    {submitCount > 0 && Object.keys(errors || {}).length > 0 && (
+                                        <div className="mb-2 p-2 rounded border border-red-200 bg-red-50 text-red-700 text-sm">
+                                            Please fix {Object.keys(errors).length} highlighted field{Object.keys(errors).length>1?'s':''}.
+                                        </div>
+                                    )}
+                                    <ValidationTouched submitCount={submitCount} errors={errors} setTouched={setTouched} />
                                     <AnimatedInput name="companyName" placeholder="Company Name" />
                                     <AnimatedInput name="phone" placeholder="Phone" />
                                     <AnimatedInput name="website" placeholder="Website" />

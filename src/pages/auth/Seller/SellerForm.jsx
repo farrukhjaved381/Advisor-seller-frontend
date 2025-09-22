@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast, Toaster } from "react-hot-toast";
-import { Formik, Form, Field, ErrorMessage } from "formik";
+import { Formik, Form, Field, ErrorMessage, useFormikContext } from "formik";
 import * as Yup from "yup";
 import { motion } from "framer-motion";
 import { getIndustryData } from "../../../components/Static/newIndustryData";
@@ -61,6 +61,24 @@ const SellerSchema = Yup.object().shape({
 
 // Simple Input with separate label
 const SimpleInput = ({ name, type = "text", placeholder, label, icon }) => {
+  const ValidationEffects = () => {
+    const { submitCount, errors, setTouched } = useFormikContext();
+    React.useEffect(() => {
+      if (submitCount > 0 && errors && Object.keys(errors).length) {
+        const all = {}; const walk=(o,p='')=>{Object.keys(o).forEach(k=>{const path=p?`${p}.${k}`:k; if(o[k]&&typeof o[k]==='object') walk(o[k],path); else all[path]=true;});}; walk(errors); setTouched(all, true);
+      }
+    }, [submitCount]);
+    return null;
+  };
+
+  const ErrorBanner = () => {
+    const { submitCount, errors } = useFormikContext();
+    const count=(o)=>{let c=0; const walk=x=>Object.values(x||{}).forEach(v=>{ if(v&&typeof v==='object') walk(v); else c++;}); walk(o); return c;};
+    const ec=count(errors);
+    if (submitCount>0 && ec>0) return <div className="mb-4 p-3 rounded border border-red-200 bg-red-50 text-red-700">Please fix {ec} highlighted field{ec>1?'s':''}.</div>;
+    return null;
+  };
+
   return (
     <div className="w-full">
       <label className="block text-sm font-medium text-secondary mb-2 flex items-center">
@@ -367,13 +385,15 @@ const SellerForm = () => {
           <div className="w-24 h-1 bg-gradient-to-r from-primary to-third mx-auto mt-4 rounded-full"></div>
         </div>
 
-        <Formik
-          initialValues={initialValues}
-          validationSchema={SellerSchema}
-          onSubmit={onSubmit}
-        >
-          {({ isSubmitting, setFieldValue, values }) => (
-            <Form className="space-y-8">
+      <Formik
+        initialValues={initialValues}
+        validationSchema={SellerSchema}
+        onSubmit={onSubmit}
+      >
+        {({ isSubmitting, setFieldValue, values }) => (
+          <Form className="space-y-8">
+            <ValidationEffects />
+            <ErrorBanner />
               {/* Company Information */}
               <motion.div 
                 initial={{ opacity: 0, x: 20 }}

@@ -478,6 +478,20 @@ const AdvisorDashboard = () => {
 
   const [logoFile, setLogoFile] = useState(null);
 
+  const ValidationTouched = ({ submitCount, errors, setTouched }) => {
+    useEffect(() => {
+      if (submitCount > 0 && errors && Object.keys(errors).length) {
+        const all = {};
+        const walk = (o, p='') => {
+          Object.keys(o).forEach(k => { const path = p?`${p}.${k}`:k; if (o[k] && typeof o[k]==='object') walk(o[k], path); else all[path]=true; });
+        };
+        walk(errors);
+        setTouched(all, true);
+      }
+    }, [submitCount]);
+    return null;
+  };
+
   const onSubmit = async (values, { setSubmitting }) => {
     try {
       const token = localStorage.getItem('access_token');
@@ -1287,8 +1301,14 @@ const AdvisorDashboard = () => {
                 validationSchema={validationSchema}
                 onSubmit={onSubmit}
               >
-                {({ isSubmitting, values, setFieldValue }) => (
+                {({ isSubmitting, values, setFieldValue, submitCount, errors, setTouched }) => (
                   <Form className="space-y-8">
+                    {submitCount > 0 && Object.keys(errors || {}).length > 0 && (
+                      <div className="mb-4 p-3 rounded border border-red-200 bg-red-50 text-red-700">
+                        Please fix {Object.keys(errors).length} highlighted field{Object.keys(errors).length>1?'s':''}.
+                      </div>
+                    )}
+                    <ValidationTouched submitCount={submitCount} errors={errors} setTouched={setTouched} />
                     {/* Personal Information */}
                     <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
                       <h3 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">

@@ -563,55 +563,21 @@ const SellerDashboard = () => {
     fetchMatches()
   }, [profileRefreshTrigger])
 
-  // Intercept in-app navigations with a custom message and show native prompt on tab/browser close
+  // Warn on unload only when there are unsaved changes (prevents constant prompts)
+  const [unsavedChanges, setUnsavedChanges] = useState(false)
   useEffect(() => {
-    const hasToken = !!localStorage.getItem("access_token")
-
     const beforeUnloadHandler = (e) => {
-      // If a seller profile appears to be active, warn user on close/refresh
-      if (seller || hasToken) {
+      if (unsavedChanges) {
         e.preventDefault()
-        e.returnValue = "" // Triggers browser's built-in confirmation dialog
+        e.returnValue = ""
         return ""
       }
     }
-
-    const linkClickHandler = (e) => {
-      const anchor = e.target.closest && e.target.closest('a')
-      if (!anchor) return
-      const href = anchor.getAttribute('href')
-      if (!href || href.startsWith('#') || anchor.target === '_blank') return
-      if (seller || hasToken) {
-        const ok = window.confirm("Don’t close or leave without deleting your profile.")
-        if (!ok) {
-          e.preventDefault()
-          e.stopPropagation()
-        }
-      }
-    }
-
-    const popstateHandler = (e) => {
-      if (seller || hasToken) {
-        const ok = window.confirm("Don’t close or leave without deleting your profile.")
-        if (!ok) {
-          // Push the current state again to negate the back action
-          history.pushState(null, document.title, window.location.href)
-        }
-      }
-    }
-
     window.addEventListener("beforeunload", beforeUnloadHandler)
-    document.addEventListener("click", linkClickHandler, true)
-    window.addEventListener("popstate", popstateHandler)
-    // Push an initial state to help control back button
-    history.pushState(null, document.title, window.location.href)
-
     return () => {
       window.removeEventListener("beforeunload", beforeUnloadHandler)
-      document.removeEventListener("click", linkClickHandler, true)
-      window.removeEventListener("popstate", popstateHandler)
     }
-  }, [seller])
+  }, [unsavedChanges])
 
   // Comprehensive validation schema with all fields required
   const SellerSchema = Yup.object().shape({
@@ -704,13 +670,9 @@ const SellerDashboard = () => {
           localStorage.setItem("user", JSON.stringify(updatedUser))
         }
 
-        // Force refresh data and profile
+        // Refresh data and clear unsaved flag without full reload
         setProfileRefreshTrigger((prev) => prev + 1)
-
-        // Auto-refresh page after 1 second
-        setTimeout(() => {
-          window.location.reload()
-        }, 1000)
+        setUnsavedChanges(false)
       } else {
         toast.error(res.data?.message || "Failed to update profile")
       }
@@ -761,6 +723,25 @@ const SellerDashboard = () => {
       }
     },
   })
+
+  // Helper component to mark all fields touched after submit
+  const ValidationTouched = ({ submitCount, errors, setTouched }) => {
+    useEffect(() => {
+      if (submitCount > 0 && errors && Object.keys(errors).length) {
+        const all = {}
+        const walk = (o, p = '') => {
+          Object.keys(o).forEach(k => {
+            const path = p ? `${p}.${k}` : k
+            if (o[k] && typeof o[k] === 'object') walk(o[k], path)
+            else all[path] = true
+          })
+        }
+        walk(errors)
+        setTouched(all, true)
+      }
+    }, [submitCount])
+    return null
+  }
 
   // Enhanced initial values with comprehensive autofill
   const enhancedInitialValues = {
@@ -1204,8 +1185,15 @@ const SellerDashboard = () => {
                   validationSchema={SellerSchema}
                   onSubmit={handleEnhancedSubmit}
                 >
-                  {({ isSubmitting, values, setFieldValue }) => (
+                  {({ isSubmitting, values, setFieldValue, errors, submitCount, setTouched, dirty }) => (
                     <Form className="p-8 space-y-8">
+                      {submitCount > 0 && Object.keys(errors || {}).length > 0 && (
+                        <div className="mb-4 p-3 rounded border border-red-200 bg-red-50 text-red-700">
+                          Please fix {Object.keys(errors).length} highlighted field{Object.keys(errors).length>1?'s':''}.
+                        </div>
+                      )}
+                      <ValidationTouched submitCount={submitCount} errors={errors} setTouched={setTouched} />
+                      {unsavedChanges !== dirty && setUnsavedChanges(dirty)}
                       {/* Company Details Section */}
                       <div className="border-b border-gray-200 pb-8">
                         <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center space-x-2">
