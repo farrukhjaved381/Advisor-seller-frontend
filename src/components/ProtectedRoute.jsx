@@ -102,10 +102,10 @@ const ProtectedRoute = ({ children, requiredRole, requiresPayment = false }) => 
   if (user.role === 'advisor') {
     const { pathname } = window.location;
     const isActive = user.isSubscriptionActive ?? user.isPaymentVerified;
-    const allowWhenInactive = ['/advisor-payments', '/adviser-payment', '/advisor-profile'];
+    const allowWhenInactive = ['/advisor-payments', '/adviser-payment'];
     if (!isActive) {
       if (!allowWhenInactive.includes(pathname)) {
-        return <Navigate to="/advisor-profile" replace />;
+        return <Navigate to="/advisor-payments" replace />;
       }
     }
     // If active, allow normal advisor pages; dashboard and edit proceed, advisor-form also allowed

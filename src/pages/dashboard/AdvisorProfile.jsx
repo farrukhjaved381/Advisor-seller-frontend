@@ -92,6 +92,21 @@ export default function AdvisorProfile() {
     }
   };
 
+  const handleResume = async () => {
+    try {
+      setBusy(true);
+      const token = localStorage.getItem('access_token');
+      const res = await axios.post('https://advisor-seller-backend.vercel.app/api/payment/resume', {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.data?.subscription) setSubscription(res.data.subscription);
+    } catch (e) {
+      // optionally notify
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const handleLogout = async () => {
     try {
       const token = localStorage.getItem('access_token');
@@ -291,13 +306,23 @@ export default function AdvisorProfile() {
                       Cancel at Period End
                     </button>
                   )}
-                  {!isActive && (
-                    <Link to="/advisor-payments" className="px-4 py-2 text-sm rounded-lg bg-primary text-white hover:opacity-90 flex items-center gap-2">
-                      <FaCreditCard /> Renew Now
-                    </Link>
+                  {isActive && isCanceled && (
+                    <button onClick={handleResume} disabled={busy}
+                      className="px-4 py-2 text-sm rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-50">
+                      Resume Subscription
+                    </button>
                   )}
+                  {/* Renew available anytime; extends from current end */}
+                  <Link to="/advisor-payments" className="px-4 py-2 text-sm rounded-lg bg-primary text-white hover:opacity-90 flex items-center gap-2">
+                    <FaCreditCard /> {isActive ? 'Renew Early' : 'Renew Now'}
+                  </Link>
                 </div>
               </div>
+              {isActive && (
+                <div className="text-xs text-gray-500 mt-2">
+                  Renewing now will extend your access beyond {formatDate(subscription?.currentPeriodEnd)} by one year.
+                </div>
+              )}
             </div>
 
             {/* History */}
