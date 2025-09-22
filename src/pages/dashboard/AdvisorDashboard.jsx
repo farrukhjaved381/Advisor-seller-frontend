@@ -103,12 +103,19 @@ const AdvisorDashboard = () => {
           headers: { Authorization: `Bearer ${token}` }
         });
         const p = profileRes.data || {};
-        // Normalize industries/geographies to arrays
-        const norm = (val) => Array.isArray(val)
-          ? val
-          : typeof val === 'string'
-            ? val.split(',').map(s => s.trim()).filter(Boolean)
-            : [];
+        // Normalize industries/geographies to arrays, including single-item comma payloads
+        const norm = (val) => {
+          if (Array.isArray(val)) {
+            if (val.length === 1 && typeof val[0] === 'string' && val[0].includes(',')) {
+              return val[0].split(',').map(s => s.trim()).filter(Boolean);
+            }
+            return val;
+          }
+          if (typeof val === 'string') {
+            return val.split(',').map(s => s.trim()).filter(Boolean);
+          }
+          return [];
+        };
         p.industries = norm(p.industries);
         p.geographies = norm(p.geographies);
         // Ensure revenueRange numbers
