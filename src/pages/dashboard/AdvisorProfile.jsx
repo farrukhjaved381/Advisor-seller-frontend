@@ -312,9 +312,12 @@ export default function AdvisorProfile() {
                       Resume Subscription
                     </button>
                   )}
-                  {/* Renew available anytime; extends from current end */}
-                  <Link to="/advisor-payments" className="px-4 py-2 text-sm rounded-lg bg-primary text-white hover:opacity-90 flex items-center gap-2">
-                    <FaCreditCard /> {isActive ? 'Renew Early' : 'Renew Now'}
+                  {/* Renewal / Re-Subscribe */}
+                  <Link
+                    to={`/advisor-payments?intent=${isActive ? 'renew' : 'resubscribe'}&return=${encodeURIComponent('/advisor-profile')}`}
+                    className="px-4 py-2 text-sm rounded-lg bg-primary text-white hover:opacity-90 flex items-center gap-2"
+                  >
+                    <FaCreditCard /> {isActive ? 'Renew Early' : 'Re-Subscribe'}
                   </Link>
                 </div>
               </div>

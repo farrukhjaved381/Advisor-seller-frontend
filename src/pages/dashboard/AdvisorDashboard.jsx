@@ -486,6 +486,11 @@ const AdvisorDashboard = () => {
       formData.append('name', values.name);
       formData.append('industries', values.industries.join(','));
       
+      if (!logoFile && !profile?.logoUrl) {
+        toast.error('Company logo is required');
+        setSubmitting(false);
+        return;
+      }
       if (logoFile) {
         formData.append('logo', logoFile);
       }
@@ -661,7 +666,30 @@ const AdvisorDashboard = () => {
             >
               <FaBars className="w-5 h-5 text-gray-600" />
             </button>
-            <h1 className="text-xl lg:text-2xl font-bold text-gray-900">Advisor Dashboard</h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-xl lg:text-2xl font-bold text-gray-900">Advisor Dashboard</h1>
+              {user?.subscription?.status === 'canceled' && user?.subscription?.currentPeriodEnd && (
+                <span className="inline-flex items-center gap-2 text-xs px-2 py-1 rounded-full bg-yellow-100 text-yellow-800 border border-yellow-200">
+                  Canceled • access until {new Date(user.subscription.currentPeriodEnd).toLocaleDateString()}
+                  <button
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      try {
+                        const token = localStorage.getItem('access_token');
+                        await axios.post('https://advisor-seller-backend.vercel.app/api/payment/resume', {}, { headers: { Authorization: `Bearer ${token}` }});
+                        toast.success('Subscription resumed');
+                        fetchUserData();
+                      } catch {
+                        toast.error('Could not resume subscription');
+                      }
+                    }}
+                    className="ml-1 underline hover:opacity-80"
+                  >
+                    Resume
+                  </button>
+                </span>
+              )}
+            </div>
           </div>
           
           <div className="relative">

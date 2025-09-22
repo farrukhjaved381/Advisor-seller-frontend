@@ -17,6 +17,9 @@ import {
   FaSpinner
 } from "react-icons/fa";
 
+// -------------------- URL Params --------------------
+const getSearchParams = () => new URLSearchParams(window.location.search);
+
 // -------------------- Stripe --------------------
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY).catch(err => {
   console.error('Failed to load Stripe:', err);
@@ -128,6 +131,11 @@ const AdvisorPaymentForm = () => {
   const [originalAmount] = useState(500000);
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
   const [cardReady, setCardReady] = useState(false);
+  const [hasProfile, setHasProfile] = useState(false);
+  const [isVerified, setIsVerified] = useState(false);
+  const params = getSearchParams();
+  const returnTo = params.get('return') || '/advisor-profile';
+  const intent = params.get('intent') || 'activate'; // 'renew' | 'resubscribe' | 'activate'
 
   // Autofill user info from localStorage if available
   let userEmail = "test@example.com";
@@ -150,6 +158,47 @@ const AdvisorPaymentForm = () => {
   } catch (e) {
     // ignore
   }
+
+  // Fetch current state (profile / verification)
+  useEffect(() => {
+    (async () => {
+      try {
+        const token = localStorage.getItem('access_token');
+        if (!token) return;
+        const prof = await fetch('https://advisor-seller-backend.vercel.app/api/auth/profile', {
+          headers: { Authorization: `Bearer ${token}` },
+          credentials: 'include',
+        });
+        if (prof.ok) {
+          const data = await prof.json();
+          setIsVerified(!!data.isPaymentVerified);
+          if (data.role === 'advisor') {
+            // if API exposes isProfileComplete
+            if (typeof data.isProfileComplete === 'boolean') {
+              setHasProfile(data.isProfileComplete);
+            } else {
+              // fallback: try advisors/profile
+              const prof2 = await fetch('https://advisor-seller-backend.vercel.app/api/advisors/profile', {
+                headers: { Authorization: `Bearer ${token}` },
+                credentials: 'include',
+              });
+              setHasProfile(prof2.ok);
+            }
+          }
+        }
+      } catch {}
+    })();
+  }, []);
+
+  const redirectAfterPayment = () => {
+    // If user already has profile or came for renewal/resubscribe, go to returnTo
+    if (hasProfile || isVerified || intent === 'renew' || intent === 'resubscribe') {
+      window.location.href = returnTo || '/advisor-profile';
+    } else {
+      // Fresh activation flow
+      window.location.href = '/advisor-form';
+    }
+  };
 
   // Helper to format amount with commas
   const formatAmount = (amt) => {
@@ -174,10 +223,9 @@ const AdvisorPaymentForm = () => {
         const data = await response.json();
         if (response.ok) {
           toast.success("Free trial activated! 🎉 Redirecting to create your profile...");
-          // Direct redirect to advisor-form
           setTimeout(() => {
-            window.location.href = '/advisor-form';
-          }, 2000);
+            redirectAfterPayment();
+          }, 1500);
           return;
         } else {
           toast.error(data.message || "Failed to redeem free trial coupon ❌");
@@ -286,12 +334,11 @@ const AdvisorPaymentForm = () => {
           return;
         }
 
-        toast.success("Payment confirmed! 🎉 Redirecting to create your profile...");
+        toast.success("Payment confirmed! 🎉 Redirecting...");
         resetForm();
-        // Direct redirect to advisor-form
         setTimeout(() => {
-          window.location.href = '/advisor-form';
-        }, 2000);
+          redirectAfterPayment();
+        }, 1500);
       } else {
         toast.error(`Stripe payment not succeeded. Current status: ${paymentIntent?.status || 'unknown'} ❌`);
       }

@@ -356,12 +356,12 @@ const AdvisorForm = () => {
     testimonials: Yup.array()
       .of(
         Yup.object().shape({
-          clientName: Yup.string().notRequired(),
-          testimonial: Yup.string().notRequired(),
+          clientName: Yup.string().required('Client name is required'),
+          testimonial: Yup.string().required('Testimonial is required'),
           pdfFile: Yup.mixed().notRequired(),
         })
       )
-      .notRequired(),
+      .min(1, 'At least one testimonial is required'),
 
     revenueRange: Yup.object().shape({
       min: Yup.number().required("Required"),
@@ -388,6 +388,11 @@ const AdvisorForm = () => {
   const onSubmit = async (values, { setSubmitting, resetForm }) => {
     console.log('Form submitted:', values);
     try {
+      if (!logoFile) {
+        toast.error('Company logo is required');
+        setSubmitting(false);
+        return;
+      }
 
       let logoUrl = "";
       if (logoFile) {
@@ -402,15 +407,18 @@ const AdvisorForm = () => {
       // Upload testimonial PDFs
       const testimonials = await Promise.all(
         values.testimonials.map(async (t) => {
-          if (t.clientName && t.testimonial && t.pdfFile) {
-            const pdfUrl = await handleFileUpload(
-              t.pdfFile,
-              "https://advisor-seller-backend.vercel.app/api/upload/testimonial"
-            );
+          if (t.clientName && t.testimonial) {
+            let pdfUrl = undefined;
+            if (t.pdfFile) {
+              pdfUrl = await handleFileUpload(
+                t.pdfFile,
+                "https://advisor-seller-backend.vercel.app/api/upload/testimonial"
+              );
+            }
             return {
               clientName: t.clientName,
               testimonial: t.testimonial,
-              pdfUrl,
+              ...(pdfUrl ? { pdfUrl } : {}),
             };
           }
           return null;
@@ -418,6 +426,11 @@ const AdvisorForm = () => {
       );
 
       const filteredTestimonials = testimonials.filter(Boolean);
+      if (filteredTestimonials.length < 1) {
+        toast.error('At least one testimonial (client name and text) is required');
+        setSubmitting(false);
+        return;
+      }
       
       const token = localStorage.getItem("access_token");
       const payload = {
