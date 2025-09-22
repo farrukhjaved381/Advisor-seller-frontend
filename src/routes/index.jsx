@@ -16,7 +16,8 @@ import AdvisorPayments from "../pages/auth/Advisor/AdvisorPayments.jsx";
 import AdvisorForm from "../pages/auth/Advisor/AdvisorForm.jsx";
 import AdvisorUpload from "../pages/auth/Advisor/AdvisorUpload.jsx";
 import ProtectedRoute from "../components/ProtectedRoute.jsx";
-import EditAdvisorProfile from "../pages/dashboard/EditAdvisorProfile.jsx";
+// Removed standalone edit page; route will show AdvisorDashboard's profile tab
+import AdvisorProfile from "../pages/dashboard/AdvisorProfile.jsx";
 const AppRoutes = () => {
     return (
         <Routes>
@@ -58,6 +59,11 @@ const AppRoutes = () => {
                     <AdvisorDashboard />
                 </ProtectedRoute>
             } />
+            <Route path="/advisor-profile" element={
+                <ProtectedRoute requiredRole="advisor">
+                    <AdvisorProfile />
+                </ProtectedRoute>
+            } />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/continue" element={<Continue />} />
@@ -68,7 +74,7 @@ const AppRoutes = () => {
             } />
             <Route path="/edit-advisor-profile" element={
                 <ProtectedRoute requiredRole="advisor">
-                    <EditAdvisorProfile />
+                    <AdvisorDashboard />
                 </ProtectedRoute>
             } />
         </Routes>

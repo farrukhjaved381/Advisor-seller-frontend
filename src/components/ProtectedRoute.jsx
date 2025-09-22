@@ -101,23 +101,16 @@ const ProtectedRoute = ({ children, requiredRole, requiresPayment = false }) => 
   // Advisor specific redirection logic
   if (user.role === 'advisor') {
     const { pathname } = window.location;
-
-    // Only check payment verification for non-dashboard routes
-    if (!user.isPaymentVerified) {
-      if (pathname !== '/advisor-payments' && pathname !== '/adviser-payment') {
-        return <Navigate to="/advisor-payments" replace />;
+    const isActive = user.isSubscriptionActive ?? user.isPaymentVerified;
+    const allowWhenInactive = ['/advisor-payments', '/adviser-payment', '/advisor-profile'];
+    if (!isActive) {
+      if (!allowWhenInactive.includes(pathname)) {
+        return <Navigate to="/advisor-profile" replace />;
       }
-    } else {
-      // Payment verified - let individual components handle their own flow
-      // Dashboard will check profile completion internally
-      if (pathname === '/advisor-dashboard' || pathname === '/edit-advisor-profile') {
-        return children;
-      }
-      
-      // For form route, allow access
-      if (pathname === '/advisor-form') {
-        return children;
-      }
+    }
+    // If active, allow normal advisor pages; dashboard and edit proceed, advisor-form also allowed
+    if (pathname === '/advisor-dashboard' || pathname === '/edit-advisor-profile' || pathname === '/advisor-form') {
+      return children;
     }
   }
 

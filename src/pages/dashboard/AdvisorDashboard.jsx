@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import { Formik, Form, Field, ErrorMessage, useFormikContext } from 'formik';
 import * as Yup from 'yup';
-import { FaUser, FaBuilding, FaPhone, FaGlobe, FaCalendarAlt, FaQuoteLeft, FaFilePdf, FaChartLine, FaDollarSign, FaMapMarkerAlt, FaIndustry, FaCog, FaSignOutAlt, FaEdit, FaToggleOn, FaToggleOff, FaBars, FaTimes, FaChevronDown, FaChevronRight, FaFileAlt, FaSearch } from 'react-icons/fa';
+import { FaUser, FaBuilding, FaPhone, FaGlobe, FaCalendarAlt, FaQuoteLeft, FaFilePdf, FaChartLine, FaDollarSign, FaMapMarkerAlt, FaIndustry, FaCog, FaSignOutAlt, FaEdit, FaToggleOn, FaToggleOff, FaBars, FaTimes, FaChevronDown, FaChevronRight, FaFileAlt, FaSearch, FaCreditCard } from 'react-icons/fa';
 import { getIndustryData } from '../../components/Static/newIndustryData';
 import { Country, State } from 'country-state-city';
 
@@ -61,6 +61,13 @@ const AdvisorDashboard = () => {
 
   useEffect(() => {
     fetchUserData();
+  }, []);
+
+  // If landed via /edit-advisor-profile, open the Settings tab by default
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location?.pathname === '/edit-advisor-profile') {
+      setActiveTab('settings');
+    }
   }, []);
 
   useEffect(() => {
@@ -609,8 +616,22 @@ const AdvisorDashboard = () => {
               >
                 <FaCog className="w-5 h-5" />
                 <div>
-                  <span className="font-medium text-sm">Profile Settings</span>
+                  <span className="font-medium text-sm">Advisor profile</span>
                   <p className="text-xs opacity-70">Update your information</p>
+                </div>
+              </button>
+
+              <button
+                className="w-full text-left px-4 py-3 rounded-lg transition-all duration-200 flex items-center space-x-3 text-gray-700 hover:bg-gray-100"
+                onClick={() => {
+                  navigate('/advisor-profile');
+                  setSidebarOpen(false);
+                }}
+              >
+                <FaCreditCard className="w-5 h-5" />
+                <div>
+                  <span className="font-medium text-sm">Profile & Billing</span>
+                  <p className="text-xs opacity-70">Manage subscription and payments</p>
                 </div>
               </button>
             </div>
@@ -714,6 +735,32 @@ const AdvisorDashboard = () => {
                       <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
                         <FaCalendarAlt className="w-6 h-6 text-blue-600" />
                       </div>
+                    </div>
+                  </motion.div>
+
+                  {/* Subscription Glimpse */}
+                  <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 }}
+                    className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow md:col-span-2 lg:col-span-1"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-500 mb-1">Subscription</p>
+                        <p className="text-sm text-gray-900">
+                          {user?.isSubscriptionActive ? 'Active' : 'Inactive'}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Ends: {user?.subscription?.currentPeriodEnd ? new Date(user.subscription.currentPeriodEnd).toLocaleDateString() : '—'}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => navigate('/advisor-profile')}
+                        className="px-3 py-2 text-xs rounded-md bg-primary text-white hover:opacity-90"
+                      >
+                        Manage
+                      </button>
                     </div>
                   </motion.div>
 

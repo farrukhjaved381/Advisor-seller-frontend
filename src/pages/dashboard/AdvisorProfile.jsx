@@ -1,0 +1,343 @@
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { useNavigate, Link } from 'react-router-dom';
+import {
+  FaCalendarAlt,
+  FaCheckCircle,
+  FaExclamationTriangle,
+  FaTimesCircle,
+  FaHistory,
+  FaCreditCard,
+  FaBars,
+  FaTimes,
+  FaChartLine,
+  FaUser,
+  FaCog,
+  FaSignOutAlt,
+} from 'react-icons/fa';
+
+const formatDate = (d) => {
+  if (!d) return '-';
+  const date = new Date(d);
+  return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+};
+
+const centsToUsd = (cents) => {
+  const n = Number(cents || 0) / 100;
+  return `$${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+};
+
+export default function AdvisorProfile() {
+  const [user, setUser] = useState(null);
+  const [history, setHistory] = useState([]);
+  const [subscription, setSubscription] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+          navigate('/advisor-login');
+          return;
+        }
+        console.log('[AdvisorProfile] Fetch /api/auth/profile');
+        const profileRes = await axios.get('https://advisor-seller-backend.vercel.app/api/auth/profile', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setUser(profileRes.data);
+        setSubscription(profileRes.data.subscription);
+
+        try {
+          console.log('[AdvisorProfile] Fetch /api/payment/history');
+          const histRes = await axios.get('https://advisor-seller-backend.vercel.app/api/payment/history', {
+            headers: { Authorization: `Bearer ${token}` },
+            validateStatus: () => true,
+          });
+          if (histRes.status >= 200 && histRes.status < 300) {
+            setHistory(histRes.data.paymentHistory || []);
+            if (histRes.data.subscription) setSubscription(histRes.data.subscription);
+          } else {
+            console.warn('[AdvisorProfile] history API non-2xx:', histRes.status, histRes.data);
+          }
+        } catch (err) {
+          console.error('[AdvisorProfile] history API failed', err);
+        }
+      } catch (e) {
+        console.error('[AdvisorProfile] profile API failed', e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, [navigate]);
+
+  const handleCancel = async () => {
+    if (!window.confirm('Cancel your subscription at period end?')) return;
+    try {
+      setBusy(true);
+      const token = localStorage.getItem('access_token');
+      const res = await axios.post('https://advisor-seller-backend.vercel.app/api/payment/cancel', {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.data?.subscription) setSubscription(res.data.subscription);
+    } catch (e) {
+      // optionally notify
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      const token = localStorage.getItem('access_token');
+      if (token) {
+        await axios.post('https://advisor-seller-backend.vercel.app/api/auth/logout', {}, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      }
+    } catch (error) {
+      // ignore
+    } finally {
+      localStorage.clear();
+      sessionStorage.clear();
+      navigate('/advisor-login');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  const now = new Date();
+  const end = subscription?.currentPeriodEnd ? new Date(subscription.currentPeriodEnd) : null;
+  const isActive = (user?.isSubscriptionActive ?? user?.isPaymentVerified) || (end && end > now);
+  const isCanceled = subscription?.status === 'canceled';
+  const isExpired = subscription?.status === 'expired' || (!isActive && user?.isPaymentVerified);
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Mobile overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/30 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside
+        className={`
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        fixed lg:static inset-y-0 left-0 z-30 w-72 bg-white flex flex-col border-r border-gray-200 shadow-sm transition-transform duration-300 ease-in-out
+      `}
+      >
+        {/* Brand */}
+        <div className="p-4 border-b border-gray-100 bg-white flex items-center justify-between">
+          <div className="flex items-center">
+            <img
+              src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=768,fit=crop,q=95/mk3JaNVZEltBD9g4/logo-transparency-mnlJLXr4jxIOR470.png"
+              alt="Advisor Chooser"
+              className="h-8 w-auto object-contain"
+            />
+          </div>
+          <button onClick={() => setSidebarOpen(false)} className="lg:hidden p-2 rounded-md hover:bg-gray-100">
+            <FaTimes className="w-5 h-5 text-gray-600" />
+          </button>
+        </div>
+
+        {/* Navigation (mirrors dashboard) */}
+        <nav className="flex-1 px-6 py-6">
+          <div className="space-y-6">
+            {/* Main Menu */}
+            <div className="space-y-1">
+              <p className="px-3 text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">Main Menu</p>
+
+              <button
+                className={"w-full text-left px-4 py-3 rounded-lg transition-all duration-200 flex items-center justify-between text-gray-700 hover:bg-gray-100"}
+                onClick={() => navigate('/advisor-dashboard')}
+              >
+                <div className="flex items-center space-x-3">
+                  <FaChartLine className="w-5 h-5" />
+                  <div>
+                    <span className="font-medium text-sm">Lead Management</span>
+                    <p className="text-xs opacity-70">Manage your leads</p>
+                  </div>
+                </div>
+              </button>
+
+              <button
+                className={"w-full text-left px-4 py-3 rounded-lg transition-all duration-200 flex items-center justify-between text-gray-700 hover:bg-gray-100"}
+                onClick={() => navigate('/advisor-dashboard')}
+              >
+                <div className="flex items-center space-x-3">
+                  <FaUser className="w-5 h-5" />
+                  <div>
+                    <span className="font-medium text-sm">Profile Overview</span>
+                    <p className="text-xs opacity-70">View your profile details</p>
+                  </div>
+                </div>
+              </button>
+
+              <button
+                className={"w-full text-left px-4 py-3 rounded-lg transition-all duration-200 flex items-center space-x-3 text-gray-700 hover:bg-gray-100"}
+                onClick={() => navigate('/edit-advisor-profile')}
+              >
+                <FaCog className="w-5 h-5" />
+                <div>
+                  <span className="font-medium text-sm">Advisor profile</span>
+                  <p className="text-xs opacity-70">Update your information</p>
+                </div>
+              </button>
+            </div>
+
+            {/* Profile & Billing (matches dashboard link) */}
+            <button
+              className="w-full text-left px-4 py-3 rounded-lg transition-all duration-200 flex items-center space-x-3 bg-gradient-to-r from-third to-primary text-white shadow-sm"
+            >
+              <FaCreditCard className="w-5 h-5" />
+              <div>
+                <span className="font-medium text-sm">Profile & Billing</span>
+                <p className="text-xs opacity-70">Manage subscription and payments</p>
+              </div>
+            </button>
+          </div>
+        </nav>
+
+        <div className="p-4 border-t border-gray-100">
+          <button
+            className="w-full px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 transition-colors duration-200 flex items-center justify-center space-x-2 border border-red-200 hover:border-red-300"
+            onClick={handleLogout}
+          >
+            <FaSignOutAlt className="w-4 h-4" />
+            <span className="font-medium text-sm">Sign Out</span>
+          </button>
+        </div>
+      </aside>
+
+      {/* Main */}
+      <main className="flex-1 flex flex-col min-w-0">
+        {/* Header */}
+        <header className="flex items-center justify-between bg-white shadow-sm border-b border-gray-200 px-4 lg:px-8 py-4">
+          <div className="flex items-center space-x-4">
+            <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-2 rounded-md hover:bg-gray-100">
+              <FaBars className="w-5 h-5 text-gray-600" />
+            </button>
+            <h1 className="text-xl lg:text-2xl font-bold text-gray-900">Profile & Billing</h1>
+          </div>
+          <div className="relative">
+            <button
+              className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 transition-all duration-200"
+              onClick={() => setProfileDropdownOpen(prev => !prev)}
+            >
+              <div className="text-right hidden sm:block">
+                <span className="block font-semibold text-gray-900 text-sm">{user?.name || 'Loading...'}</span>
+                <span className="block text-xs text-gray-500">Advisor Account</span>
+              </div>
+              <div className="relative">
+                <div className="w-10 h-10 flex items-center justify-center bg-gradient-to-br from-primary to-third rounded-full text-white font-bold text-sm shadow-md">
+                  {(user?.name || 'A').charAt(0)}
+                </div>
+                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
+              </div>
+            </button>
+          </div>
+        </header>
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-6">
+          <div className="max-w-5xl mx-auto">
+            <div className="mb-6">
+              <h2 className="text-lg font-semibold text-gray-900">Membership Status</h2>
+              <p className="text-gray-600">Manage your membership and view payment history.</p>
+            </div>
+
+            {/* Subscription Status */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  {isActive ? (
+                    <FaCheckCircle className="text-green-600 text-xl" />
+                  ) : isExpired ? (
+                    <FaTimesCircle className="text-red-600 text-xl" />
+                  ) : (
+                    <FaExclamationTriangle className="text-yellow-600 text-xl" />
+                  )}
+                  <div>
+                    <div className="font-semibold text-gray-900">
+                      {isActive ? 'Subscription Active' : isExpired ? 'Subscription Expired' : 'Subscription Pending'}
+                    </div>
+                    <div className="text-sm text-gray-600 flex items-center gap-2 mt-1">
+                      <FaCalendarAlt />
+                      <span>Current period: {formatDate(subscription?.currentPeriodStart)} – {formatDate(subscription?.currentPeriodEnd)}</span>
+                    </div>
+                    {isCanceled && end && end > now && (
+                      <div className="text-sm text-yellow-700 mt-2">Canceled. You retain access until {formatDate(end)}.</div>
+                    )}
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  {isActive && !isCanceled && (
+                    <button onClick={handleCancel} disabled={busy}
+                      className="px-4 py-2 text-sm rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-50">
+                      Cancel at Period End
+                    </button>
+                  )}
+                  {!isActive && (
+                    <Link to="/advisor-payments" className="px-4 py-2 text-sm rounded-lg bg-primary text-white hover:opacity-90 flex items-center gap-2">
+                      <FaCreditCard /> Renew Now
+                    </Link>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* History */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <FaHistory className="text-gray-700" />
+                <h2 className="text-lg font-semibold text-gray-900">Payment History</h2>
+              </div>
+              {history.length === 0 ? (
+                <div className="text-sm text-gray-600">No payments recorded yet.</div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-sm">
+                    <thead>
+                      <tr className="text-left text-gray-600 border-b">
+                        <th className="py-2 pr-4">Date</th>
+                        <th className="py-2 pr-4">Description</th>
+                        <th className="py-2 pr-4">Amount</th>
+                        <th className="py-2 pr-4">Status</th>
+                        <th className="py-2 pr-4">ID</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {history.slice().reverse().map((h, idx) => (
+                        <tr key={idx} className="border-b last:border-0">
+                          <td className="py-2 pr-4">{formatDate(h.createdAt)}</td>
+                          <td className="py-2 pr-4">{h.description || 'Payment'}</td>
+                          <td className="py-2 pr-4">{centsToUsd(h.amount)} {String(h.currency || 'usd').toUpperCase()}</td>
+                          <td className="py-2 pr-4 capitalize">{h.status}</td>
+                          <td className="py-2 pr-4 truncate max-w-[220px]" title={h.id}>{h.id}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
