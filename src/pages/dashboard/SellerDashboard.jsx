@@ -297,18 +297,25 @@ const GeographyRadioChooser = ({ selected, onChange }) => {
 }
 
 const SellerDashboard = () => {
-  // Logout handler
-  const handleLogout = async () => {
+  // Delete profile handler (replaces logout)
+  const handleDeleteProfile = async () => {
+    const confirmed = window.confirm(
+      "Delete your profile and exit? You'll need to enter your email and fill the form again next time.",
+    )
+    if (!confirmed) return
+
     try {
       const token = localStorage.getItem("access_token")
-      await axios.post(
-        "https://advisor-seller-backend.vercel.app/api/auth/logout",
-        {},
+      await axios.delete(
+        "https://advisor-seller-backend.vercel.app/api/sellers/profile",
         { headers: { Authorization: `Bearer ${token}` } },
       )
-    } catch (err) {
-      // optionally handle errors
-    } finally {
+
+      // Clear local auth state
+      localStorage.removeItem("access_token")
+      localStorage.removeItem("refresh_token")
+      localStorage.removeItem("user")
+
       // Clear cookies
       if (typeof document !== "undefined") {
         const cookies = document.cookie.split(";")
@@ -319,13 +326,12 @@ const SellerDashboard = () => {
         }
       }
 
-      // Show toast first
-      toast.success("Logged out successfully")
-
-      // Redirect after 1–2 seconds
+      toast.success("Profile deleted. See you next time!")
       setTimeout(() => {
         window.location.href = "/seller-login"
-      }, 2000) // 2 seconds
+      }, 1500)
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Failed to delete profile")
     }
   }
 
@@ -556,6 +562,56 @@ const SellerDashboard = () => {
     fetchSeller()
     fetchMatches()
   }, [profileRefreshTrigger])
+
+  // Intercept in-app navigations with a custom message and show native prompt on tab/browser close
+  useEffect(() => {
+    const hasToken = !!localStorage.getItem("access_token")
+
+    const beforeUnloadHandler = (e) => {
+      // If a seller profile appears to be active, warn user on close/refresh
+      if (seller || hasToken) {
+        e.preventDefault()
+        e.returnValue = "" // Triggers browser's built-in confirmation dialog
+        return ""
+      }
+    }
+
+    const linkClickHandler = (e) => {
+      const anchor = e.target.closest && e.target.closest('a')
+      if (!anchor) return
+      const href = anchor.getAttribute('href')
+      if (!href || href.startsWith('#') || anchor.target === '_blank') return
+      if (seller || hasToken) {
+        const ok = window.confirm("Don’t close or leave without deleting your profile.")
+        if (!ok) {
+          e.preventDefault()
+          e.stopPropagation()
+        }
+      }
+    }
+
+    const popstateHandler = (e) => {
+      if (seller || hasToken) {
+        const ok = window.confirm("Don’t close or leave without deleting your profile.")
+        if (!ok) {
+          // Push the current state again to negate the back action
+          history.pushState(null, document.title, window.location.href)
+        }
+      }
+    }
+
+    window.addEventListener("beforeunload", beforeUnloadHandler)
+    document.addEventListener("click", linkClickHandler, true)
+    window.addEventListener("popstate", popstateHandler)
+    // Push an initial state to help control back button
+    history.pushState(null, document.title, window.location.href)
+
+    return () => {
+      window.removeEventListener("beforeunload", beforeUnloadHandler)
+      document.removeEventListener("click", linkClickHandler, true)
+      window.removeEventListener("popstate", popstateHandler)
+    }
+  }, [seller])
 
   // Comprehensive validation schema with all fields required
   const SellerSchema = Yup.object().shape({
@@ -839,20 +895,21 @@ const SellerDashboard = () => {
         <div className="p-6 border-t border-gray-100 space-y-4">
           
 
-          {/* Sign Out */}
+          {/* Delete Profile */}
           <button
             className="w-full px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 transition-colors duration-200 flex items-center justify-center space-x-2 border border-red-200 hover:border-red-300"
-            onClick={handleLogout}
+            onClick={handleDeleteProfile}
+            title="Delete your profile and exit"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={2}
-                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m2 0a2 2 0 00-2-2h-4a2 2 0 00-2 2m-2 0h12"
               />
             </svg>
-            <span className="font-medium text-sm">Sign Out</span>
+            <span className="font-medium text-sm">Delete Profile</span>
           </button>
         </div>
       </aside>
@@ -976,6 +1033,8 @@ const SellerDashboard = () => {
             )}
           </div>
         </header>
+
+        {/* Reminder banner removed per request: show only on close/leave attempt */}
 
         {/* Tabs Content */}
         <div className="px-4 lg:px-6 py-4 overflow-y-auto flex-1">

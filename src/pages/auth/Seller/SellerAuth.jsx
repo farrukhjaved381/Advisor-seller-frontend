@@ -45,14 +45,14 @@ const SellerAuth = () => {
 
     setLoading(true);
     try {
-      console.log('[SellerAuth] Sending seller login request', email.trim());
+      console.log('[SellerAuth] Sending seller email auth request', email.trim());
       const response = await axios.post(
         'https://advisor-seller-backend.vercel.app/api/auth/seller-login',
         { email: email.trim() },
         { withCredentials: true, validateStatus: () => true },
       );
 
-      console.log('[SellerAuth] seller-login response status', response.status, response.data);
+      console.log('[SellerAuth] seller email auth response status', response.status, response.data);
       if (response.status < 200 || response.status >= 300) {
         toast.error(response.data?.message || 'Unable to authenticate email');
         return;
@@ -64,10 +64,10 @@ const SellerAuth = () => {
       localStorage.setItem('refresh_token', refreshToken || '');
       localStorage.setItem('user', JSON.stringify(user || {}));
 
-      toast.success('Welcome back!');
+      toast.success('Welcome!');
 
       try {
-        console.log('[SellerAuth] Fetching auth profile after seller login');
+        console.log('[SellerAuth] Fetching profile after seller email auth');
         const profileResponse = await axios.get(
           'https://advisor-seller-backend.vercel.app/api/auth/profile',
           { headers: { Authorization: `Bearer ${accessToken}` } },
@@ -125,10 +125,10 @@ const SellerAuth = () => {
             <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 md:p-6 shadow-xl max-w-sm">
               <div className="flex items-center space-x-3 mb-3">
                 <div className="w-4 h-4 bg-gradient-to-r from-primary to-third rounded-full animate-pulse" />
-                <span className="text-secondary font-bold text-base md:text-lg">Welcome Seller!</span>
+                <span className="text-secondary font-bold text-base md:text-lg">Discover Your Advisor Matches</span>
               </div>
               <p className="text-gray-600 text-xs md:text-sm leading-relaxed">
-                Enter your business email to access your dashboard or start your profile.
+                Enter your business email to see the best matching advisors for you.
               </p>
             </div>
           </div>
@@ -160,9 +160,9 @@ const SellerAuth = () => {
               <div className="inline-flex items-center bg-primary/10 text-primary px-3 py-2 rounded-full text-sm font-semibold mb-4">
                 Quick Access
               </div>
-              <h2 className="text-3xl font-bold text-secondary mb-2">Seller Login</h2>
+              <h2 className="text-3xl font-bold text-secondary mb-2">See the Best Advisors</h2>
               <p className="text-gray-600">
-                No passwords required. Use your business email to continue where you left off.
+                Enter your email to view your advisor matches. No passwords — fast and simple.
               </p>
             </div>
 
@@ -191,12 +191,12 @@ const SellerAuth = () => {
                 disabled={loading}
                 className="w-full bg-gradient-to-r from-primary to-third text-white font-semibold py-3 rounded-xl hover:shadow-xl transition-transform duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? 'Checking...' : 'Next'}
+                {loading ? 'Checking...' : 'See Advisors'}
               </button>
             </form>
 
             <div className="mt-6 p-4 bg-gray-50 rounded-xl text-sm text-gray-600">
-              First time here? Enter your email to create your seller profile in just a few steps.
+              A quick way to see matching advisors tailored to you.
             </div>
           </div>
         </div>

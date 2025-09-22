@@ -430,7 +430,7 @@ const AdvisorForm = () => {
         numberOfTransactions: values.numberOfTransactions,
         currency: values.currency,
         description: values.description,
-        licensing: "yes",
+        // licensing: "yes",
         revenueRange: {
           min: Number(values.revenueRange.min),
           max: Number(values.revenueRange.max)
@@ -694,7 +694,7 @@ const AdvisorForm = () => {
               </div>
             </motion.div>
 
-            {/* Description & Licensing */}
+            {/* Description*/}
             <motion.div 
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -718,8 +718,6 @@ const AdvisorForm = () => {
                   />
                   <ErrorMessage name="description" component="div" className="text-red-500 text-sm mt-1" />
                 </div>
-
-                {/* Licensing field removed as per requirements */}
               </div>
             </motion.div>
 

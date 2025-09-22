@@ -5,6 +5,7 @@ import { FaBuilding, FaUser, FaGlobe, FaPhone, FaMapMarkerAlt, FaIndustry, FaDol
 
 const AdvisorCard = ({ advisor, onSelect, isSelected }) => {
   const [loading, setLoading] = React.useState(false);
+  const [showAll, setShowAll] = React.useState(false);
   
   const handleRequestIntroduction = async () => {
     try {
@@ -112,7 +113,7 @@ const AdvisorCard = ({ advisor, onSelect, isSelected }) => {
             <h4 className="font-semibold text-gray-900 text-sm sm:text-base">Industries</h4>
           </div>
           <div className="flex flex-wrap gap-1.5 sm:gap-2">
-            {advisor.industries?.map((industry, index) => (
+            {(showAll ? advisor.industries : (advisor.industries || []).slice(0, 5))?.map((industry, index) => (
               <span key={index} className="px-2 sm:px-3 py-1 text-xs sm:text-sm font-medium text-blue-800 bg-blue-100 rounded-full border border-blue-200">
                 {industry}
               </span>
@@ -127,7 +128,7 @@ const AdvisorCard = ({ advisor, onSelect, isSelected }) => {
             <h4 className="font-semibold text-gray-900 text-sm sm:text-base">Geographies</h4>
           </div>
           <div className="flex flex-wrap gap-1.5 sm:gap-2">
-            {advisor.geographies?.map((geography, index) => (
+            {(showAll ? advisor.geographies : (advisor.geographies || []).slice(0, 5))?.map((geography, index) => (
               <span key={index} className="px-2 sm:px-3 py-1 text-xs sm:text-sm font-medium text-green-800 bg-green-100 rounded-full border border-green-200">
                 {geography}
               </span>
@@ -135,8 +136,21 @@ const AdvisorCard = ({ advisor, onSelect, isSelected }) => {
           </div>
         </div>
 
+        {/* Show more/less toggle when lists are long */}
+        {(((advisor.industries || []).length > 5) || ((advisor.geographies || []).length > 5)) && (
+          <div className="pt-1">
+            <button
+              type="button"
+              className="text-primary hover:text-third text-sm font-semibold"
+              onClick={() => setShowAll((v) => !v)}
+            >
+              {showAll ? 'Show less' : 'Show more'}
+            </button>
+          </div>
+        )}
+
         {/* Licensing */}
-        {advisor.licensing && (
+        {/* {advisor.licensing && (
           <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
             <div className="flex items-center mb-2">
               <FaAward className="w-4 h-4 text-purple-600 mr-2" />
@@ -144,7 +158,7 @@ const AdvisorCard = ({ advisor, onSelect, isSelected }) => {
             </div>
             <p className="text-purple-800 text-sm">{advisor.licensing}</p>
           </div>
-        )}
+        )} */}
 
         {/* Contact Information */}
         <div className="space-y-2 sm:space-y-3">
@@ -193,7 +207,7 @@ const AdvisorCard = ({ advisor, onSelect, isSelected }) => {
 
       {/* Footer Actions */}
       <div className="px-4 sm:px-6 py-3 sm:py-4 bg-gray-50 border-t border-gray-100">
-        <button
+        {/* <button
           onClick={handleRequestIntroduction}
           disabled={loading}
           className="w-full bg-gradient-to-r from-primary to-third text-white py-2.5 sm:py-3 px-4 rounded-lg font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-sm sm:text-base"
@@ -213,7 +227,7 @@ const AdvisorCard = ({ advisor, onSelect, isSelected }) => {
               <span className="sm:hidden">Request Intro</span>
             </>
           )}
-        </button>
+        </button> */}
       </div>
     </div>
   );

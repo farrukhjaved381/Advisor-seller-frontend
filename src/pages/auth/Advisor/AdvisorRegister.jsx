@@ -128,7 +128,7 @@ const AdvisorRegister = () => {
         <div className="w-full md:w-[45%] relative overflow-hidden min-h-[260px] md:min-h-0 h-64 md:h-auto">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-third/30 z-10"></div>
           <img 
-            src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+            src="handshake.png"
             alt="Professional advisor consultation workspace" 
             className="object-cover h-full w-full transform hover:scale-105 transition-transform duration-700" 
           />

@@ -26,7 +26,7 @@ const Footer = () => {
               <li><a href="#" className="hover:text-teal-300 cursor-pointer">Buyer Registration</a></li>
               <li><a href="https://cimamplify.com/Advisor%20Registration" className="hover:text-teal-300 cursor-pointer">Add a Deal</a></li>
               <li><a href="#" className="hover:text-teal-300 cursor-pointer">Buyer Login</a></li>
-              <li><a href="https://cimamplify.com/Advisor%20Registration" className="hover:text-teal-300 cursor-pointer">Seller Login</a></li>
+              <li><a href="https://cimamplify.com/Advisor%20Registration" className="hover:text-teal-300 cursor-pointer">See the best Advisors</a></li>
             </ul>
 
             <div className="flex gap-4 text-2xl relative top-5">

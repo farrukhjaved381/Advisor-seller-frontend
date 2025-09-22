@@ -124,7 +124,7 @@ const Auth = () => {
                         onSubmit={handleSubmit}
                         className="text-center w-[60%] min-h-[60%] flex flex-col justify-start items-center gap-6 py-10 px-4"
                     >
-                        <h2 className="text-3xl font-bold">Welcome Back!</h2>
+                        <h2 className="text-3xl font-bold">Welcome!</h2>
 
                         {/* Email Field */}
                         <div className="w-full flex flex-col items-start">

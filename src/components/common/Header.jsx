@@ -15,8 +15,8 @@ const Header = () => {
 
   // Handle login/register based on user status
   const handleMemberLogin = () => {
-  navigate("/authRegister");
-  setIsMobileMenuOpen(false); // Close mobile menu after navigation
+    navigate("/seller-login");
+    setIsMobileMenuOpen(false);
   };
 
   // Handle logo click
@@ -57,8 +57,8 @@ const Header = () => {
               onClick={handleMemberLogin}
               className="bg-gradient-to-r from-primary to-third  text-white font-semibold text-sm lg:text-base py-2.5 px-6 lg:py-3 lg:px-8 rounded-full shadow-lg hover:shadow-xl "
             >
-              Member Login
-            </button>
+              See Best Advisors
+              </button>
           </nav>
 
           {/* Mobile Menu Button */}
@@ -111,8 +111,8 @@ const Header = () => {
               onClick={handleMemberLogin}
               className="w-full bg-gradient-to-r from-third to-primary text-white font-semibold text-base py-3 px-6 rounded-full shadow-lg hover:shadow-xl hover:bg-third transform hover:-translate-y-0.5 transition-all duration-300 ease-in-out"
             >
-              Member Login
-            </button>
+              See Best Advisors
+              </button>
           </div>
         </div>
       </div>

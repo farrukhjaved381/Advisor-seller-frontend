@@ -182,7 +182,6 @@ const EditAdvisorProfile = () => {
     numberOfTransactions: Yup.number().min(0).required("Number of transactions is required"),
     currency: Yup.string().required("Currency is required"),
     description: Yup.string().required("Description is required"),
-    licensing: Yup.string().required("Licensing information is required"),
     revenueRange: Yup.object().shape({
       min: Yup.number().required("Minimum revenue is required"),
       max: Yup.number().required("Maximum revenue is required"),
@@ -269,7 +268,6 @@ const EditAdvisorProfile = () => {
                 numberOfTransactions: profile.numberOfTransactions || "",
                 currency: profile.currency || "USD",
                 description: profile.description || "",
-                licensing: profile.licensing || "",
                 revenueRange: {
                   min: profile.revenueRange?.min || "",
                   max: profile.revenueRange?.max || "",
@@ -423,7 +421,7 @@ const EditAdvisorProfile = () => {
                 </div>
               </div>
 
-              {/* Description & Licensing */}
+              {/* Description*/}
               <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
                 <h3 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
                   <FaFileAlt className="mr-3 text-primary" />
@@ -442,30 +440,6 @@ const EditAdvisorProfile = () => {
                     <ErrorMessage name="description" component="div" className="text-red-500 text-sm mt-1" />
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-4">Are you licensed?</label>
-                    <div className="flex space-x-8">
-                      <label className="flex items-center cursor-pointer">
-                        <Field
-                          type="radio"
-                          name="licensing"
-                          value="yes"
-                          className="form-radio h-5 w-5 text-primary focus:ring-primary border-gray-300"
-                        />
-                        <span className="ml-3 text-gray-700">Yes</span>
-                      </label>
-                      <label className="flex items-center cursor-pointer">
-                        <Field
-                          type="radio"
-                          name="licensing"
-                          value="no"
-                          className="form-radio h-5 w-5 text-primary focus:ring-primary border-gray-300"
-                        />
-                        <span className="ml-3 text-gray-700">No</span>
-                      </label>
-                    </div>
-                    <ErrorMessage name="licensing" component="div" className="text-red-500 text-sm mt-2" />
-                  </div>
                 </div>
               </div>
 
