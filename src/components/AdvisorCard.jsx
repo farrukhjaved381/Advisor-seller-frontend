@@ -6,6 +6,11 @@ import { FaBuilding, FaUser, FaGlobe, FaPhone, FaMapMarkerAlt, FaIndustry, FaDol
 const AdvisorCard = ({ advisor, onSelect, isSelected }) => {
   const [loading, setLoading] = React.useState(false);
   const [showAll, setShowAll] = React.useState(false);
+  const [expandedTestimonials, setExpandedTestimonials] = React.useState({});
+
+  const toggleTestimonial = (idx) => {
+    setExpandedTestimonials((prev) => ({ ...prev, [idx]: !prev[idx] }));
+  };
   
   const handleRequestIntroduction = async () => {
     try {
@@ -57,11 +62,11 @@ const AdvisorCard = ({ advisor, onSelect, isSelected }) => {
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-1 truncate">{advisor.companyName}</h3>
-              <div className="flex items-center text-gray-600 mb-2">
+              <div className="flex items-center text-gray-600 mb-1">
                 <FaUser className="w-3 h-3 sm:w-4 sm:h-4 mr-2 flex-shrink-0" />
                 <span className="font-medium text-sm sm:text-base truncate">{advisor.advisorName}</span>
               </div>
-              <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 text-xs sm:text-sm text-gray-500 space-y-1 sm:space-y-0">
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs sm:text-sm text-gray-500">
                 <div className="flex items-center">
                   <FaAward className="w-3 h-3 sm:w-4 sm:h-4 mr-1 flex-shrink-0" />
                   <span>{advisor.yearsExperience} years</span>
@@ -70,6 +75,27 @@ const AdvisorCard = ({ advisor, onSelect, isSelected }) => {
                   <FaChartLine className="w-3 h-3 sm:w-4 sm:h-4 mr-1 flex-shrink-0" />
                   <span>{advisor.numberOfTransactions} deals</span>
                 </div>
+                {advisor.phone && (
+                  <div className="flex items-center">
+                    <FaPhone className="w-3 h-3 sm:w-4 sm:h-4 mr-1 text-primary flex-shrink-0" />
+                    <span className="truncate max-w-[140px] sm:max-w-[220px]">{advisor.phone}</span>
+                  </div>
+                )}
+                {advisor.advisorEmail && (
+                  <div className="flex items-center">
+                    <FaUser className="w-3 h-3 sm:w-4 sm:h-4 mr-1 text-primary flex-shrink-0" />
+                    <span className="truncate max-w-[140px] sm:max-w-[220px]">{advisor.advisorEmail}</span>
+                  </div>
+                )}
+                {advisor.website && (
+                  <div className="flex items-center">
+                    <FaGlobe className="w-3 h-3 sm:w-4 sm:h-4 mr-1 text-primary flex-shrink-0" />
+                    <a href={advisor.website} target="_blank" rel="noopener noreferrer" className="text-primary hover:text-third transition-colors inline-flex items-center truncate max-w-[140px] sm:max-w-[220px]">
+                      <span className="truncate">{advisor.website}</span>
+                      <FaExternalLinkAlt className="w-2 h-2 sm:w-3 sm:h-3 ml-1 flex-shrink-0" />
+                    </a>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -96,7 +122,7 @@ const AdvisorCard = ({ advisor, onSelect, isSelected }) => {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
             <div className="flex items-center">
               <FaDollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 mr-2 flex-shrink-0" />
-              <span className="font-semibold text-green-800 text-sm sm:text-base">Revenue Range</span>
+              <span className="font-semibold text-green-800 text-sm sm:text-base">Revenue Range of their typical client</span>
             </div>
             <div className="text-left sm:text-right">
               <div className="text-base sm:text-lg font-bold text-green-900 break-words">
@@ -107,7 +133,7 @@ const AdvisorCard = ({ advisor, onSelect, isSelected }) => {
         </div>
 
         {/* Industries */}
-        <div>
+        {/* <div>
           <div className="flex items-center mb-2 sm:mb-3">
             <FaIndustry className="w-3 h-3 sm:w-4 sm:h-4 text-primary mr-2 flex-shrink-0" />
             <h4 className="font-semibold text-gray-900 text-sm sm:text-base">Industries</h4>
@@ -119,10 +145,10 @@ const AdvisorCard = ({ advisor, onSelect, isSelected }) => {
               </span>
             ))}
           </div>
-        </div>
+        </div> */}
 
         {/* Geographies */}
-        <div>
+        {/* <div>
           <div className="flex items-center mb-2 sm:mb-3">
             <FaMapMarkerAlt className="w-3 h-3 sm:w-4 sm:h-4 text-primary mr-2 flex-shrink-0" />
             <h4 className="font-semibold text-gray-900 text-sm sm:text-base">Geographies</h4>
@@ -134,7 +160,7 @@ const AdvisorCard = ({ advisor, onSelect, isSelected }) => {
               </span>
             ))}
           </div>
-        </div>
+        </div> */}
 
         {/* Show more/less toggle when lists are long */}
         {(((advisor.industries || []).length > 5) || ((advisor.geographies || []).length > 5)) && (
@@ -160,46 +186,71 @@ const AdvisorCard = ({ advisor, onSelect, isSelected }) => {
           </div>
         )} */}
 
-        {/* Contact Information */}
-        <div className="space-y-2 sm:space-y-3">
-          {advisor.phone && (
-            <div className="flex items-center text-gray-600">
-              <FaPhone className="w-3 h-3 sm:w-4 sm:h-4 mr-2 sm:mr-3 text-primary flex-shrink-0" />
-              <span className="text-xs sm:text-sm break-all">{advisor.phone}</span>
+        {/* Intro Video */}
+        {advisor.introVideoUrl && (
+          <div>
+            <div className="flex items-center mb-2">
+              <h4 className="font-semibold text-gray-900">Introduction Video</h4>
             </div>
-          )}
-          {advisor.website && (
-            <div className="flex items-center text-gray-600">
-              <FaGlobe className="w-3 h-3 sm:w-4 sm:h-4 mr-2 sm:mr-3 text-primary flex-shrink-0" />
-              <a href={advisor.website} target="_blank" rel="noopener noreferrer" className="text-xs sm:text-sm text-primary hover:text-third transition-colors flex items-center break-all">
-                <span className="truncate">{advisor.website}</span>
-                <FaExternalLinkAlt className="w-2 h-2 sm:w-3 sm:h-3 ml-1 flex-shrink-0" />
-              </a>
+            <div className="rounded-lg overflow-hidden border border-gray-200 bg-black">
+              <video src={advisor.introVideoUrl} controls className="w-full h-48 object-contain bg-black" />
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Testimonials */}
-        {advisor.testimonials && advisor.testimonials.length > 0 && (
+        {Array.isArray(advisor.testimonials) && advisor.testimonials.length > 0 && (
           <div>
             <div className="flex items-center mb-3">
               <FaQuoteLeft className="w-4 h-4 text-primary mr-2" />
               <h4 className="font-semibold text-gray-900">Client Testimonials</h4>
             </div>
-            <div className="space-y-3">
-              {advisor.testimonials.slice(0, 2).map((testimonial, index) => (
-                <div key={index} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                  <p className="text-gray-700 text-sm italic mb-2">"{testimonial.testimonial}"</p>
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs font-medium text-gray-600">— {testimonial.clientName}</p>
-                    {testimonial.pdfUrl && (
-                      <a href={testimonial.pdfUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:text-third transition-colors">
-                        <FaFilePdf className="w-4 h-4" />
-                      </a>
-                    )}
+            <div className="grid grid-cols-1 gap-3">
+              {advisor.testimonials.map((t, idx) => {
+                const text = t?.testimonial || '';
+                const isLong = text.length > 220;
+                const expanded = !!expandedTestimonials[idx];
+                const visible = expanded || !isLong ? text : `${text.substring(0, 220)}…`;
+                const initial = (t?.clientName || 'C').charAt(0).toUpperCase();
+                return (
+                  <div key={idx} className="rounded-xl border border-gray-200 bg-white overflow-hidden shadow-sm">
+                    <div className="flex items-center gap-3 px-4 pt-4">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-third text-white flex items-center justify-center text-sm font-bold">
+                        {initial}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-gray-900 truncate">{t?.clientName || 'Client'}</p>
+                      </div>
+                      {t?.pdfUrl && (
+                        <a
+                          href={t.pdfUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="ml-auto inline-flex items-center gap-1 text-xs text-primary hover:text-third"
+                          title="View PDF"
+                        >
+                          <FaFilePdf className="w-4 h-4" />
+                          <span>Case Study</span>
+                        </a>
+                      )}
+                    </div>
+                    <div className="px-4 pb-4">
+                      <p className="text-gray-700 text-sm mt-2">
+                        {visible}
+                      </p>
+                      {isLong && (
+                        <button
+                          type="button"
+                          onClick={() => toggleTestimonial(idx)}
+                          className="mt-2 text-xs font-semibold text-primary hover:text-third"
+                        >
+                          {expanded ? 'Read less' : 'Read more'}
+                        </button>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}

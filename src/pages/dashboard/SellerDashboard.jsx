@@ -606,7 +606,11 @@ const SellerDashboard = () => {
     geography: Yup.string().min(1, "Please select a geography").required("Geography selection is required"),
     annualRevenue: Yup.number()
       .nullable()
-      .transform((value) => (isNaN(value) || value === null || value === "" ? null : value))
+      .transform((value, originalValue) => {
+        const v = typeof originalValue === 'string' ? originalValue.replace(/,/g, '') : originalValue
+        const n = Number(v)
+        return isNaN(n) || v === '' ? null : n
+      })
       .min(1000, "Annual revenue must be at least $1,000")
       .max(999999999, "Annual revenue is too large")
       .required("Annual revenue is required")
@@ -636,7 +640,7 @@ const SellerDashboard = () => {
         website: values.website,
         industry: values.industry,
         geography: values.geography,
-        annualRevenue: values.annualRevenue,
+        annualRevenue: Number(String(values.annualRevenue || '').replace(/,/g, '')),
         currency: values.currency,
         description: values.description,
       }
@@ -752,7 +756,13 @@ const SellerDashboard = () => {
     website: profile.website || seller?.website || "",
     industry: profile.industry || seller?.industry || "",
     geography: profile.geography || seller?.geography || "",
-    annualRevenue: profile.annualRevenue || seller?.annualRevenue || "",
+    annualRevenue: (() => {
+      const raw = profile.annualRevenue ?? seller?.annualRevenue ?? ""
+      if (raw === "" || raw === null || typeof raw === 'undefined') return ""
+      const num = typeof raw === 'number' ? raw : Number(String(raw).toString().replace(/,/g, ''))
+      if (isNaN(num)) return String(raw)
+      return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+    })(),
     currency: profile.currency || seller?.currency || "USD",
     description: profile.description || seller?.description || "",
   }
@@ -897,123 +907,6 @@ const SellerDashboard = () => {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col">
-        {/* Topbar */}
-        <header className="flex items-center justify-between bg-white/95 backdrop-blur-sm shadow-lg border-b border-primary/10 px-4 lg:px-8 py-4 lg:py-6 relative overflow-hidden">
-          {/* Background Accent */}
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-third/5"></div>
-          
-          {/* Left Section */}
-          <div className="flex items-center space-x-4 relative z-10">
-            {/* Mobile menu button */}
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="lg:hidden p-2 rounded-md hover:bg-gray-100"
-            >
-              <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-            {/* <h1 className="text-lg lg:text-xl font-bold text-gray-900">Seller Dashboard</h1> */}
-          </div>
-          
-          {/* Profile Section */}
-          <div className="relative z-10">
-            <button
-              className="flex items-center gap-2 lg:gap-4 px-2 lg:px-4 py-2 rounded-xl hover:bg-primary/10 transition-all duration-300 group"
-              onClick={() => setProfileDropdownOpen((prev) => !prev)}
-            >
-              <div className="text-right hidden sm:block">
-                {/* <span className="block font-semibold text-secondary group-hover:text-primary transition-colors text-sm lg:text-base">
-                  {userProfile.name || "Loading..."}
-                </span> */}
-                <span className="block text-xs lg:text-sm text-gray-500">Seller Account</span>
-              </div>
-              <div className="relative">
-                <div className="w-8 h-8 lg:w-12 lg:h-12 flex items-center justify-center bg-gradient-to-br from-primary to-third rounded-full text-white font-bold text-sm lg:text-base shadow-lg ring-2 ring-primary/20">
-                  {(userProfile.name || "A").charAt(0)}
-                </div>
-                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 lg:w-4 lg:h-4 bg-green-500 border-2 border-white rounded-full"></div>
-              </div>
-            </button>
-            {/* Enhanced Profile Dropdown */}
-            {profileDropdownOpen && (
-              <div className="absolute right-0 mt-4 w-72 sm:w-80 bg-white/95 backdrop-blur-sm border border-primary/20 rounded-2xl shadow-2xl p-4 sm:p-6 z-50 animate-fadeIn">
-                <div className="flex flex-col gap-4">
-                  {/* Profile Header */}
-                  <div className="flex items-center gap-4 pb-4 border-b border-gray-100">
-                    <div className="w-16 h-16 flex items-center justify-center bg-gradient-to-br from-primary to-third rounded-full text-white font-bold text-xl shadow-lg">
-                      {(userProfile.name || "A").charAt(0)}
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-secondary text-lg">{userProfile.name}</h3>
-                      <p className="text-sm text-gray-500">Seller Account</p>
-                    </div>
-                  </div>
-                  {/* Name Field */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-2">Name</label>
-                    <input
-                      type="text"
-                      value={userProfile.name}
-                      readOnly
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 cursor-not-allowed text-gray-600"
-                    />
-                  </div>
-                  {/* Email Field */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-2">Email</label>
-                    <input
-                      type="email"
-                      value={userProfile.email}
-                      readOnly
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 cursor-not-allowed text-gray-600"
-                    />
-                  </div>
-                  {/* Reset Password Button */}
-                  <div className="pt-2">
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        try {
-                          const res = await axios.post(
-                            "https://advisor-seller-backend.vercel.app/api/auth/forgot-password",
-                            { email: userProfile.email },
-                            { validateStatus: () => true },
-                          )
-                          if (res.status === 200 || res.status === 201) {
-                            toast.success(res.data?.message || "Check your email to reset your password", {
-                              duration: 2000,
-                              id: "reset-password-success",
-                            })
-                            setTimeout(() => {
-                              window.location.href = "/seller-login"
-                            }, 2000)
-                          } else {
-                            toast.error(res.data?.message || "Failed to send reset link. Please try again.")
-                          }
-                        } catch (err) {
-                          console.error(err)
-                          toast.error("Network error. Please try again later.")
-                        }
-                      }}
-                      className="w-full px-6 py-3 bg-gradient-to-r from-primary to-third text-white rounded-xl hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-3 font-medium transform hover:scale-105"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
-                        />
-                      </svg>
-                      <span>Reset Password</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </header>
 
         {/* Reminder banner removed per request: show only on close/leave attempt */}
 
@@ -1299,12 +1192,22 @@ const SellerDashboard = () => {
                                       ? "€"
                                       : "£"}
                               </span>
-                              <Field
-                                name="annualRevenue"
-                                type="number"
-                                className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
-                                placeholder="1000000"
-                              />
+                            <Field name="annualRevenue">
+                              {({ field, form }) => (
+                                <input
+                                  {...field}
+                                  type="text"
+                                  className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
+                                  placeholder="1,000,000"
+                                  onChange={(e) => {
+                                    const digits = e.target.value.replace(/[^\d]/g, '')
+                                    const formatted = digits.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                                    form.setFieldValue(field.name, formatted)
+                                  }}
+                                  value={field.value}
+                                />
+                              )}
+                            </Field>
                             </div>
                             <ErrorMessage name="annualRevenue" component="p" className="text-red-500 text-sm" />
                           </div>

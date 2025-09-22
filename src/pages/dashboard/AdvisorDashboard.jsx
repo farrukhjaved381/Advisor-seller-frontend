@@ -21,6 +21,7 @@ const AdvisorDashboard = () => {
   const [leadsLoading, setLeadsLoading] = useState(false);
   const [leadError, setLeadError] = useState('');
   const [hasLoadedLeads, setHasLoadedLeads] = useState(false);
+  const [showAllIndustries, setShowAllIndustries] = useState(false);
 
   const leadStats = leadOverview?.stats;
   const totalLeads = leadStats?.totalLeads ?? 0;
@@ -101,7 +102,21 @@ const AdvisorDashboard = () => {
         const profileRes = await axios.get('https://advisor-seller-backend.vercel.app/api/advisors/profile', {
           headers: { Authorization: `Bearer ${token}` }
         });
-        setProfile(profileRes.data);
+        const p = profileRes.data || {};
+        // Normalize industries/geographies to arrays
+        const norm = (val) => Array.isArray(val)
+          ? val
+          : typeof val === 'string'
+            ? val.split(',').map(s => s.trim()).filter(Boolean)
+            : [];
+        p.industries = norm(p.industries);
+        p.geographies = norm(p.geographies);
+        // Ensure revenueRange numbers
+        if (p.revenueRange) {
+          if (p.revenueRange.min !== undefined) p.revenueRange.min = Number(p.revenueRange.min);
+          if (p.revenueRange.max !== undefined) p.revenueRange.max = Number(p.revenueRange.max);
+        }
+        setProfile(p);
       } catch (error) {
         if (error.response?.status === 404) {
           // No profile exists, check if payment is verified
@@ -477,6 +492,8 @@ const AdvisorDashboard = () => {
   });
 
   const [logoFile, setLogoFile] = useState(null);
+  const [introVideoFile, setIntroVideoFile] = useState(null);
+  const [introVideoPreview, setIntroVideoPreview] = useState('');
 
   const ValidationTouched = ({ submitCount, errors, setTouched }) => {
     useEffect(() => {
@@ -497,8 +514,24 @@ const AdvisorDashboard = () => {
       const token = localStorage.getItem('access_token');
       
       const formData = new FormData();
-      formData.append('name', values.name);
-      formData.append('industries', values.industries.join(','));
+      formData.append('name', values.name || '');
+      formData.append('companyName', values.companyName || '');
+      formData.append('phone', values.phone || '');
+      formData.append('website', values.website || '');
+      formData.append('currency', values.currency || 'USD');
+      formData.append('description', values.description || '');
+      // Arrays as JSON to ensure backend saves arrays
+      formData.append('industries', JSON.stringify(values.industries || []));
+      formData.append('geographies', JSON.stringify(values.geographies || []));
+      // Numbers and ranges
+      formData.append('yearsExperience', String(values.yearsExperience ?? ''));
+      formData.append('numberOfTransactions', String(values.numberOfTransactions ?? ''));
+      if (values.revenueRange) {
+        formData.append('revenueRange', JSON.stringify({
+          min: values.revenueRange.min || 0,
+          max: values.revenueRange.max || 0,
+        }));
+      }
       
       if (!logoFile && !profile?.logoUrl) {
         toast.error('Company logo is required');
@@ -507,6 +540,10 @@ const AdvisorDashboard = () => {
       }
       if (logoFile) {
         formData.append('logo', logoFile);
+      }
+
+      if (introVideoFile) {
+        formData.append('introVideo', introVideoFile);
       }
       
       // Handle testimonials array
@@ -527,6 +564,11 @@ const AdvisorDashboard = () => {
       toast.success('Profile updated successfully!');
       // Refresh profile data
       fetchUserData();
+      if (introVideoPreview) {
+        URL.revokeObjectURL(introVideoPreview);
+        setIntroVideoPreview('');
+      }
+      setIntroVideoFile(null);
     } catch (error) {
       console.error('Error updating profile:', error);
       toast.error('Failed to update profile');
@@ -953,12 +995,23 @@ const AdvisorDashboard = () => {
                       Industries
                     </h3>
                     <div className="flex flex-wrap gap-2">
-                      {profile.industries?.map((industry, index) => (
+                      {(showAllIndustries ? profile.industries : (profile.industries || []).slice(0, 10))?.map((industry, index) => (
                         <span key={index} className="px-3 py-2 bg-blue-100 text-blue-800 rounded-lg text-sm font-medium border border-blue-200">
                           {industry}
                         </span>
                       ))}
                     </div>
+                    {(profile.industries?.length || 0) > 10 && (
+                      <div className="pt-3">
+                        <button
+                          type="button"
+                          onClick={() => setShowAllIndustries(v => !v)}
+                          className="text-sm font-semibold text-primary hover:text-third"
+                        >
+                          {showAllIndustries ? 'Show less' : `Show ${profile.industries.length - 10} more`}
+                        </button>
+                      </div>
+                    )}
                   </motion.div>
 
                   <motion.div 
@@ -1276,6 +1329,7 @@ const AdvisorDashboard = () => {
           {activeTab === 'settings' && profile && (
             <div className="max-w-6xl mx-auto">
               <Formik
+                enableReinitialize
                 initialValues={{
                   name: profile.name || user?.name || "",
                   companyName: profile.companyName || "",
@@ -1302,7 +1356,7 @@ const AdvisorDashboard = () => {
                 onSubmit={onSubmit}
               >
                 {({ isSubmitting, values, setFieldValue, submitCount, errors, setTouched }) => (
-                  <Form className="space-y-8">
+                  <Form className="space-y-8" key={JSON.stringify(profile?.industries) + '|' + JSON.stringify(profile?.geographies)}>
                     {submitCount > 0 && Object.keys(errors || {}).length > 0 && (
                       <div className="mb-4 p-3 rounded border border-red-200 bg-red-50 text-red-700">
                         Please fix {Object.keys(errors).length} highlighted field{Object.keys(errors).length>1?'s':''}.
@@ -1595,6 +1649,91 @@ const AdvisorDashboard = () => {
                                     {logoFile.name}
                                   </span>
                                 </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Introduction Video Upload */}
+                    <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                      <h3 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                        <FaFileAlt className="mr-3 text-primary" />
+                        Advisor Introduction Video (optional)
+                      </h3>
+
+                      <div className="flex flex-col items-center justify-center">
+                        <div className="w-full max-w-xl">
+                          {/* Existing video preview if available and no new file */}
+                          {profile.introVideoUrl && !introVideoFile && (
+                            <div className="mb-4">
+                              <div className="relative aspect-video bg-black rounded-lg overflow-hidden border border-gray-200 shadow-sm">
+                                <video src={profile.introVideoUrl} controls className="w-full h-full object-contain bg-black" />
+                              </div>
+                              <p className="text-sm text-gray-600 mt-2 text-center">Current intro video</p>
+                            </div>
+                          )}
+
+                          <input
+                            type="file"
+                            accept="video/mp4,video/quicktime,video/webm"
+                            id="intro-video-upload"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              if (!file.type.startsWith('video/')) {
+                                toast.error('Please select a valid video file (MP4, MOV, WEBM).');
+                                return;
+                              }
+                              if (file.size > 200 * 1024 * 1024) {
+                                toast.error('Video must be 200MB or smaller.');
+                                return;
+                              }
+                              if (introVideoPreview) {
+                                URL.revokeObjectURL(introVideoPreview);
+                              }
+                              setIntroVideoFile(file);
+                              setIntroVideoPreview(URL.createObjectURL(file));
+                            }}
+                          />
+                          <label
+                            htmlFor="intro-video-upload"
+                            className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-primary/30 rounded-lg cursor-pointer bg-white hover:bg-primary/5 transition-all duration-200"
+                          >
+                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                              <FaFileAlt className="w-8 h-8 mb-2 text-primary" />
+                              <p className="mb-1 text-sm text-gray-700">
+                                <span className="font-semibold">Click to {profile.introVideoUrl ? 'change' : 'upload'}</span> intro video
+                              </p>
+                              <p className="text-xs text-gray-500">MP4, MOV, or WEBM • up to 200MB</p>
+                            </div>
+                          </label>
+
+                          {introVideoFile && (
+                            <div className="mt-4 space-y-3">
+                              {introVideoPreview && (
+                                <div className="relative aspect-video bg-black rounded-lg overflow-hidden border border-gray-200 shadow-sm">
+                                  <video src={introVideoPreview} controls className="w-full h-full object-contain bg-black" />
+                                </div>
+                              )}
+                              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between">
+                                <div className="flex items-center">
+                                  <FaUser className="text-blue-500 mr-2" />
+                                  <span className="text-sm text-blue-800 font-medium">{introVideoFile.name}</span>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (introVideoPreview) URL.revokeObjectURL(introVideoPreview);
+                                    setIntroVideoFile(null);
+                                    setIntroVideoPreview('');
+                                  }}
+                                  className="text-xs text-blue-700 hover:text-blue-900 font-semibold"
+                                >
+                                  Remove
+                                </button>
                               </div>
                             </div>
                           )}
