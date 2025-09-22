@@ -321,15 +321,18 @@ export default function AdvisorProfile() {
                       </tr>
                     </thead>
                     <tbody>
-                      {history.slice().reverse().map((h, idx) => (
-                        <tr key={idx} className="border-b last:border-0">
-                          <td className="py-2 pr-4">{formatDate(h.createdAt)}</td>
-                          <td className="py-2 pr-4">{h.description || 'Payment'}</td>
-                          <td className="py-2 pr-4">{centsToUsd(h.amount)} {String(h.currency || 'usd').toUpperCase()}</td>
-                          <td className="py-2 pr-4 capitalize">{h.status}</td>
-                          <td className="py-2 pr-4 truncate max-w-[220px]" title={h.id}>{h.id}</td>
-                        </tr>
-                      ))}
+                      {history.slice().reverse().map((h, idx) => {
+                        const pid = h.paymentId || h.id || h._id || '';
+                        return (
+                          <tr key={idx} className="border-b last:border-0">
+                            <td className="py-2 pr-4">{formatDate(h.createdAt)}</td>
+                            <td className="py-2 pr-4">{h.description || 'Payment'}</td>
+                            <td className="py-2 pr-4">{centsToUsd(h.amount)} {String(h.currency || 'usd').toUpperCase()}</td>
+                            <td className="py-2 pr-4 capitalize">{h.status}</td>
+                            <td className="py-2 pr-4 truncate max-w-[220px]" title={pid}>{pid}</td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
