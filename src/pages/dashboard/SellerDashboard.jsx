@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import axios from "axios"
 import AdvisorCard from "../../components/AdvisorCard"
 import toast, { Toaster } from "react-hot-toast"
@@ -13,6 +13,7 @@ import { getIndustryData } from "../../components/Static/newIndustryData"
 import { Country, State } from "country-state-city"
 import { FaChevronDown, FaChevronRight, FaSearch } from "react-icons/fa"
 import EditProfileModal from "../../components/EditProfileModal"
+import { useLocation, useNavigate } from "react-router-dom"
 
 // Map selected industry id to top-level industry label
 const mapIndustry = (selectedId) => {
@@ -297,6 +298,14 @@ const GeographyRadioChooser = ({ selected, onChange }) => {
 }
 
 const SellerDashboard = () => {
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  // Exit guard refs
+  const exitGuardEnabledRef = useRef(true) // block exit until profile is deleted
+  const revertInProgressRef = useRef(false) // avoid loops when reverting navigation
+  const lastPathRef = useRef("")
+
   // Delete profile handler (replaces logout)
   const handleDeleteProfile = async () => {
     const confirmed = window.confirm(
@@ -327,6 +336,8 @@ const SellerDashboard = () => {
       }
 
       toast.success("Profile deleted. See you next time!")
+      // allow navigation away (disable exit guard) before redirecting
+      exitGuardEnabledRef.current = false
       setTimeout(() => {
         window.location.href = "/seller-login"
       }, 1500)
@@ -563,11 +574,11 @@ const SellerDashboard = () => {
     fetchMatches()
   }, [profileRefreshTrigger])
 
-  // Warn on unload only when there are unsaved changes (prevents constant prompts)
+  // Always warn on unload while exit guard is enabled (tab close, browser close, URL change)
   const [unsavedChanges, setUnsavedChanges] = useState(false)
   useEffect(() => {
     const beforeUnloadHandler = (e) => {
-      if (unsavedChanges) {
+      if (exitGuardEnabledRef.current) {
         e.preventDefault()
         e.returnValue = ""
         return ""
@@ -577,7 +588,39 @@ const SellerDashboard = () => {
     return () => {
       window.removeEventListener("beforeunload", beforeUnloadHandler)
     }
-  }, [unsavedChanges])
+  }, [])
+
+  // Block in-app route changes while exit guard is enabled (back button or URL/path changes within SPA)
+  useEffect(() => {
+    const currentPath = location.pathname + location.search + location.hash
+
+    // Initialize lastPathRef on first render
+    if (!lastPathRef.current) {
+      lastPathRef.current = currentPath
+      return
+    }
+
+    // If we're reverting a navigation, just record and clear the flag
+    if (revertInProgressRef.current) {
+      lastPathRef.current = currentPath
+      revertInProgressRef.current = false
+      return
+    }
+
+    // Detect a path change
+    if (currentPath !== lastPathRef.current) {
+      if (exitGuardEnabledRef.current) {
+        // Notify user and revert navigation
+        alert("Don't exit without deleting the profile. Please delete your profile to leave the dashboard.")
+        toast.error("Delete your profile before exiting.")
+        revertInProgressRef.current = true
+        navigate(-1)
+        return
+      }
+      // Allowed navigation (guard disabled)
+      lastPathRef.current = currentPath
+    }
+  }, [location, navigate])
 
   // Comprehensive validation schema with all fields required
   const SellerSchema = Yup.object().shape({

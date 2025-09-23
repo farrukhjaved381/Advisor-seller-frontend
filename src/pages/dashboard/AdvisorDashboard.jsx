@@ -1268,7 +1268,20 @@ const AdvisorDashboard = () => {
                             return (
                               <tr key={lead._id}>
                                 <td className="px-4 py-3 text-gray-900 font-medium">
-                                  {seller.companyName || 'Unknown seller'}
+                                  <div className="flex flex-col">
+                                    <span>{seller.companyName || 'Unknown seller'}</span>
+                                    {(seller.website || seller.phone) && (
+                                      <span className="text-xs text-gray-500 font-normal">
+                                        {seller.website && (
+                                          <a className="underline hover:text-primary" href={seller.website} target="_blank" rel="noopener noreferrer">
+                                            Website
+                                          </a>
+                                        )}
+                                        {seller.website && seller.phone && ' • '}
+                                        {seller.phone && <span>{seller.phone}</span>}
+                                      </span>
+                                    )}
+                                  </div>
                                 </td>
                                 <td className="px-4 py-3 text-gray-600">{seller.industry || '—'}</td>
                                 <td className="px-4 py-3 text-gray-600">{seller.geography || '—'}</td>
