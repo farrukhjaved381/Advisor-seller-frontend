@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_CONFIG } from '../../config/api';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
@@ -86,7 +87,7 @@ const AdvisorDashboard = () => {
       }
 
       // Get user profile
-      const userRes = await axios.get('https://advisor-seller-backend.vercel.app/api/auth/profile', {
+      const userRes = await axios.get(`${API_CONFIG.BACKEND_URL}/api/auth/profile`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -99,7 +100,7 @@ const AdvisorDashboard = () => {
 
       // Get advisor profile from database
       try {
-        const profileRes = await axios.get('https://advisor-seller-backend.vercel.app/api/advisors/profile', {
+        const profileRes = await axios.get(`${API_CONFIG.BACKEND_URL}/api/advisors/profile`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const p = profileRes.data || {};
@@ -150,7 +151,7 @@ const AdvisorDashboard = () => {
       if (!token) return;
       setLeadsLoading(true);
       setLeadError('');
-      const response = await axios.get('https://advisor-seller-backend.vercel.app/api/advisors/leads', {
+      const response = await axios.get(`${API_CONFIG.BACKEND_URL}/api/advisors/leads`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setLeadOverview(response.data);
@@ -167,7 +168,7 @@ const AdvisorDashboard = () => {
     try {
       const token = localStorage.getItem('access_token');
       if (token) {
-        await axios.post('https://advisor-seller-backend.vercel.app/api/auth/logout', {}, {
+        await axios.post(`${API_CONFIG.BACKEND_URL}/api/auth/logout`, {}, {
           headers: { Authorization: `Bearer ${token}` }
         });
       }
@@ -561,7 +562,7 @@ const AdvisorDashboard = () => {
         }
       });
       
-      await axios.patch('https://advisor-seller-backend.vercel.app/api/advisors/profile', formData, {
+      await axios.patch(`${API_CONFIG.BACKEND_URL}/api/advisors/profile`, formData, {
         headers: { 
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data'
@@ -739,7 +740,7 @@ const AdvisorDashboard = () => {
                       e.stopPropagation();
                       try {
                         const token = localStorage.getItem('access_token');
-                        await axios.post('https://advisor-seller-backend.vercel.app/api/payment/resume', {}, { headers: { Authorization: `Bearer ${token}` }});
+                        await axios.post(`${API_CONFIG.BACKEND_URL}/api/payment/resume`, {}, { headers: { Authorization: `Bearer ${token}` }});
                         toast.success('Subscription resumed');
                         fetchUserData();
                       } catch {
@@ -1141,7 +1142,7 @@ const AdvisorDashboard = () => {
                             try {
                               const token = localStorage.getItem('access_token');
                               await axios.patch(
-                                'https://advisor-seller-backend.vercel.app/api/advisors/profile/pause-leads',
+                                `${API_CONFIG.BACKEND_URL}/api/advisors/profile/pause-leads`,
                                 { sendLeads: !profile.sendLeads },
                                 { headers: { Authorization: `Bearer ${token}` } }
                               );
@@ -1321,7 +1322,7 @@ const AdvisorDashboard = () => {
                               try {
                                 const token = localStorage.getItem('access_token');
                                 await axios.patch(
-                                  'https://advisor-seller-backend.vercel.app/api/advisors/profile/pause-leads',
+                                  `${API_CONFIG.BACKEND_URL}/api/advisors/profile/pause-leads`,
                                   { sendLeads: true },
                                   { headers: { Authorization: `Bearer ${token}` } }
                                 );
