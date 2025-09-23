@@ -136,9 +136,25 @@ export default function AdvisorProfile() {
   const now = new Date();
   const end = subscription?.currentPeriodEnd ? new Date(subscription.currentPeriodEnd) : null;
   const start = subscription?.currentPeriodStart ? new Date(subscription.currentPeriodStart) : null;
-  // Derive a display start if stored start is in the future (early renewal stored incorrectly as next cycle)
-  const displayStart = start && end && start > now ? new Date(new Date(end).setFullYear(end.getFullYear() - 1)) : start;
-  const isActive = (user?.isSubscriptionActive ?? user?.isPaymentVerified) || (end && end > now);
+  // Find the most recent payment date from history
+  const lastPaymentAt = (history || []).reduce((acc, h) => {
+    const d = h?.createdAt ? new Date(h.createdAt) : null;
+    return !d ? acc : (!acc || d > acc ? d : acc);
+  }, null);
+  // Derive a display start when backend start is missing or incorrectly set in the future
+  let displayStart = start;
+  if (end) {
+    if (!displayStart || (displayStart > now)) {
+      if (lastPaymentAt && lastPaymentAt <= now && lastPaymentAt <= end) {
+        displayStart = lastPaymentAt;
+      } else {
+        // Fallback to 1 year before end when no reliable start available
+        displayStart = new Date(new Date(end).setFullYear(end.getFullYear() - 1));
+      }
+    }
+  }
+  const displayEnd = displayStart ? new Date(new Date(displayStart).setFullYear(displayStart.getFullYear() + 1)) : end;
+  const isActive = (user?.isSubscriptionActive ?? user?.isPaymentVerified) || (displayEnd && displayEnd > now);
   const isCanceled = subscription?.status === 'canceled';
   const isExpired = subscription?.status === 'expired' || (!isActive && user?.isPaymentVerified);
 
@@ -296,7 +312,7 @@ export default function AdvisorProfile() {
                     </div>
                     <div className="text-sm text-gray-600 flex items-center gap-2 mt-1">
                       <FaCalendarAlt />
-                      <span>Current period: {formatDate(displayStart)} – {formatDate(subscription?.currentPeriodEnd)}</span>
+                      <span>Current period: {formatDate(displayStart)} – {formatDate(displayEnd)}</span>
                     </div>
                     {isCanceled && end && end > now && (
                       <div className="text-sm text-yellow-700 mt-2">Canceled. You retain access until {formatDate(end)}.</div>
@@ -327,7 +343,7 @@ export default function AdvisorProfile() {
               </div>
               {isActive && (
                 <div className="text-xs text-gray-500 mt-2">
-                  Renewing now will extend your access beyond {formatDate(subscription?.currentPeriodEnd)} by one year.
+                  Renewing now will extend your access beyond {formatDate(displayEnd)} by one year.
                 </div>
               )}
             </div>
