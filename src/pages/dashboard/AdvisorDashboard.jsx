@@ -844,7 +844,15 @@ const AdvisorDashboard = () => {
                           {user?.isSubscriptionActive ? 'Active' : 'Inactive'}
                         </p>
                         <p className="text-xs text-gray-500 mt-1">
-                          Ends: {user?.subscription?.currentPeriodEnd ? new Date(user.subscription.currentPeriodEnd).toLocaleDateString() : '—'}
+                          {(() => {
+                            const sub = user?.subscription || {};
+                            const now = new Date();
+                            const start = sub.currentPeriodStart ? new Date(sub.currentPeriodStart) : null;
+                            const end = sub.currentPeriodEnd ? new Date(sub.currentPeriodEnd) : null;
+                            // If start is in the future (next cycle), the current cycle ends at start; else ends at end
+                            const displayEnd = start && start > now ? start : end;
+                            return `Ends: ${displayEnd ? displayEnd.toLocaleDateString() : '—'}`;
+                          })()}
                         </p>
                       </div>
                       <button
