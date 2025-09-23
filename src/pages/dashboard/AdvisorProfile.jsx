@@ -198,7 +198,7 @@ export default function AdvisorProfile() {
 
               <button
                 className={"w-full text-left px-4 py-3 rounded-lg transition-all duration-200 flex items-center justify-between text-gray-700 hover:bg-gray-100"}
-                onClick={() => navigate('/advisor-dashboard')}
+                onClick={() => navigate('/advisor-dashboard?tab=leads')}
               >
                 <div className="flex items-center space-x-3">
                   <FaChartLine className="w-5 h-5" />
@@ -211,7 +211,7 @@ export default function AdvisorProfile() {
 
               <button
                 className={"w-full text-left px-4 py-3 rounded-lg transition-all duration-200 flex items-center justify-between text-gray-700 hover:bg-gray-100"}
-                onClick={() => navigate('/advisor-dashboard')}
+                onClick={() => navigate('/advisor-dashboard?tab=overview')}
               >
                 <div className="flex items-center space-x-3">
                   <FaUser className="w-5 h-5" />

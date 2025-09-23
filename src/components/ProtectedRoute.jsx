@@ -53,10 +53,13 @@ const ProtectedRoute = ({ children, requiredRole, requiresPayment = false }) => 
   const cached = (() => {
     try { return JSON.parse(localStorage.getItem('user') || 'null'); } catch { return null; }
   })();
-  // Always start loading to avoid redirect-before-auth on first mount/navigate
-  const [loading, setLoading] = useState(true);
+  const hasToken = (() => {
+    try { return !!localStorage.getItem('access_token'); } catch { return false; }
+  })();
+  // Optimistic render when we have cached user and token
+  const [loading, setLoading] = useState(!cached || !hasToken);
   const [user, setUser] = useState(cached);
-  const [authorized, setAuthorized] = useState(false);
+  const [authorized, setAuthorized] = useState(!!cached && hasToken);
 
   useEffect(() => {
     checkAuth();

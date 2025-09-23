@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { API_CONFIG } from '../../config/api';
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -71,6 +71,18 @@ const AdvisorDashboard = () => {
       setActiveTab('settings');
     }
   }, []);
+
+  // Read tab from query string (?tab=leads|overview|settings)
+  const location = useLocation();
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(location.search);
+      const tab = params.get('tab');
+      if (tab && ['leads','overview','settings'].includes(tab)) {
+        setActiveTab(tab);
+      }
+    } catch {}
+  }, [location.search]);
 
   useEffect(() => {
     if (activeTab === 'leads' && !hasLoadedLeads) {

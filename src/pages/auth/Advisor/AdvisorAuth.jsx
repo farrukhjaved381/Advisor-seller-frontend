@@ -120,6 +120,13 @@ const Auth = () => {
           console.log('User data from API:', user);
           localStorage.setItem("user", JSON.stringify(user));
 
+          // If email is not verified, show specific message and stop
+          if (user.role === 'advisor' && user.isEmailVerified === false) {
+            toast.error('Please verify your email first.');
+            setLoading(false);
+            return;
+          }
+
           if (user.role === "advisor") {
             if (!user.isPaymentVerified) {
               navigate("/advisor-payments");
@@ -148,7 +155,12 @@ const Auth = () => {
             navigate("/"); // fallback
           }
         } else if (res.status === 401) {
-          toast.error("Incorrect email or password ❌");
+          const msg = res.data?.message || '';
+          if (/verify/i.test(msg)) {
+            toast.error('Please verify your email first.');
+          } else {
+            toast.error("Incorrect email or password ❌");
+          }
         } else {
           toast.error(res.data?.message || "Something went wrong");
         }
