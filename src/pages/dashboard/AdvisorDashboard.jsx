@@ -151,7 +151,7 @@ const AdvisorDashboard = () => {
       if (!token) return;
       setLeadsLoading(true);
       setLeadError('');
-      const response = await axios.get(`${API_CONFIG.BACKEND_URL}/api/advisors/leads`, {
+      const response = await axios.get(`${API_CONFIG.BACKEND_URL}/api/advisors/leads?_=${Date.now()}` , {
         headers: { Authorization: `Bearer ${token}` },
       });
       setLeadOverview(response.data);
@@ -1265,7 +1265,11 @@ const AdvisorDashboard = () => {
                         </thead>
                         <tbody className="divide-y divide-gray-100">
                           {recentLeads.slice(0, 10).map((lead) => {
-                            const seller = lead.sellerId || {};
+                            const seller = (lead.seller && typeof lead.seller === 'object')
+                              ? lead.seller
+                              : (lead.sellerId && typeof lead.sellerId === 'object')
+                                ? lead.sellerId
+                                : {};
                             return (
                               <tr key={lead._id}>
                                 <td className="px-4 py-3 text-gray-900 font-medium">
