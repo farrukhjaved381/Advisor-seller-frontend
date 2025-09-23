@@ -73,7 +73,7 @@ const AppRoutes = () => {
                     <AdvisorUpload />
                 </ProtectedRoute>
             } />
-            <Route path="/edit-advisor-profile" element={<Navigate to="/advisor-dashboard" replace />} />
+            <Route path="/edit-advisor-profile" element={<Navigate to="/advisor-dashboard?tab=settings" replace />} />
         </Routes>
     );
 };

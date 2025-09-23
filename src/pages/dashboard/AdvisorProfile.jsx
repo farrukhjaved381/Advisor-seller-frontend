@@ -224,7 +224,7 @@ export default function AdvisorProfile() {
 
               <button
                 className={"w-full text-left px-4 py-3 rounded-lg transition-all duration-200 flex items-center space-x-3 text-gray-700 hover:bg-gray-100"}
-                onClick={() => navigate('/edit-advisor-profile')}
+                onClick={() => navigate('/advisor-dashboard?tab=settings')}
               >
                 <FaCog className="w-5 h-5" />
                 <div>

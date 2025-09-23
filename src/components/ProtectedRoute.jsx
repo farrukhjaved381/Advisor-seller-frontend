@@ -155,8 +155,11 @@ const ProtectedRoute = ({ children, requiredRole, requiresPayment = false }) => 
   // Advisor specific redirection logic
   if (user.role === 'advisor') {
     const { pathname } = window.location;
-    const isActive = user.isSubscriptionActive ?? user.isPaymentVerified;
-    const allowWhenInactive = ['/advisor-payments', '/adviser-payment'];
+    const isActive = (typeof user.isSubscriptionActive === 'boolean')
+      ? user.isSubscriptionActive
+      : !!user.isPaymentVerified;
+    // Allow the advisor form even if active flag hasn't propagated yet after first payment
+    const allowWhenInactive = ['/advisor-payments', '/adviser-payment', '/advisor-form'];
     if (!isActive) {
       if (!allowWhenInactive.includes(pathname)) {
         return <Navigate to="/advisor-payments" replace />;
