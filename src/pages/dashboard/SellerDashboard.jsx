@@ -302,6 +302,7 @@ const SellerDashboard = () => {
   const location = useLocation()
 
   // Exit guard refs
+  const [guardEnabled, setGuardEnabled] = useState(true)
   const exitGuardEnabledRef = useRef(true) // block exit until profile is deleted
   const revertInProgressRef = useRef(false) // avoid loops when reverting navigation
   const lastPathRef = useRef("")
@@ -338,6 +339,7 @@ const SellerDashboard = () => {
       toast.success("Profile deleted. See you next time!")
       // allow navigation away (disable exit guard) before redirecting
       exitGuardEnabledRef.current = false
+      setGuardEnabled(false)
       setTimeout(() => {
         window.location.href = "/seller-login"
       }, 1500)
@@ -577,6 +579,7 @@ const SellerDashboard = () => {
   // Always warn on unload while exit guard is enabled (tab close, browser close, URL change)
   const [unsavedChanges, setUnsavedChanges] = useState(false)
   useEffect(() => {
+    console.log('[SellerDashboard] Exit guard mounted')
     const beforeUnloadHandler = (e) => {
       if (exitGuardEnabledRef.current) {
         e.preventDefault()
@@ -587,6 +590,57 @@ const SellerDashboard = () => {
     window.addEventListener("beforeunload", beforeUnloadHandler)
     return () => {
       window.removeEventListener("beforeunload", beforeUnloadHandler)
+    }
+  }, [])
+
+  // (Removed unstable router blocker; using history/beforeunload guards instead)
+
+  // Block browser back/forward (popstate) while guard enabled
+  useEffect(() => {
+    // Push a dummy state so back button fires popstate and we can intercept
+    try {
+      window.history.pushState({ _guard: true }, document.title, window.location.href)
+    } catch {}
+
+    const onPopState = (e) => {
+      if (!exitGuardEnabledRef.current) return
+      // Re-push state to keep user on the page
+      try {
+        window.history.pushState({ _guard: true }, document.title, window.location.href)
+      } catch {}
+      alert("Don't exit without deleting the profile. Please delete your profile to leave the dashboard.")
+      toast.error("Delete your profile before exiting.")
+    }
+    window.addEventListener('popstate', onPopState)
+    return () => {
+      window.removeEventListener('popstate', onPopState)
+    }
+  }, [])
+
+  // Block in-app navigation triggered via history.pushState/replaceState (e.g., Links)
+  useEffect(() => {
+    const originalPush = window.history.pushState
+    const originalReplace = window.history.replaceState
+
+    const guardWrapper = (original) => function (...args) {
+      if (exitGuardEnabledRef.current) {
+        alert("Don't exit without deleting the profile. Please delete your profile to leave the dashboard.")
+        toast.error("Delete your profile before exiting.")
+        return // cancel navigation
+      }
+      return original.apply(this, args)
+    }
+
+    try {
+      window.history.pushState = guardWrapper(originalPush)
+      window.history.replaceState = guardWrapper(originalReplace)
+    } catch {}
+
+    return () => {
+      try {
+        window.history.pushState = originalPush
+        window.history.replaceState = originalReplace
+      } catch {}
     }
   }, [])
 
@@ -610,17 +664,18 @@ const SellerDashboard = () => {
     // Detect a path change
     if (currentPath !== lastPathRef.current) {
       if (exitGuardEnabledRef.current) {
-        // Notify user and revert navigation
+        // Notify user and revert navigation if possible
         alert("Don't exit without deleting the profile. Please delete your profile to leave the dashboard.")
         toast.error("Delete your profile before exiting.")
-        revertInProgressRef.current = true
-        navigate(-1)
+        try { revertInProgressRef.current = true; navigate(-1) } catch {}
         return
       }
       // Allowed navigation (guard disabled)
       lastPathRef.current = currentPath
     }
   }, [location, navigate])
+
+  // No router blocker component required
 
   // Comprehensive validation schema with all fields required
   const SellerSchema = Yup.object().shape({

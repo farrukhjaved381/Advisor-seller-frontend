@@ -59,26 +59,46 @@ const SellerSchema = Yup.object().shape({
     .required("Description is required"),
 });
 
+// Show all validation errors after submit and scroll to first
+const ValidationEffects = () => {
+  const { submitCount, errors, setTouched, isSubmitting } = useFormikContext();
+  React.useEffect(() => {
+    if (submitCount > 0 && errors && Object.keys(errors).length) {
+      const all = {};
+      const walk = (o, p = '') => {
+        Object.keys(o).forEach(k => {
+          const path = p ? `${p}.${k}` : k;
+          if (o[k] && typeof o[k] === 'object') walk(o[k], path); else all[path] = true;
+        });
+      };
+      walk(errors);
+      setTouched(all, true);
+      const first = Object.keys(all)[0];
+      if (first && !isSubmitting) {
+        const el = document.querySelector(`[name="${first}"],[data-field="${first}"]`);
+        if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }, [submitCount]);
+  return null;
+};
+
+const ErrorBanner = () => {
+  const { submitCount, errors } = useFormikContext();
+  const count = (o) => { let c = 0; const walk = x => Object.values(x||{}).forEach(v=>{ if (v && typeof v==='object') walk(v); else c++; }); walk(o); return c; };
+  const ec = count(errors);
+  if (submitCount > 0 && ec > 0) {
+    return (
+      <div className="mb-4 p-3 rounded border border-red-200 bg-red-50 text-red-700">
+        Please fix {ec} highlighted field{ec>1?'s':''}.
+      </div>
+    );
+  }
+  return null;
+};
+
 // Simple Input with separate label
 const SimpleInput = ({ name, type = "text", placeholder, label, icon }) => {
-  const ValidationEffects = () => {
-    const { submitCount, errors, setTouched } = useFormikContext();
-    React.useEffect(() => {
-      if (submitCount > 0 && errors && Object.keys(errors).length) {
-        const all = {}; const walk=(o,p='')=>{Object.keys(o).forEach(k=>{const path=p?`${p}.${k}`:k; if(o[k]&&typeof o[k]==='object') walk(o[k],path); else all[path]=true;});}; walk(errors); setTouched(all, true);
-      }
-    }, [submitCount]);
-    return null;
-  };
-
-  const ErrorBanner = () => {
-    const { submitCount, errors } = useFormikContext();
-    const count=(o)=>{let c=0; const walk=x=>Object.values(x||{}).forEach(v=>{ if(v&&typeof v==='object') walk(v); else c++;}); walk(o); return c;};
-    const ec=count(errors);
-    if (submitCount>0 && ec>0) return <div className="mb-4 p-3 rounded border border-red-200 bg-red-50 text-red-700">Please fix {ec} highlighted field{ec>1?'s':''}.</div>;
-    return null;
-  };
-
   return (
     <div className="w-full">
       <label className="block text-sm font-medium text-secondary mb-2 flex items-center">
@@ -554,24 +574,27 @@ const SellerForm = () => {
                     <FaChartLine className="mr-2 text-primary text-xs" />
                     Annual Revenue
                   </label>
-                  <Field name="annualRevenue">
-                    {({ field, form }) => (
-                      <input
-                        {...field}
-                        type="text"
-                        placeholder="Enter annual revenue"
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary"
-                        onChange={(e) => {
-                          // Only allow numbers and commas, no currency symbol
-                          const value = e.target.value.replace(/[^\d,]/g, '');
-                          if (value === '' || /^\d{1,3}(,\d{3})*$/.test(value) || /^\d+$/.test(value)) {
-                            form.setFieldValue(field.name, value);
-                          }
-                        }}
-                        value={field.value}
-                      />
-                    )}
-                  </Field>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+                      {values.currency === 'USD' ? '$' : values.currency === 'EUR' ? '€' : values.currency === 'GBP' ? '£' : ''}
+                    </span>
+                    <Field name="annualRevenue">
+                      {({ field, form }) => (
+                        <input
+                          {...field}
+                          type="text"
+                          placeholder="1,000,000"
+                          className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary"
+                          onChange={(e) => {
+                            const digits = e.target.value.replace(/[^\d]/g, '');
+                            const formatted = digits.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                            form.setFieldValue(field.name, formatted);
+                          }}
+                          value={field.value}
+                        />
+                      )}
+                    </Field>
+                  </div>
                   <ErrorMessage name="annualRevenue" component="div" className="text-red-500 text-sm mt-1" />
                 </div>
               </motion.div>

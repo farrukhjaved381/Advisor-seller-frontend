@@ -1,10 +1,61 @@
 import React, { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import axios from 'axios';
+import { API_CONFIG } from '../config/api';
+
+// Global exit guard for seller routes (except seller form)
+const SellerExitGuard = ({ enabled }) => {
+  useEffect(() => {
+    if (!enabled) return;
+    // Flag so pages can detect a global guard exists
+    window.__SELLER_EXIT_GUARD_ACTIVE = true;
+
+    const isEnabled = () => {
+      if (!enabled) return false;
+      if (typeof window === 'undefined') return false;
+      const path = window.location?.pathname || '';
+      if (path === '/seller-form') return false;
+      const token = localStorage.getItem('access_token');
+      if (!token) return false; // disabled after profile delete/logout
+      return true;
+    };
+
+    // beforeunload: native confirmation
+    const beforeUnloadHandler = (e) => {
+      if (isEnabled()) {
+        e.preventDefault();
+        e.returnValue = '';
+        return '';
+      }
+    };
+    window.addEventListener('beforeunload', beforeUnloadHandler);
+
+    // popstate: block back/forward
+    try { window.history.pushState({ _guard: true }, document.title, window.location.href); } catch {}
+    const onPopState = () => {
+      if (!isEnabled()) return;
+      try { window.history.pushState({ _guard: true }, document.title, window.location.href); } catch {}
+      alert("Don't exit without deleting the profile. Please delete your profile to leave the dashboard.");
+      // toast is optional here; toast library may not be loaded at this layer
+    };
+    window.addEventListener('popstate', onPopState);
+
+    return () => {
+      window.removeEventListener('beforeunload', beforeUnloadHandler);
+      window.removeEventListener('popstate', onPopState);
+      delete window.__SELLER_EXIT_GUARD_ACTIVE;
+    };
+  }, [enabled]);
+  return null;
+};
 
 const ProtectedRoute = ({ children, requiredRole, requiresPayment = false }) => {
+  const cached = (() => {
+    try { return JSON.parse(localStorage.getItem('user') || 'null'); } catch { return null; }
+  })();
+  // Always start loading to avoid redirect-before-auth on first mount/navigate
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(cached);
   const [authorized, setAuthorized] = useState(false);
 
   useEffect(() => {
@@ -19,7 +70,7 @@ const ProtectedRoute = ({ children, requiredRole, requiresPayment = false }) => 
         return;
       }
 
-      const response = await axios.get('https://advisor-seller-backend.vercel.app/api/auth/profile', {
+      const response = await axios.get(`${API_CONFIG.BACKEND_URL}/api/auth/profile`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -28,7 +79,7 @@ const ProtectedRoute = ({ children, requiredRole, requiresPayment = false }) => 
       if (userData.role === 'seller' && !userData.isProfileComplete) {
         try {
           const profileResponse = await axios.get(
-            'https://advisor-seller-backend.vercel.app/api/sellers/profile',
+            `${API_CONFIG.BACKEND_URL}/api/sellers/profile`,
             { headers: { Authorization: `Bearer ${token}` }, validateStatus: () => true }
           );
 
@@ -129,7 +180,14 @@ const ProtectedRoute = ({ children, requiredRole, requiresPayment = false }) => 
     }
   }
 
-  return children;
+  // Apply exit guard to all seller routes except seller form
+  const shouldGuard = user.role === 'seller' && window.location.pathname !== '/seller-form';
+  return (
+    <>
+      {shouldGuard && <SellerExitGuard enabled />}
+      {children}
+    </>
+  );
 };
 
 export default ProtectedRoute;

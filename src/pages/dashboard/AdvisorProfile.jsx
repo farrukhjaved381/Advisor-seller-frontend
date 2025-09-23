@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { API_CONFIG } from '../../config/api';
 import { useNavigate, Link } from 'react-router-dom';
 import {
   FaCalendarAlt,
@@ -39,36 +40,36 @@ export default function AdvisorProfile() {
 
   useEffect(() => {
     const load = async () => {
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        navigate('/advisor-login');
+        return;
+      }
       try {
-        const token = localStorage.getItem('access_token');
-        if (!token) {
-          navigate('/advisor-login');
-          return;
-        }
-        console.log('[AdvisorProfile] Fetch /api/auth/profile');
-        const profileRes = await axios.get('https://advisor-seller-backend.vercel.app/api/auth/profile', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setUser(profileRes.data);
-        setSubscription(profileRes.data.subscription);
-
-        try {
-          console.log('[AdvisorProfile] Fetch /api/payment/history');
-          const histRes = await axios.get('https://advisor-seller-backend.vercel.app/api/payment/history', {
+        // Fetch profile and payment history in parallel for faster render
+        const [profileRes, histRes] = await Promise.all([
+          axios.get(`${API_CONFIG.BACKEND_URL}/api/auth/profile`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          axios.get(`${API_CONFIG.BACKEND_URL}/api/payment/history`, {
             headers: { Authorization: `Bearer ${token}` },
             validateStatus: () => true,
-          });
-          if (histRes.status >= 200 && histRes.status < 300) {
-            setHistory(histRes.data.paymentHistory || []);
-            if (histRes.data.subscription) setSubscription(histRes.data.subscription);
-          } else {
-            console.warn('[AdvisorProfile] history API non-2xx:', histRes.status, histRes.data);
-          }
-        } catch (err) {
-          console.error('[AdvisorProfile] history API failed', err);
+          }),
+        ]);
+
+        setUser(profileRes.data);
+        const subFromProfile = profileRes.data?.subscription;
+        let sub = subFromProfile || null;
+
+        if (histRes.status >= 200 && histRes.status < 300) {
+          setHistory(histRes.data.paymentHistory || []);
+          if (histRes.data.subscription) sub = histRes.data.subscription;
+        } else {
+          console.warn('[AdvisorProfile] history API non-2xx:', histRes.status, histRes.data);
         }
+        setSubscription(sub);
       } catch (e) {
-        console.error('[AdvisorProfile] profile API failed', e);
+        console.error('[AdvisorProfile] profile/history fetch failed', e);
       } finally {
         setLoading(false);
       }
@@ -81,7 +82,7 @@ export default function AdvisorProfile() {
     try {
       setBusy(true);
       const token = localStorage.getItem('access_token');
-      const res = await axios.post('https://advisor-seller-backend.vercel.app/api/payment/cancel', {}, {
+      const res = await axios.post(`${API_CONFIG.BACKEND_URL}/api/payment/cancel`, {}, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.data?.subscription) setSubscription(res.data.subscription);
@@ -96,7 +97,7 @@ export default function AdvisorProfile() {
     try {
       setBusy(true);
       const token = localStorage.getItem('access_token');
-      const res = await axios.post('https://advisor-seller-backend.vercel.app/api/payment/resume', {}, {
+      const res = await axios.post(`${API_CONFIG.BACKEND_URL}/api/payment/resume`, {}, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.data?.subscription) setSubscription(res.data.subscription);
@@ -111,7 +112,7 @@ export default function AdvisorProfile() {
     try {
       const token = localStorage.getItem('access_token');
       if (token) {
-        await axios.post('https://advisor-seller-backend.vercel.app/api/auth/logout', {}, {
+        await axios.post(`${API_CONFIG.BACKEND_URL}/api/auth/logout`, {}, {
           headers: { Authorization: `Bearer ${token}` }
         });
       }
@@ -134,6 +135,9 @@ export default function AdvisorProfile() {
 
   const now = new Date();
   const end = subscription?.currentPeriodEnd ? new Date(subscription.currentPeriodEnd) : null;
+  const start = subscription?.currentPeriodStart ? new Date(subscription.currentPeriodStart) : null;
+  // Derive a display start if stored start is in the future (early renewal stored incorrectly as next cycle)
+  const displayStart = start && end && start > now ? new Date(new Date(end).setFullYear(end.getFullYear() - 1)) : start;
   const isActive = (user?.isSubscriptionActive ?? user?.isPaymentVerified) || (end && end > now);
   const isCanceled = subscription?.status === 'canceled';
   const isExpired = subscription?.status === 'expired' || (!isActive && user?.isPaymentVerified);
@@ -292,7 +296,7 @@ export default function AdvisorProfile() {
                     </div>
                     <div className="text-sm text-gray-600 flex items-center gap-2 mt-1">
                       <FaCalendarAlt />
-                      <span>Current period: {formatDate(subscription?.currentPeriodStart)} – {formatDate(subscription?.currentPeriodEnd)}</span>
+                      <span>Current period: {formatDate(displayStart)} – {formatDate(subscription?.currentPeriodEnd)}</span>
                     </div>
                     {isCanceled && end && end > now && (
                       <div className="text-sm text-yellow-700 mt-2">Canceled. You retain access until {formatDate(end)}.</div>
