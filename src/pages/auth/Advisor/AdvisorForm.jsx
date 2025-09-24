@@ -326,11 +326,13 @@ const AdvisorForm = () => {
     currency: "USD",
     description: "",
   // licensing: "",
-    testimonials: [{
-      clientName: "",
-      testimonial: "",
-      pdfFile: null,
-    }],
+    testimonials: [
+      { clientName: "", testimonial: "" },
+      { clientName: "", testimonial: "" },
+      { clientName: "", testimonial: "" },
+      { clientName: "", testimonial: "" },
+      { clientName: "", testimonial: "" }
+    ],
     revenueRange: { min: "", max: "" },
     visibleTestimonials: 1,   // 👈 added here
   };
@@ -358,10 +360,10 @@ const AdvisorForm = () => {
         Yup.object().shape({
           clientName: Yup.string().required('Client name is required'),
           testimonial: Yup.string().required('Testimonial is required'),
-          pdfFile: Yup.mixed().notRequired(),
+
         })
       )
-      .min(1, 'At least one testimonial is required'),
+      .length(5, 'Exactly 5 testimonials are required'),
 
     revenueRange: Yup.object().shape({
       min: Yup.number().required("Required"),
@@ -937,7 +939,7 @@ const AdvisorForm = () => {
               <FieldArray name="testimonials">
                 {({ push, remove }) => {
                   const completedTestimonials = values.testimonials.filter(
-                    (t) => t.clientName && t.testimonial && t.pdfFile
+                    (t) => t.clientName && t.testimonial
                   ).length;
 
                   return (
@@ -947,28 +949,16 @@ const AdvisorForm = () => {
                           <FaQuoteLeft className="mr-3 text-primary" />
                           Client Testimonials
                         </h3>
-                        <div className="flex items-center space-x-3">
-                          <div className="bg-primary/10 px-3 py-1 rounded-full">
-                            <span className="text-primary font-medium text-sm">
-                              {completedTestimonials}/{values.testimonials.length} completed
-                            </span>
-                          </div>
-                          {values.testimonials.length < 5 && (
-                            <button
-                              type="button"
-                              onClick={() => push({ clientName: "", testimonial: "", pdfFile: null })}
-                              className="flex items-center px-3 py-1 bg-primary text-white rounded-full hover:bg-primary/90 transition-all duration-200 text-sm"
-                            >
-                              <FaPlus className="mr-1" />
-                              Add Testimonial
-                            </button>
-                          )}
+                        <div className="bg-primary/10 px-3 py-1 rounded-full">
+                          <span className="text-primary font-medium text-sm">
+                            {completedTestimonials}/5 completed
+                          </span>
                         </div>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {values.testimonials.map((testimonial, index) => {
-                          const isCompleted = testimonial.clientName && testimonial.testimonial && testimonial.pdfFile;
+                          const isCompleted = testimonial.clientName && testimonial.testimonial;
                           
                           return (
                             <motion.div
@@ -991,15 +981,7 @@ const AdvisorForm = () => {
                                   {isCompleted && (
                                     <FaCheckCircle className="text-green-500" />
                                   )}
-                                  {values.testimonials.length > 1 && (
-                                    <button
-                                      type="button"
-                                      onClick={() => remove(index)}
-                                      className="text-red-500 hover:text-red-700 transition-colors duration-200"
-                                    >
-                                      <FaTrash size={12} />
-                                    </button>
-                                  )}
+
                                 </div>
                               </div>
 
@@ -1016,39 +998,7 @@ const AdvisorForm = () => {
                                   rows="3"
                                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 text-sm bg-white resize-none"
                                 />
-                                <div>
-                                  <input
-                                    type="file"
-                                    accept="application/pdf"
-                                    onChange={(e) => {
-                                      const file = e.target.files[0];
-                                      if (file) {
-                                        setFieldValue(`testimonials[${index}].pdfFile`, file);
-                                      }
-                                    }}
-                                    className="hidden"
-                                    id={`pdf-upload-${index}`}
-                                  />
-                                  <label
-                                    htmlFor={`pdf-upload-${index}`}
-                                    className="flex items-center justify-center w-full py-2 px-3 border border-dashed border-primary/30 rounded-lg cursor-pointer bg-white hover:bg-primary/5 transition-all duration-200"
-                                  >
-                                    <FaFilePdf className="mr-2 text-primary" />
-                                    <span className="text-sm text-secondary">
-                                      {values.testimonials[index]?.pdfFile ? 'Change PDF' : 'Upload PDF'}
-                                    </span>
-                                  </label>
-                                  {values.testimonials[index]?.pdfFile && (
-                                    <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-lg">
-                                      <div className="flex items-center">
-                                        <FaFilePdf className="text-green-500 mr-2" />
-                                        <span className="text-xs text-green-700 truncate">
-                                          {values.testimonials[index].pdfFile.name}
-                                        </span>
-                                      </div>
-                                    </div>
-                                  )}
-                                </div>
+
                               </div>
                             </motion.div>
                           );

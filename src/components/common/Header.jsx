@@ -15,7 +15,7 @@ const Header = () => {
 
   // Handle login/register based on user status
   const handleMemberLogin = () => {
-    navigate("/seller-login");
+    navigate("/authRegister");
     setIsMobileMenuOpen(false);
   };
 

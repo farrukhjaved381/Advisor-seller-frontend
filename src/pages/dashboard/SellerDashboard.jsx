@@ -679,15 +679,6 @@ const SellerDashboard = () => {
 
   // Comprehensive validation schema with all fields required
   const SellerSchema = Yup.object().shape({
-    fullName: Yup.string()
-      .min(2, "Full name must be at least 2 characters")
-      .max(50, "Full name must not exceed 50 characters")
-      .matches(/^[a-zA-Z\s]+$/, "Full name can only contain letters and spaces")
-      .required("Full Name is required"),
-    email: Yup.string()
-      .email("Invalid email format")
-      .matches(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Please enter a valid email address")
-      .required("Email is required"),
     companyName: Yup.string()
       .min(2, "Company name must be at least 2 characters")
       .max(100, "Company name must not exceed 100 characters")
@@ -697,9 +688,12 @@ const SellerDashboard = () => {
       .min(10, "Phone number must be at least 10 digits")
       .required("Phone number is required"),
     website: Yup.string()
-      .matches(/^https?:\/\/.+\..+/, "Website must be a valid URL (https://example.com)")
-      .url("Enter a valid website URL")
-      .required("Website is required"),
+      .required("Website is required")
+      .test('url', 'Enter a valid website (e.g., www.example.com or https://example.com)', function(value) {
+        if (!value) return false;
+        const urlPattern = /^(https?:\/\/)?(www\.)?[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.[a-zA-Z]{2,}(\.[a-zA-Z]{2,})?(\/.*)?(\?.*)?(#.*)?$/;
+        return urlPattern.test(value);
+      }),
     industry: Yup.string().min(1, "Please select an industry").required("Industry selection is required"),
     geography: Yup.string().min(1, "Please select a geography").required("Geography selection is required"),
     annualRevenue: Yup.number()
@@ -757,8 +751,6 @@ const SellerDashboard = () => {
           const parsedUser = JSON.parse(storedUser)
           const updatedUser = {
             ...parsedUser,
-            name: values.fullName,
-            fullName: values.fullName,
             companyName: values.companyName,
             phone: values.phone,
             website: values.website,
@@ -1282,13 +1274,9 @@ const SellerDashboard = () => {
                             <label className="block text-sm font-medium text-gray-700">Annual Revenue *</label>
                             <div className="relative">
                               <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-                                {values.currency === "USD"
-                                  ? "$"
-                                  : values.currency === "PKR"
-                                    ? "₨"
-                                    : values.currency === "EUR"
-                                      ? "€"
-                                      : "£"}
+                                {{
+                                  USD: '$', EUR: '€', GBP: '£', PKR: '₨', INR: '₹', AUD: '$', CAD: '$', SGD: '$', JPY: '¥', CNY: '¥', CHF: 'CHF', ZAR: 'R', BRL: 'R$', RUB: '₽', SAR: '﷼', AED: 'د.إ', TRY: '₺', EGP: '£', NGN: '₦', MXN: '$', SEK: 'kr', NOK: 'kr', DKK: 'kr', HKD: '$', KRW: '₩', THB: '฿', IDR: 'Rp', MYR: 'RM', TWD: 'NT$', ILS: '₪', PLN: 'zł', CZK: 'Kč', HUF: 'Ft', PHP: '₱', CLP: '$', COP: '$', ARS: '$', VND: '₫', BDT: '৳', LKR: '₨', MMK: 'K', KWD: 'د.ك', QAR: '﷼', OMR: '﷼', BHD: '.د.ب', JOD: 'د.ا', MAD: 'د.م.', TND: 'د.ت', KES: 'KSh', TZS: 'TSh', UGX: 'USh', GHS: '₵', ETB: 'Br', DZD: 'د.ج', SDG: 'ج.س.', AOA: 'Kz', MZN: 'MT', XOF: 'CFA', XAF: 'FCFA', CDF: 'FC', ZMW: 'ZK', BWP: 'P', NAD: '$', MUR: '₨', SCR: '₨', MWK: 'MK', LSL: 'L', SZL: 'L', SLL: 'Le', GMD: 'D', GNF: 'FG', MGA: 'Ar', KMF: 'CF', SOS: 'S', DJF: 'Fdj', ERN: 'Nfk', LYD: 'ل.د', MRU: 'UM', BIF: 'FBu', RWF: 'R₣', XPF: '₣', FJD: '$', WST: 'T', TOP: 'T$', PGK: 'K', SBD: '$', VUV: 'Vt', KZT: '₸', UZS: 'лв', TJS: 'SM', KGS: 'лв', AFN: '؋', NPR: '₨', MNT: '₮', LAK: '₭', KHR: '៛', BND: '$', MOP: 'MOP$', ISK: 'kr', RON: 'lei', BGN: 'лв', HRK: 'kn', RSD: 'Дин.', UAH: '₴', BYN: 'Br', MDL: 'L', GEL: '₾', AZN: '₼', AMD: '֏', ALL: 'L', MKD: 'ден', BAM: 'KM', SSP: '£', KPW: '₩'
+                                }[values.currency] || values.currency}
                               </span>
                             <Field name="annualRevenue">
                               {({ field, form }) => (
@@ -1329,6 +1317,11 @@ const SellerDashboard = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                           <div className="space-y-3">
                             <label className="block text-sm font-medium text-gray-700">Industry Sector *</label>
+                            {values.industry && (
+                              <div className="mb-2 p-2 bg-primary/10 rounded-lg border border-primary/20">
+                                <span className="text-sm font-medium text-primary">Selected: {values.industry}</span>
+                              </div>
+                            )}
                             <IndustryRadioChooser
                               selected={values.industry}
                               onChange={(val) => setFieldValue("industry", val)}
@@ -1338,6 +1331,11 @@ const SellerDashboard = () => {
 
                           <div className="space-y-3">
                             <label className="block text-sm font-medium text-gray-700">Geographic Region *</label>
+                            {values.geography && (
+                              <div className="mb-2 p-2 bg-primary/10 rounded-lg border border-primary/20">
+                                <span className="text-sm font-medium text-primary">Selected: {values.geography}</span>
+                              </div>
+                            )}
                             <GeographyRadioChooser
                               selected={values.geography}
                               onChange={(val) => setFieldValue("geography", val)}

@@ -107,13 +107,13 @@ const Option = () => {
                                     <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                                     </svg>
-                                    <span>See the best Advisors</span>
+                                    <span>Get Matched</span>
                                 </div>
                             </button>
                         </div>
                         
                         {/* Stats Section */}
-                        <div className="w-full mt-8 sm:mt-12 pt-6 sm:pt-8 border-t border-gray-200">
+                        {/* <div className="w-full mt-8 sm:mt-12 pt-6 sm:pt-8 border-t border-gray-200">
                             <div className="grid grid-cols-3 gap-2 sm:gap-4 text-center">
                                 <div className="p-2 sm:p-3">
                                     <div className="text-lg sm:text-2xl font-bold text-primary">500+</div>
@@ -128,7 +128,7 @@ const Option = () => {
                                     <div className="text-xs text-gray-500 uppercase tracking-wide">Match Success</div>
                                 </div>
                             </div>
-                        </div>
+                        </div> */}
                     </div>
                 </div>
             </div>

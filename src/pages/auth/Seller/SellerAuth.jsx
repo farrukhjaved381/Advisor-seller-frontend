@@ -121,7 +121,7 @@ const SellerAuth = () => {
             className="object-cover h-full w-full transform hover:scale-105 transition-transform duration-700"
           />
 
-          <div className="absolute top-4 left-4 md:top-8 md:left-8 z-20 w-[90%] md:w-auto">
+          {/* <div className="absolute top-4 left-4 md:top-8 md:left-8 z-20 w-[90%] md:w-auto">
             <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 md:p-6 shadow-xl max-w-sm">
               <div className="flex items-center space-x-3 mb-3">
                 <div className="w-4 h-4 bg-gradient-to-r from-primary to-third rounded-full animate-pulse" />
@@ -131,9 +131,9 @@ const SellerAuth = () => {
                 Enter your business email to see the best matching advisors for you.
               </p>
             </div>
-          </div>
+          </div> */}
 
-          <div className="absolute bottom-4 right-4 md:bottom-8 md:right-8 z-20">
+          {/* <div className="absolute bottom-4 right-4 md:bottom-8 md:right-8 z-20">
             <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-2 md:p-4 shadow-xl">
               <div className="flex items-center space-x-2">
                 <svg className="w-4 h-4 md:w-5 md:h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
@@ -146,7 +146,7 @@ const SellerAuth = () => {
                 <span className="text-secondary font-semibold text-xs md:text-sm">Secure Access</span>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
 
         <div className="w-full md:w-[55%] flex justify-center items-center bg-gradient-to-bl from-white to-gray-50/50 relative px-4 py-10 md:py-0">
@@ -157,12 +157,12 @@ const SellerAuth = () => {
 
           <div className="w-full max-w-md bg-white/80 backdrop-blur-lg shadow-2xl rounded-3xl p-8 md:p-10 relative z-10">
             <div className="mb-8">
-              <div className="inline-flex items-center bg-primary/10 text-primary px-3 py-2 rounded-full text-sm font-semibold mb-4">
+              {/* <div className="inline-flex items-center bg-primary/10 text-primary px-3 py-2 rounded-full text-sm font-semibold mb-4">
                 Quick Access
-              </div>
-              <h2 className="text-3xl font-bold text-secondary mb-2">See the Best Advisors</h2>
+              </div> */}
+              <h2 className="text-3xl font-bold text-secondary mb-2">Advisor Matching</h2>
               <p className="text-gray-600">
-                Enter your email to view your advisor matches. No passwords — fast and simple.
+                To begin, enter your email address.
               </p>
             </div>
 
@@ -185,19 +185,18 @@ const SellerAuth = () => {
                 />
                 {emailError && <p className="mt-2 text-sm text-red-500">{emailError}</p>}
               </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-gradient-to-r from-primary to-third text-white font-semibold py-3 rounded-xl hover:shadow-xl transition-transform duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading ? 'Checking...' : 'See Advisors'}
-              </button>
+<button
+  type="submit"
+  disabled={loading}
+  className="w-full bg-gradient-to-r from-primary to-third text-white font-semibold py-3 rounded-xl hover:shadow-xl transition-transform duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+>
+  {loading ? 'Checking...' : 'Next Step → Your Company Details'}
+</button>
             </form>
 
-            <div className="mt-6 p-4 bg-gray-50 rounded-xl text-sm text-gray-600">
+            {/* <div className="mt-6 p-4 bg-gray-50 rounded-xl text-sm text-gray-600">
               A quick way to see matching advisors tailored to you.
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

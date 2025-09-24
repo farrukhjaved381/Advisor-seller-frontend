@@ -35,7 +35,7 @@ const SellerSchema = Yup.object().shape({
     .required("Phone is required"),
   website: Yup.string()
     .required("Website is required")
-    .test('url', 'Invalid URL format', function(value) {
+    .test('url', 'Enter a valid website (e.g., www.example.com or https://example.com)', function(value) {
       if (!value) return false;
       const urlPattern = /^(https?:\/\/)?(www\.)?[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.[a-zA-Z]{2,}(\.[a-zA-Z]{2,})?(\/.*)?(\?.*)?(#.*)?$/;
       return urlPattern.test(value);
@@ -340,10 +340,12 @@ const GeographyRadioChooser = ({ selected, onChange }) => {
 const SellerForm = () => {
   const navigate = useNavigate();
 
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  
   const initialValues = {
     contactName: "",
     contactTitle: "",
-    contactEmail: "",
+    contactEmail: user.email || "",
     companyName: "",
     phone: "",
     website: "",
@@ -435,7 +437,7 @@ const SellerForm = () => {
                   <SimpleInput
                     name="contactName"
                     label="Primary Contact Name"
-                    placeholder="Who should advisors speak with?"
+                    placeholder="Your name?"
                     icon={<FaUser className="text-xs" />}
                   />
                   <SimpleInput
@@ -576,7 +578,11 @@ const SellerForm = () => {
                   </label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
-                      {values.currency === 'USD' ? '$' : values.currency === 'EUR' ? '€' : values.currency === 'GBP' ? '£' : ''}
+                      {{
+                        USD: '$', EUR: '€', GBP: '£', JPY: '¥', CNY: '¥', AUD: '$', CAD: '$', CHF: 'CHF', 
+                        HKD: '$', SGD: '$', SEK: 'kr', NOK: 'kr', NZD: '$', MXN: '$', ZAR: 'R', 
+                        TRY: '₺', BRL: 'R$', KRW: '₩', INR: '₹', RUB: '₽'
+                      }[values.currency] || values.currency}
                     </span>
                     <Field name="annualRevenue">
                       {({ field, form }) => (
