@@ -266,7 +266,7 @@ export default function AdvisorProfile() {
             <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-2 rounded-md hover:bg-gray-100">
               <FaBars className="w-5 h-5 text-gray-600" />
             </button>
-            <h1 className="text-xl lg:text-2xl font-bold text-gray-900">Profile & Billing</h1>
+            <h1 className="text-xl lg:text-2xl font-bold text-gray-900">Subscription Details</h1>
           </div>
           <div className="relative">
             <button
@@ -333,19 +333,15 @@ export default function AdvisorProfile() {
                     </button>
                   )}
                   {/* Renewal / Re-Subscribe */}
-                  <Link
+                  {/* <Link
                     to={`/advisor-payments?intent=${isActive ? 'renew' : 'resubscribe'}&return=${encodeURIComponent('/advisor-profile')}`}
                     className="px-4 py-2 text-sm rounded-lg bg-primary text-white hover:opacity-90 flex items-center gap-2"
                   >
                     <FaCreditCard /> {isActive ? 'Renew Early' : 'Re-Subscribe'}
-                  </Link>
+                  </Link> */}
                 </div>
               </div>
-              {isActive && (
-                <div className="text-xs text-gray-500 mt-2">
-                  Renewing now will extend your access beyond {formatDate(displayEnd)} by one year.
-                </div>
-              )}
+    
             </div>
 
             {/* History */}

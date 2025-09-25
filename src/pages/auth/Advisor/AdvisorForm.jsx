@@ -4,7 +4,7 @@ import * as Yup from "yup";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { motion } from "framer-motion";
-import { FaChevronDown, FaChevronRight, FaSearch, FaBuilding, FaPhone, FaGlobe, FaCalendarAlt, FaChartLine, FaDollarSign, FaFileAlt, FaCertificate, FaUpload, FaCheckCircle, FaImage, FaQuoteLeft, FaUser, FaPlus, FaTrash, FaFilePdf, FaVideo } from "react-icons/fa";
+import { FaChevronDown, FaChevronRight, FaSearch, FaBuilding, FaPhone, FaGlobe, FaCalendarAlt, FaChartLine, FaDollarSign, FaFileAlt, FaCertificate, FaUpload, FaCheckCircle, FaImage, FaQuoteLeft, FaUser, FaPlus, FaTrash, FaVideo } from "react-icons/fa";
 
 // ✅ Use named imports for static data
 import { getIndustryData } from "../../../components/Static/newIndustryData";

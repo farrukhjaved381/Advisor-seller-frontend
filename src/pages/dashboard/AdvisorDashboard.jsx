@@ -14,7 +14,7 @@ const AdvisorDashboard = () => {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState('leads');
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -55,11 +55,30 @@ const AdvisorDashboard = () => {
       ? 'text-green-600'
       : 'text-red-600'
     : 'text-gray-500';
-  const recentLeads = leadOverview?.leads ?? [];
+  const allLeads = leadOverview?.leads ?? [];
+  const recentLeads = allLeads.filter(
+    (lead) => (lead.type || 'introduction') === 'introduction',
+  );
   const lastLeadDate = recentLeads.length > 0 && recentLeads[0]?.createdAt
     ? new Date(recentLeads[0].createdAt)
     : null;
   const topLeadTypeLabel = topLeadType ? formatTitleCase(topLeadType.label) : '';
+
+  const formatCurrencyValue = (amount, currency = 'USD') => {
+    const numericAmount = typeof amount === 'number' ? amount : Number(amount);
+    if (!Number.isFinite(numericAmount)) {
+      return '—';
+    }
+    try {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: currency || 'USD',
+        maximumFractionDigits: 0,
+      }).format(numericAmount);
+    } catch (error) {
+      return numericAmount.toLocaleString();
+    }
+  };
 
   useEffect(() => {
     fetchUserData();
@@ -711,7 +730,7 @@ const AdvisorDashboard = () => {
               >
                 <FaCreditCard className="w-5 h-5" />
                 <div>
-                  <span className="font-medium text-sm">Profile & Billing</span>
+                  <span className="font-medium text-sm">Subscription Details</span>
                   <p className="text-xs opacity-70">Manage subscription and payments</p>
                 </div>
               </button>
@@ -1150,7 +1169,7 @@ const AdvisorDashboard = () => {
                           )}
                         </p>
                         <p className="text-sm text-gray-500 mt-1">
-                          Toggle this setting to control whether you receive new lead notifications.
+                          Toggle this setting to control whether you receive new leads.
                         </p>
                       </div>
                       <div className="flex items-center space-x-4">
@@ -1279,7 +1298,10 @@ const AdvisorDashboard = () => {
                             <th className="px-4 py-3 text-left font-semibold text-gray-600">Seller</th>
                             <th className="px-4 py-3 text-left font-semibold text-gray-600">Industry</th>
                             <th className="px-4 py-3 text-left font-semibold text-gray-600">Geography</th>
-                            <th className="px-4 py-3 text-left font-semibold text-gray-600">Type</th>
+                            <th className="px-4 py-3 text-left font-semibold text-gray-600">Revenue</th>
+                            <th className="px-4 py-3 text-left font-semibold text-gray-600">Email</th>
+                            <th className="px-4 py-3 text-left font-semibold text-gray-600">Phone</th>
+                            <th className="px-4 py-3 text-left font-semibold text-gray-600">Website</th>
                             <th className="px-4 py-3 text-left font-semibold text-gray-600">Received</th>
                           </tr>
                         </thead>
@@ -1290,30 +1312,68 @@ const AdvisorDashboard = () => {
                               : (lead.sellerId && typeof lead.sellerId === 'object')
                                 ? lead.sellerId
                                 : {};
+                            const websiteUrl = seller.website
+                              ? seller.website.startsWith('http')
+                                ? seller.website
+                                : `https://${seller.website}`
+                              : '';
+                            const revenueText = formatCurrencyValue(
+                              seller.annualRevenue,
+                              seller.currency,
+                            );
+                            const contactEmail = seller.contactEmail || seller.email;
                             return (
                               <tr key={lead._id}>
                                 <td className="px-4 py-3 text-gray-900 font-medium">
                                   <div className="flex flex-col">
                                     <span>{seller.companyName || 'Unknown seller'}</span>
-                                    {(seller.website || seller.phone) && (
+                                    {seller.contactName && (
                                       <span className="text-xs text-gray-500 font-normal">
-                                        {seller.website && (
-                                          <a className="underline hover:text-primary" href={seller.website} target="_blank" rel="noopener noreferrer">
-                                            Website
-                                          </a>
-                                        )}
-                                        {seller.website && seller.phone && ' • '}
-                                        {seller.phone && <span>{seller.phone}</span>}
+                                        {seller.contactName}
                                       </span>
                                     )}
                                   </div>
                                 </td>
                                 <td className="px-4 py-3 text-gray-600">{seller.industry || '—'}</td>
                                 <td className="px-4 py-3 text-gray-600">{seller.geography || '—'}</td>
-                                <td className="px-4 py-3">
-                                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary capitalize">
-                                    {formatTitleCase(lead.type || 'unknown')}
-                                  </span>
+                                <td className="px-4 py-3 text-gray-600">{revenueText}</td>
+                                <td className="px-4 py-3 text-gray-600">
+                                  {contactEmail ? (
+                                    <a
+                                      href={`mailto:${contactEmail}`}
+                                      className="text-primary hover:text-third underline"
+                                    >
+                                      {contactEmail}
+                                    </a>
+                                  ) : (
+                                    '—'
+                                  )}
+                                </td>
+                                <td className="px-4 py-3 text-gray-600">
+                                  {seller.phone ? (
+                                    <a
+                                      href={`tel:${seller.phone}`}
+                                      className="text-primary hover:text-third"
+                                    >
+                                      {seller.phone}
+                                    </a>
+                                  ) : (
+                                    '—'
+                                  )}
+                                </td>
+                                <td className="px-4 py-3 text-gray-600">
+                                  {websiteUrl ? (
+                                    <a
+                                      href={websiteUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-primary hover:text-third underline"
+                                    >
+                                      Visit Site
+                                    </a>
+                                  ) : (
+                                    '—'
+                                  )}
                                 </td>
                                 <td className="px-4 py-3 text-gray-600">
                                   {lead.createdAt ? new Date(lead.createdAt).toLocaleString() : '—'}
@@ -1831,7 +1891,7 @@ const AdvisorDashboard = () => {
                                 />
                               </div>
                               
-                              <div className="md:col-span-2">
+                              {/* <div className="md:col-span-2">
                                 <label className="block text-sm font-medium text-gray-700 mb-1">PDF Document</label>
                                 {testimonial.existingPdfUrl && (
                                   <div className="mb-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
@@ -1861,7 +1921,7 @@ const AdvisorDashboard = () => {
                                   }}
                                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-primary focus:outline-none"
                                 />
-                              </div>
+                              </div> */}
                             </div>
                           </div>
                         ))}

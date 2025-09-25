@@ -389,7 +389,7 @@ const SellerDashboard = () => {
         { headers: { Authorization: `Bearer ${token}` } },
       )
       
-      toast.success(`📧 Introduction emails sent to ${selectedAdvisors.length} advisors!`)
+      toast.success(`📧 Introduction emails sent to you and x selected advisors!`)
       setIntroductionRequests([...introductionRequests, ...selectedAdvisors])
       setSelectedAdvisors([])
     } catch (error) {
@@ -409,7 +409,7 @@ const SellerDashboard = () => {
         { headers: { Authorization: `Bearer ${token}` } },
       )
       if (response.status === 200 || response.status === 201) {
-        const msg = response.data?.message || `Direct contact list sent! ${response.data?.advisorCount || ''} advisors notified.`;
+        const msg = response.data?.message || `Direct contact list sent!`;
         const sellerEmail = userProfile?.email || profile?.email || "your email";
         toast.success(
           `📧 ${msg}\nCheck your email (${sellerEmail}) for the contact list.`,

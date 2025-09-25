@@ -1,7 +1,7 @@
 import React from 'react';
 import axios from 'axios';
 import toast, { Toaster } from 'react-hot-toast';
-import { FaBuilding, FaUser, FaGlobe, FaPhone, FaMapMarkerAlt, FaIndustry, FaDollarSign, FaAward, FaQuoteLeft, FaExternalLinkAlt, FaFilePdf, FaChartLine } from 'react-icons/fa';
+import { FaBuilding, FaUser, FaGlobe, FaPhone, FaMapMarkerAlt, FaIndustry, FaDollarSign, FaAward, FaQuoteLeft, FaExternalLinkAlt, FaChartLine } from 'react-icons/fa';
 
 const AdvisorCard = ({ advisor, onSelect, isSelected }) => {
   const [loading, setLoading] = React.useState(false);
@@ -118,7 +118,7 @@ const AdvisorCard = ({ advisor, onSelect, isSelected }) => {
         </div>
 
         {/* Revenue Range */}
-        <div className="bg-green-50 rounded-lg p-3 sm:p-4 border border-green-200">
+        {/* <div className="bg-green-50 rounded-lg p-3 sm:p-4 border border-green-200">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
             <div className="flex items-center">
               <FaDollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 mr-2 flex-shrink-0" />
@@ -130,7 +130,7 @@ const AdvisorCard = ({ advisor, onSelect, isSelected }) => {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
 
         {/* Industries */}
         {/* <div>
@@ -163,7 +163,7 @@ const AdvisorCard = ({ advisor, onSelect, isSelected }) => {
         </div> */}
 
         {/* Show more/less toggle when lists are long */}
-        {(((advisor.industries || []).length > 5) || ((advisor.geographies || []).length > 5)) && (
+        {/* {(((advisor.industries || []).length > 5) || ((advisor.geographies || []).length > 5)) && (
           <div className="pt-1">
             <button
               type="button"
@@ -173,7 +173,7 @@ const AdvisorCard = ({ advisor, onSelect, isSelected }) => {
               {showAll ? 'Show less' : 'Show more'}
             </button>
           </div>
-        )}
+        )} */}
 
         {/* Licensing */}
         {/* {advisor.licensing && (
@@ -221,18 +221,6 @@ const AdvisorCard = ({ advisor, onSelect, isSelected }) => {
                       <div className="min-w-0">
                         <p className="text-sm font-semibold text-gray-900 truncate">{t?.clientName || 'Client'}</p>
                       </div>
-                      {t?.pdfUrl && (
-                        <a
-                          href={t.pdfUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="ml-auto inline-flex items-center gap-1 text-xs text-primary hover:text-third"
-                          title="View PDF"
-                        >
-                          <FaFilePdf className="w-4 h-4" />
-                          <span>Case Study</span>
-                        </a>
-                      )}
                     </div>
                     <div className="px-4 pb-4">
                       <p className="text-gray-700 text-sm mt-2">
