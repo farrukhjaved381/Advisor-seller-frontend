@@ -240,7 +240,7 @@ export default function AdvisorProfile() {
             >
               <FaCreditCard className="w-5 h-5" />
               <div>
-                <span className="font-medium text-sm">Profile & Billing</span>
+                <span className="font-medium text-sm">Subscription Details</span>
                 <p className="text-xs opacity-70">Manage subscription and payments</p>
               </div>
             </button>

@@ -1,10 +1,8 @@
 import { Routes, Route } from "react-router-dom";
-import Auth from "../pages/auth/auth.jsx";
 import SellerSignin from "../pages/auth/Seller/SellerAuth.jsx";
 import AdvisorSignin from "../pages/auth/Advisor/AdvisorAuth.jsx";
 import AdvisorRegister from "../pages/auth/Advisor/AdvisorRegister.jsx";
 import Option from "../pages/Option";
-import AuthRegister from "../pages/auth/authRegister.jsx"
 import VerifyEmailRouter from "../pages/auth/VerifyEmailRouter.jsx";
 import SellerForm from "../pages/auth/Seller/SellerForm.jsx";
 import SellerDashboard from "../pages/dashboard/SellerDashboard.jsx";
@@ -23,7 +21,6 @@ const AppRoutes = () => {
     return (
         <Routes>
             <Route path="/" element={<Option />} />
-            <Route path="/auth" element={<Auth />} />
             <Route path="/authRegister" element={<Option />} />
             <Route path="/seller-login" element={<SellerSignin />} />
             <Route path="/seller-register" element={<SellerSignin />} />
