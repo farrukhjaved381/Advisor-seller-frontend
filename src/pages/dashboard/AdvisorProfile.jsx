@@ -154,9 +154,13 @@ export default function AdvisorProfile() {
     }
   }
   const displayEnd = displayStart ? new Date(new Date(displayStart).setFullYear(displayStart.getFullYear() + 1)) : end;
-  const isActive = (user?.isSubscriptionActive ?? user?.isPaymentVerified) || (displayEnd && displayEnd > now);
-  const isCanceled = subscription?.status === 'canceled';
-  const isExpired = subscription?.status === 'expired' || (!isActive && user?.isPaymentVerified);
+  const subscriptionStatus = subscription?.status || 'none';
+  const fallbackActive = (user?.isSubscriptionActive ?? false) || (!!displayEnd && displayEnd > now);
+  const isPastDue = subscriptionStatus === 'past_due';
+  const isActive = subscriptionStatus === 'active' || (!isPastDue && fallbackActive);
+  const isCanceled = subscriptionStatus === 'canceled';
+  const isExpired = subscriptionStatus === 'expired' || (!isActive && !isPastDue && user?.isPaymentVerified);
+  const billing = user?.billing;
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -297,11 +301,11 @@ export default function AdvisorProfile() {
 
             {/* Subscription Status */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                  {isActive ? (
-                    <FaCheckCircle className="text-green-600 text-xl" />
-                  ) : isExpired ? (
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    {isActive ? (
+                      <FaCheckCircle className="text-green-600 text-xl" />
+                    ) : isExpired ? (
                     <FaTimesCircle className="text-red-600 text-xl" />
                   ) : (
                     <FaExclamationTriangle className="text-yellow-600 text-xl" />
@@ -316,6 +320,12 @@ export default function AdvisorProfile() {
                     </div>
                     {isCanceled && end && end > now && (
                       <div className="text-sm text-yellow-700 mt-2">Canceled. You retain access until {formatDate(end)}.</div>
+                    )}
+                    {isPastDue && (
+                      <div className="text-sm text-red-600 mt-2 flex items-center gap-2">
+                        <FaExclamationTriangle />
+                        Automatic renewal failed. Update your card to restore access.
+                      </div>
                     )}
                   </div>
                 </div>
@@ -332,16 +342,55 @@ export default function AdvisorProfile() {
                       Resume Subscription
                     </button>
                   )}
-                  {/* Renewal / Re-Subscribe */}
-                  {/* <Link
-                    to={`/advisor-payments?intent=${isActive ? 'renew' : 'resubscribe'}&return=${encodeURIComponent('/advisor-profile')}`}
+                  <Link
+                    to="/advisor-change-card"
                     className="px-4 py-2 text-sm rounded-lg bg-primary text-white hover:opacity-90 flex items-center gap-2"
                   >
-                    <FaCreditCard /> {isActive ? 'Renew Early' : 'Re-Subscribe'}
-                  </Link> */}
+                    <FaCreditCard /> Change credit card
+                  </Link>
                 </div>
               </div>
-    
+
+            </div>
+
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
+              <div className="flex items-center gap-3 mb-4">
+                <FaCreditCard className="text-primary" />
+                <div>
+                  <h3 className="text-base font-semibold text-gray-900">Saved payment method</h3>
+                  <p className="text-sm text-gray-600">We use this card for automatic renewals at the end of each subscription period.</p>
+                </div>
+              </div>
+              {billing?.cardLast4 ? (
+                <div className="flex flex-wrap items-center justify-between gap-4 bg-gray-50 border border-gray-200 rounded-lg p-4">
+                  <div>
+                    <div className="text-sm text-gray-600">Default card</div>
+                    <div className="text-lg font-semibold text-gray-900 mt-1">
+                      {(billing.cardBrand || 'Card').toUpperCase()} •••• {billing.cardLast4}
+                    </div>
+                    {billing.expMonth && billing.expYear && (
+                      <div className="text-xs text-gray-500 mt-1">
+                        Expires {String(billing.expMonth).padStart(2, '0')}/{billing.expYear}
+                      </div>
+                    )}
+                    {billing.updatedAt && (
+                      <div className="text-xs text-gray-400 mt-1">
+                        Updated {formatDate(billing.updatedAt)}
+                      </div>
+                    )}
+                  </div>
+                  <Link
+                    to="/advisor-change-card"
+                    className="px-4 py-2 text-sm rounded-lg border border-primary text-primary hover:bg-primary/5 transition-colors"
+                  >
+                    Update card
+                  </Link>
+                </div>
+              ) : (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-sm text-yellow-800">
+                  No credit card on file yet. Add one to enable seamless automatic renewals when your subscription ends.
+                </div>
+              )}
             </div>
 
             {/* History */}

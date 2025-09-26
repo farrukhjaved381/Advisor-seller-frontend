@@ -117,6 +117,18 @@ const AdvisorCard = ({ advisor, onSelect, isSelected }) => {
           <p className="text-gray-700 leading-relaxed">{advisor.description}</p>
         </div>
 
+        {/* Intro Video */}
+        {advisor.introVideoUrl && (
+          <div>
+            <div className="flex items-center mb-2">
+              <h4 className="font-semibold text-gray-900">Introduction Video</h4>
+            </div>
+            <div className="rounded-lg overflow-hidden border border-gray-200 bg-black">
+              <video src={advisor.introVideoUrl} controls className="w-full h-48 object-contain bg-black" />
+            </div>
+          </div>
+        )}
+
         {/* Revenue Range */}
         {/* <div className="bg-green-50 rounded-lg p-3 sm:p-4 border border-green-200">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
@@ -185,18 +197,6 @@ const AdvisorCard = ({ advisor, onSelect, isSelected }) => {
             <p className="text-purple-800 text-sm">{advisor.licensing}</p>
           </div>
         )} */}
-
-        {/* Intro Video */}
-        {advisor.introVideoUrl && (
-          <div>
-            <div className="flex items-center mb-2">
-              <h4 className="font-semibold text-gray-900">Introduction Video</h4>
-            </div>
-            <div className="rounded-lg overflow-hidden border border-gray-200 bg-black">
-              <video src={advisor.introVideoUrl} controls className="w-full h-48 object-contain bg-black" />
-            </div>
-          </div>
-        )}
 
         {/* Testimonials */}
         {Array.isArray(advisor.testimonials) && advisor.testimonials.length > 0 && (

@@ -16,6 +16,7 @@ import AdvisorUpload from "../pages/auth/Advisor/AdvisorUpload.jsx";
 import ProtectedRoute from "../components/ProtectedRoute.jsx";
 // Removed standalone edit page; route will show AdvisorDashboard's profile tab
 import AdvisorProfile from "../pages/dashboard/AdvisorProfile.jsx";
+import AdvisorChangeCard from "../pages/dashboard/AdvisorChangeCard.jsx";
 import { Navigate } from "react-router-dom";
 const AppRoutes = () => {
     return (
@@ -60,6 +61,11 @@ const AppRoutes = () => {
             <Route path="/advisor-profile" element={
                 <ProtectedRoute requiredRole="advisor">
                     <AdvisorProfile />
+                </ProtectedRoute>
+            } />
+            <Route path="/advisor-change-card" element={
+                <ProtectedRoute requiredRole="advisor">
+                    <AdvisorChangeCard />
                 </ProtectedRoute>
             } />
             <Route path="/reset-password" element={<ResetPassword />} />

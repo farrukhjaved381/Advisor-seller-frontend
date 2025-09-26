@@ -40,6 +40,25 @@ const AdvisorDashboard = () => {
       .split(/[-_\s]+/)
       .map((chunk) => chunk.charAt(0).toUpperCase() + chunk.slice(1))
       .join(' ');
+
+  const normalizeTestimonials = (rawTestimonials = []) => {
+    const base = Array.isArray(rawTestimonials)
+      ? rawTestimonials
+          .slice(0, 5)
+          .map((testimonial) => ({
+            clientName: testimonial?.clientName || '',
+            testimonial: testimonial?.testimonial || '',
+            pdfFile: null,
+            existingPdfUrl: testimonial?.pdfUrl || testimonial?.existingPdfUrl || null,
+          }))
+      : [];
+
+    while (base.length < 5) {
+      base.push({ clientName: '', testimonial: '', pdfFile: null, existingPdfUrl: null });
+    }
+
+    return base;
+  };
   const monthDelta = leadsLastMonth > 0
     ? Math.round(((leadsThisMonth - leadsLastMonth) / leadsLastMonth) * 100)
     : leadsThisMonth > 0
@@ -524,6 +543,14 @@ const AdvisorDashboard = () => {
     numberOfTransactions: Yup.number().min(0).required("Number of transactions is required"),
     currency: Yup.string().required("Currency is required"),
     description: Yup.string().required("Description is required"),
+    testimonials: Yup.array()
+      .of(
+        Yup.object().shape({
+          clientName: Yup.string().trim().required('Client name is required'),
+          testimonial: Yup.string().trim().required('Testimonial is required'),
+        }),
+      )
+      .length(5, 'Exactly 5 testimonials are required'),
     revenueRange: Yup.object().shape({
       min: Yup.number().required("Minimum revenue is required"),
       max: Yup.number().required("Maximum revenue is required"),
@@ -585,13 +612,24 @@ const AdvisorDashboard = () => {
         formData.append('introVideo', introVideoFile);
       }
       
-      // Handle testimonials array
-      values.testimonials?.forEach((testimonial, index) => {
-        if (testimonial.clientName && testimonial.testimonial) {
-          formData.append(`testimonials[${index}][clientName]`, testimonial.clientName);
-          formData.append(`testimonials[${index}][testimonial]`, testimonial.testimonial);
-        }
-      });
+      const sanitizedTestimonials = (values.testimonials || []).map((testimonial) => ({
+        clientName: testimonial.clientName?.trim() || '',
+        testimonial: testimonial.testimonial?.trim() || '',
+        pdfUrl: testimonial.existingPdfUrl || undefined,
+      }));
+
+      if (
+        sanitizedTestimonials.length !== 5 ||
+        sanitizedTestimonials.some(
+          (testimonial) => !testimonial.clientName || !testimonial.testimonial,
+        )
+      ) {
+        toast.error('Please provide client name and testimonial text for all 5 testimonials');
+        setSubmitting(false);
+        return;
+      }
+
+      formData.append('testimonials', JSON.stringify(sanitizedTestimonials));
       
       await axios.patch(`${API_CONFIG.BACKEND_URL}/api/advisors/profile`, formData, {
         headers: { 
@@ -1369,7 +1407,7 @@ const AdvisorDashboard = () => {
                                       rel="noopener noreferrer"
                                       className="text-primary hover:text-third underline"
                                     >
-                                      Visit Site
+                                      {websiteUrl}
                                     </a>
                                   ) : (
                                     '—'
@@ -1446,12 +1484,7 @@ const AdvisorDashboard = () => {
                   numberOfTransactions: profile.numberOfTransactions || "",
                   currency: profile.currency || "USD",
                   description: profile.description || "",
-                  testimonials: profile.testimonials?.map(t => ({
-                    clientName: t.clientName || "",
-                    testimonial: t.testimonial || "",
-                    pdfFile: null,
-                    existingPdfUrl: t.pdfUrl || null
-                  })) || [{ clientName: "", testimonial: "", pdfFile: null }],
+                  testimonials: normalizeTestimonials(profile.testimonials),
                   revenueRange: {
                     min: profile.revenueRange?.min || "",
                     max: profile.revenueRange?.max || "",
@@ -1858,18 +1891,6 @@ const AdvisorDashboard = () => {
                           <div key={index} className="p-4 border border-gray-200 rounded-lg">
                             <div className="flex items-center justify-between mb-3">
                               <h4 className="text-sm font-semibold text-gray-700">Testimonial {index + 1}</h4>
-                              {values.testimonials.length > 1 && (
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    const newTestimonials = values.testimonials.filter((_, i) => i !== index);
-                                    setFieldValue('testimonials', newTestimonials);
-                                  }}
-                                  className="text-red-500 hover:text-red-700 text-sm"
-                                >
-                                  Remove
-                                </button>
-                              )}
                             </div>
                             
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1878,6 +1899,11 @@ const AdvisorDashboard = () => {
                                 <Field
                                   name={`testimonials[${index}].clientName`}
                                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                />
+                                <ErrorMessage
+                                  name={`testimonials[${index}].clientName`}
+                                  component="div"
+                                  className="text-red-500 text-xs mt-1"
                                 />
                               </div>
                               
@@ -1888,6 +1914,11 @@ const AdvisorDashboard = () => {
                                   name={`testimonials[${index}].testimonial`}
                                   rows={3}
                                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
+                                />
+                                <ErrorMessage
+                                  name={`testimonials[${index}].testimonial`}
+                                  component="div"
+                                  className="text-red-500 text-xs mt-1"
                                 />
                               </div>
                               
@@ -1926,19 +1957,11 @@ const AdvisorDashboard = () => {
                           </div>
                         ))}
                         
-                        {values.testimonials.length < 5 && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const newTestimonials = [...values.testimonials, { clientName: "", testimonial: "", pdfFile: null }];
-                              setFieldValue('testimonials', newTestimonials);
-                            }}
-                            className="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-primary hover:text-primary transition-colors"
-                          >
-                            + Add Testimonial
-                          </button>
-                        )}
                       </div>
+
+                        <p className="text-xs text-gray-500">
+                          Exactly 5 testimonials are required. Update the details in each card to reflect your latest client feedback.
+                        </p>
                     </div>
 
                     {/* Submit Button */}
