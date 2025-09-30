@@ -17,15 +17,18 @@ const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 const cardElementOptions = {
   style: {
     base: {
-      fontSize: '16px',
-      color: '#1f2937',
-      '::placeholder': { color: '#9ca3af' },
-      fontFamily: '"Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+      fontSize: "16px",
+      color: "#1f2937",
+      "::placeholder": { color: "#9ca3af" },
+      fontFamily:
+        '"Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
     },
     invalid: {
-      color: '#ef4444',
+      color: "#ef4444",
     },
   },
+  hidePostalCode: true, // <-- Hide ZIP/postal code field
+  autocomplete: "off",
 };
 
 const ChangeCardForm = () => {

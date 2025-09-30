@@ -625,7 +625,7 @@ export const AdvisorForm = () => {
         numberOfTransactions: Number(values.numberOfTransactions),
         currency: values.currency,
         description: values.description,
-        licensing: values.licensing,
+        // licensing: values.licensing,
         testimonials, // already validated as array of 5 objects
         revenueRange: {
           min: Number(values.revenueRange.min),
