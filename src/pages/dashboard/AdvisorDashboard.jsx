@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import { Formik, Form, Field, ErrorMessage, useFormikContext } from 'formik';
 import * as Yup from 'yup';
-import { FaUser, FaBuilding, FaPhone, FaGlobe, FaCalendarAlt, FaQuoteLeft, FaFilePdf, FaChartLine, FaDollarSign, FaMapMarkerAlt, FaIndustry, FaCog, FaSignOutAlt, FaEdit, FaToggleOn, FaToggleOff, FaBars, FaTimes, FaChevronDown, FaChevronRight, FaFileAlt, FaSearch, FaCreditCard } from 'react-icons/fa';
+import { FaUser, FaBuilding, FaPhone, FaGlobe, FaCalendarAlt, FaQuoteLeft, FaFilePdf, FaChartLine, FaDollarSign, FaMapMarkerAlt, FaIndustry, FaCog, FaSignOutAlt, FaEdit, FaToggleOn, FaToggleOff, FaBars, FaTimes, FaChevronDown, FaChevronRight, FaFileAlt, FaSearch, FaCreditCard, FaExclamationTriangle, FaInfoCircle } from 'react-icons/fa';
 import { getIndustryData } from '../../components/Static/newIndustryData';
 import { Country, State } from 'country-state-city';
 
@@ -598,6 +598,7 @@ const AdvisorDashboard = () => {
           max: values.revenueRange.max || 0,
         }));
       }
+      formData.append('workedWithCimamplify', values.workedWithCimamplify);
       
       if (!logoFile && !profile?.logoUrl) {
         toast.error('Company logo is required');
@@ -831,9 +832,14 @@ const AdvisorDashboard = () => {
               onClick={() => setProfileDropdownOpen(prev => !prev)}
             >
               <div className="text-right hidden sm:block">
-                <span className="block font-semibold text-gray-900 text-sm">
-                  {user?.name || "Loading..."}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="block font-semibold text-gray-900 text-sm">
+                    {user?.name || "Loading..."}
+                  </span>
+                  {profile?.workedWithCimamplify && (
+                    <img src="/logo.png" alt="Cimamplify Ventures Partner" className="h-5 w-5" title="Worked with Cimamplify Ventures" />
+                  )}
+                </div>
                 <span className="block text-xs text-gray-500">Advisor Account</span>
               </div>
               <div className="relative">
@@ -1489,6 +1495,7 @@ const AdvisorDashboard = () => {
                     min: profile.revenueRange?.min || "",
                     max: profile.revenueRange?.max || "",
                   },
+                  workedWithCimamplify: profile.workedWithCimamplify || false,
                 }}
                 validationSchema={validationSchema}
                 onSubmit={onSubmit}
@@ -1516,6 +1523,23 @@ const AdvisorDashboard = () => {
                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                           />
                           <ErrorMessage name="name" component="div" className="text-red-500 text-sm mt-1" />
+                        </div>
+                      </div>
+
+                      <div className="mt-6 p-6 rounded-2xl bg-blue-50 border border-blue-200 shadow-sm">
+                        <div className="flex items-start">
+                          <Field
+                            type="checkbox"
+                            name="workedWithCimamplify"
+                            id="workedWithCimamplify-edit"
+                            className="h-4 w-4 mt-1 text-primary focus:ring-primary border-gray-300 rounded"
+                          />
+                          <div className="ml-3 text-sm">
+                            <label htmlFor="workedWithCimamplify-edit" className="font-bold text-blue-800">
+                              Did you previously work with Cimamplify Ventures?
+                            </label>
+                            <p className="text-blue-700">Check this box if you have been engaged in any capacity with Cimamplify Ventures in the past.</p>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -1593,6 +1617,20 @@ const AdvisorDashboard = () => {
                         Experience & Performance
                       </h3>
                       
+                      <div className="mb-6 p-4 rounded-lg bg-red-50 border border-red-200 text-red-800">
+                        <div className="flex items-start">
+                          <div className="flex-shrink-0">
+                            <FaExclamationTriangle className="h-5 w-5 text-red-400" aria-hidden="true" />
+                          </div>
+                          <div className="ml-3">
+                            <h3 className="text-sm font-medium">Important Requirement</h3>
+                            <div className="mt-2 text-sm">
+                              <p>To ensure the quality of our network, we require all advisors to have a minimum of 5 years of experience and to have completed at least 20 transactions.</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">Years of Experience</label>
@@ -1800,6 +1838,20 @@ const AdvisorDashboard = () => {
                         <FaFileAlt className="mr-3 text-primary" />
                         Advisor Introduction Video (optional)
                       </h3>
+
+                      <div className="mb-6 p-4 rounded-lg bg-blue-50 border border-blue-200 text-blue-800">
+                        <div className="flex items-start">
+                          <div className="flex-shrink-0">
+                            <FaInfoCircle className="h-5 w-5 text-blue-400" aria-hidden="true" />
+                          </div>
+                          <div className="ml-3">
+                            <h3 className="text-sm font-bold">Video Instructions</h3>
+                            <div className="mt-2 text-sm">
+                              <p>When we present you to a seller this video will be attached. We suggest a quick introduction of your company followed by a story about your favorite company sale.</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
 
                       <div className="flex flex-col items-center justify-center">
                         <div className="w-full max-w-xl">

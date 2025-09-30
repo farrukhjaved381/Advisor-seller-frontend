@@ -1,46 +1,52 @@
-"use client"
+"use client";
 
-import { useEffect, useRef, useState } from "react"
-import axios from "axios"
-import AdvisorCard from "../../components/AdvisorCard"
-import toast, { Toaster } from "react-hot-toast"
-import { useFormik } from "formik"
-import * as Yup from "yup"
-import { Formik, Form, Field, ErrorMessage, useFormikContext } from "formik"
-import { rawGeographyData } from "../../components/Static/geographyData"
-import { rawIndustryData } from "../../components/Static/industryData"
-import { getIndustryData } from "../../components/Static/newIndustryData"
-import { Country, State } from "country-state-city"
-import { FaChevronDown, FaChevronRight, FaSearch } from "react-icons/fa"
-import EditProfileModal from "../../components/EditProfileModal"
-import { useLocation, useNavigate } from "react-router-dom"
+import { useEffect, useRef, useState } from "react";
+import axios from "axios";
+import AdvisorCard from "../../components/AdvisorCard";
+import toast, { Toaster } from "react-hot-toast";
+import { useFormik } from "formik";
+import * as Yup from "yup";
+import { Formik, Form, Field, ErrorMessage, useFormikContext } from "formik";
+import { rawGeographyData } from "../../components/Static/geographyData";
+import { rawIndustryData } from "../../components/Static/industryData";
+import { getIndustryData } from "../../components/Static/newIndustryData";
+import { Country, State } from "country-state-city";
+import { FaChevronDown, FaChevronRight, FaSearch } from "react-icons/fa";
+import EditProfileModal from "../../components/EditProfileModal";
+import { useLocation, useNavigate } from "react-router-dom";
 
 // Map selected industry id to top-level industry label
 const mapIndustry = (selectedId) => {
   for (const category of rawIndustryData) {
-    if (category.id === selectedId) return category.label
+    if (category.id === selectedId) return category.label;
     if (category.children) {
-      const child = category.children.find((c) => c.id === selectedId)
-      if (child) return category.label // return parent label
+      const child = category.children.find((c) => c.id === selectedId);
+      if (child) return category.label; // return parent label
     }
   }
-  return "Technology" // fallback
-}
+  return "Technology"; // fallback
+};
 
 // Map selected geography id to top-level geography label
 const mapGeography = (selectedId) => {
   for (const country of rawGeographyData) {
-    if (country.id === selectedId) return country.label
+    if (country.id === selectedId) return country.label;
     if (country.children) {
-      const child = country.children.find((c) => c.id === selectedId)
-      if (child) return country.label // return parent label
+      const child = country.children.find((c) => c.id === selectedId);
+      if (child) return country.label; // return parent label
     }
   }
-  return "North America" // fallback
-}
+  return "North America"; // fallback
+};
 
 // AnimatedInput component from seller form
-const AnimatedInput = ({ name, type = "text", placeholder, readOnly = false, prefix = "" }) => {
+const AnimatedInput = ({
+  name,
+  type = "text",
+  placeholder,
+  readOnly = false,
+  prefix = "",
+}) => {
   return (
     <div className="relative w-full">
       {prefix && (
@@ -71,30 +77,34 @@ const AnimatedInput = ({ name, type = "text", placeholder, readOnly = false, pre
       >
         {placeholder}
       </label>
-      <ErrorMessage name={name} component="p" className="text-red-500 text-sm mt-1" />
+      <ErrorMessage
+        name={name}
+        component="p"
+        className="text-red-500 text-sm mt-1"
+      />
     </div>
-  )
-}
+  );
+};
 
 // Industry Radio Chooser Component from SellerForm
 const IndustryRadioChooser = ({ selected, onChange }) => {
-  const [query, setQuery] = useState("")
-  const [expandedSectors, setExpandedSectors] = useState({})
-  const industryData = getIndustryData()
+  const [query, setQuery] = useState("");
+  const [expandedSectors, setExpandedSectors] = useState({});
+  const industryData = getIndustryData();
 
   const filterSectors = (sectors, currentQuery) => {
-    if (!currentQuery) return sectors
-    const lowerCaseQuery = currentQuery.toLowerCase()
-    return sectors.filter(sector => {
-      const sectorMatches = sector.name.toLowerCase().includes(lowerCaseQuery)
-      const groupMatches = sector.industryGroups.some(group => 
+    if (!currentQuery) return sectors;
+    const lowerCaseQuery = currentQuery.toLowerCase();
+    return sectors.filter((sector) => {
+      const sectorMatches = sector.name.toLowerCase().includes(lowerCaseQuery);
+      const groupMatches = sector.industryGroups.some((group) =>
         group.name.toLowerCase().includes(lowerCaseQuery)
-      )
-      return sectorMatches || groupMatches
-    })
-  }
+      );
+      return sectorMatches || groupMatches;
+    });
+  };
 
-  const filteredSectors = filterSectors(industryData.sectors, query)
+  const filteredSectors = filterSectors(industryData.sectors, query);
 
   return (
     <div className="w-full">
@@ -126,7 +136,7 @@ const IndustryRadioChooser = ({ selected, onChange }) => {
                   <div
                     className="flex items-center cursor-pointer flex-1"
                     onClick={() =>
-                      setExpandedSectors(prev => ({
+                      setExpandedSectors((prev) => ({
                         ...prev,
                         [sector.id]: !prev[sector.id],
                       }))
@@ -137,7 +147,10 @@ const IndustryRadioChooser = ({ selected, onChange }) => {
                     ) : (
                       <FaChevronRight className="h-4 w-4 mr-1 text-secondary/60" />
                     )}
-                    <label htmlFor={`sector-${sector.id}`} className="text-secondary cursor-pointer font-medium">
+                    <label
+                      htmlFor={`sector-${sector.id}`}
+                      className="text-secondary cursor-pointer font-medium"
+                    >
                       {sector.name}
                     </label>
                   </div>
@@ -182,25 +195,31 @@ const IndustryRadioChooser = ({ selected, onChange }) => {
         )}
       </div>
     </div>
-  )
-}
+  );
+};
 
 // Geography Radio Chooser Component from SellerForm
 const GeographyRadioChooser = ({ selected, onChange }) => {
-  const [query, setQuery] = useState("")
-  const [expandedCountries, setExpandedCountries] = useState({})
+  const [query, setQuery] = useState("");
+  const [expandedCountries, setExpandedCountries] = useState({});
 
   let allCountries = Country.getAllCountries().filter((country) => {
-    const countryMatch = country.name.toLowerCase().includes(query.toLowerCase())
-    const states = State.getStatesOfCountry(country.isoCode)
-    const stateMatch = states.some(state => state.name.toLowerCase().includes(query.toLowerCase()))
-    return countryMatch || stateMatch
-  })
+    const countryMatch = country.name
+      .toLowerCase()
+      .includes(query.toLowerCase());
+    const states = State.getStatesOfCountry(country.isoCode);
+    const stateMatch = states.some((state) =>
+      state.name.toLowerCase().includes(query.toLowerCase())
+    );
+    return countryMatch || stateMatch;
+  });
 
-  const priorityCountries = ["United States", "Canada", "Mexico"]
-  const priority = allCountries.filter(c => priorityCountries.includes(c.name))
-  const rest = allCountries.filter(c => !priorityCountries.includes(c.name))
-  allCountries = [...priority, ...rest]
+  const priorityCountries = ["United States", "Canada", "Mexico"];
+  const priority = allCountries.filter((c) =>
+    priorityCountries.includes(c.name)
+  );
+  const rest = allCountries.filter((c) => !priorityCountries.includes(c.name));
+  allCountries = [...priority, ...rest];
 
   return (
     <div className="w-full">
@@ -217,17 +236,71 @@ const GeographyRadioChooser = ({ selected, onChange }) => {
       <div className="bg-gray-50 border border-primary/20 rounded-lg p-4 h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-gray-100 shadow-inner">
         <div className="space-y-2">
           {allCountries.map((country) => {
-            let states = State.getStatesOfCountry(country.isoCode)
-            
+            let states = State.getStatesOfCountry(country.isoCode);
+
             if (country.name === "United States") {
               const contiguous = [
-                "Alabama","Arizona","Arkansas","California","Colorado","Connecticut","Delaware","Florida","Georgia","Idaho","Illinois","Indiana","Iowa","Kansas","Kentucky","Louisiana","Maine","Maryland","Massachusetts","Michigan","Minnesota","Mississippi","Missouri","Montana","Nebraska","Nevada","New Hampshire","New Jersey","New Mexico","New York","North Carolina","North Dakota","Ohio","Oklahoma","Oregon","Pennsylvania","Rhode Island","South Carolina","South Dakota","Tennessee","Texas","Utah","Vermont","Virginia","Washington","West Virginia","Wisconsin","Wyoming"
-              ]
-              states = states.filter(state => contiguous.includes(state.name) || ["Hawaii","Alaska"].includes(state.name))
+                "Alabama",
+                "Arizona",
+                "Arkansas",
+                "California",
+                "Colorado",
+                "Connecticut",
+                "Delaware",
+                "Florida",
+                "Georgia",
+                "Idaho",
+                "Illinois",
+                "Indiana",
+                "Iowa",
+                "Kansas",
+                "Kentucky",
+                "Louisiana",
+                "Maine",
+                "Maryland",
+                "Massachusetts",
+                "Michigan",
+                "Minnesota",
+                "Mississippi",
+                "Missouri",
+                "Montana",
+                "Nebraska",
+                "Nevada",
+                "New Hampshire",
+                "New Jersey",
+                "New Mexico",
+                "New York",
+                "North Carolina",
+                "North Dakota",
+                "Ohio",
+                "Oklahoma",
+                "Oregon",
+                "Pennsylvania",
+                "Rhode Island",
+                "South Carolina",
+                "South Dakota",
+                "Tennessee",
+                "Texas",
+                "Utah",
+                "Vermont",
+                "Virginia",
+                "Washington",
+                "West Virginia",
+                "Wisconsin",
+                "Wyoming",
+              ];
+              states = states.filter(
+                (state) =>
+                  contiguous.includes(state.name) ||
+                  ["Hawaii", "Alaska"].includes(state.name)
+              );
             }
-            
+
             return (
-              <div key={country.isoCode} className="border-b border-gray-100 pb-1">
+              <div
+                key={country.isoCode}
+                className="border-b border-gray-100 pb-1"
+              >
                 <div className="flex items-center">
                   <input
                     type="radio"
@@ -241,7 +314,7 @@ const GeographyRadioChooser = ({ selected, onChange }) => {
                   <div
                     className="flex items-center cursor-pointer flex-1"
                     onClick={() =>
-                      setExpandedCountries(prev => ({
+                      setExpandedCountries((prev) => ({
                         ...prev,
                         [country.isoCode]: !prev[country.isoCode],
                       }))
@@ -252,7 +325,10 @@ const GeographyRadioChooser = ({ selected, onChange }) => {
                     ) : (
                       <FaChevronRight className="h-4 w-4 mr-1 text-secondary/60" />
                     )}
-                    <label htmlFor={`geo-${country.isoCode}`} className="text-secondary cursor-pointer font-medium">
+                    <label
+                      htmlFor={`geo-${country.isoCode}`}
+                      className="text-secondary cursor-pointer font-medium"
+                    >
                       {country.name}
                     </label>
                   </div>
@@ -260,10 +336,13 @@ const GeographyRadioChooser = ({ selected, onChange }) => {
                 {expandedCountries[country.isoCode] && (
                   <div className="ml-6 mt-1 space-y-1">
                     {states
-                      .filter(state =>
-                        query.trim() === '' ||
-                        country.name.toLowerCase().includes(query.toLowerCase()) ||
-                        state.name.toLowerCase().includes(query.toLowerCase())
+                      .filter(
+                        (state) =>
+                          query.trim() === "" ||
+                          country.name
+                            .toLowerCase()
+                            .includes(query.toLowerCase()) ||
+                          state.name.toLowerCase().includes(query.toLowerCase())
                       )
                       .map((state) => (
                         <div key={state.isoCode} className="pl-2">
@@ -273,8 +352,12 @@ const GeographyRadioChooser = ({ selected, onChange }) => {
                               name="geography"
                               id={`geo-${country.isoCode}-${state.isoCode}`}
                               value={`${country.name} > ${state.name}`}
-                              checked={selected === `${country.name} > ${state.name}`}
-                              onChange={() => onChange(`${country.name} > ${state.name}`)}
+                              checked={
+                                selected === `${country.name} > ${state.name}`
+                              }
+                              onChange={() =>
+                                onChange(`${country.name} > ${state.name}`)
+                              }
                               className="mr-2 h-4 w-4 text-primary focus:ring-primary form-radio border-gray-300 transition-colors duration-200"
                             />
                             <label
@@ -289,128 +372,136 @@ const GeographyRadioChooser = ({ selected, onChange }) => {
                   </div>
                 )}
               </div>
-            )
+            );
           })}
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
 const SellerDashboard = () => {
-  const navigate = useNavigate()
-  const location = useLocation()
+  const navigate = useNavigate();
+  const location = useLocation();
 
   // Exit guard refs
-  const [guardEnabled, setGuardEnabled] = useState(true)
-  const exitGuardEnabledRef = useRef(true) // block exit until profile is deleted
-  const revertInProgressRef = useRef(false) // avoid loops when reverting navigation
-  const lastPathRef = useRef("")
+  const [guardEnabled, setGuardEnabled] = useState(true);
+  const exitGuardEnabledRef = useRef(true); // block exit until profile is deleted
+  const revertInProgressRef = useRef(false); // avoid loops when reverting navigation
+  const lastPathRef = useRef("");
 
   // Delete profile handler (replaces logout)
   const handleDeleteProfile = async () => {
     const confirmed = window.confirm(
-      "Delete your profile and exit? You'll need to enter your email and fill the form again next time.",
-    )
-    if (!confirmed) return
+      "When you exit your profile and matches are deleted. You'll need to enter your email and fill the form again next time."
+    );
+    if (!confirmed) return;
 
     try {
-      const token = localStorage.getItem("access_token")
+      const token = localStorage.getItem("access_token");
       await axios.delete(
         "https://advisor-seller-backend.vercel.app/api/sellers/profile",
-        { headers: { Authorization: `Bearer ${token}` } },
-      )
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
       // Clear local auth state
-      localStorage.removeItem("access_token")
-      localStorage.removeItem("refresh_token")
-      localStorage.removeItem("user")
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("refresh_token");
+      localStorage.removeItem("user");
 
       // Clear cookies
       if (typeof document !== "undefined") {
-        const cookies = document.cookie.split(";")
+        const cookies = document.cookie.split(";");
         for (const cookie of cookies) {
-          const eqPos = cookie.indexOf("=")
-          const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie
-          document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/"
+          const eqPos = cookie.indexOf("=");
+          const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+          document.cookie =
+            name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
         }
       }
 
-      toast.success("Profile deleted. See you next time!")
+      toast.success("Profile deleted. See you next time!");
       // allow navigation away (disable exit guard) before redirecting
-      exitGuardEnabledRef.current = false
-      setGuardEnabled(false)
+      exitGuardEnabledRef.current = false;
+      setGuardEnabled(false);
       setTimeout(() => {
-        window.location.href = "/seller-login"
-      }, 1500)
+        window.location.href = "/seller-login";
+      }, 1500);
     } catch (err) {
-      toast.error(err?.response?.data?.message || "Failed to delete profile")
+      toast.error(err?.response?.data?.message || "Failed to delete profile");
     }
-  }
+  };
 
-  const [seller, setSeller] = useState(null)
-  const [activeTab, setActiveTab] = useState("pending")
-  const [loading, setLoading] = useState(false)
-  const [matches, setMatches] = useState([])
-  const [matchesLoading, setMatchesLoading] = useState(false)
-  const [profileRefreshTrigger, setProfileRefreshTrigger] = useState(0)
-  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
-  const [userProfile, setUserProfile] = useState({ name: "", email: "", password: "" })
+  const [seller, setSeller] = useState(null);
+  const [activeTab, setActiveTab] = useState("pending");
+  const [loading, setLoading] = useState(false);
+  const [matches, setMatches] = useState([]);
+  const [matchesLoading, setMatchesLoading] = useState(false);
+  const [profileRefreshTrigger, setProfileRefreshTrigger] = useState(0);
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [userProfile, setUserProfile] = useState({
+    name: "",
+    email: "",
+    password: "",
+  });
 
-  const [selectedAdvisors, setSelectedAdvisors] = useState([])
-  const [introductionRequests, setIntroductionRequests] = useState([])
-  const [directContactList, setDirectContactList] = useState([])
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
-  const [introductionLoading, setIntroductionLoading] = useState(false)
-  const [directListLoading, setDirectListLoading] = useState(false)
-  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [selectedAdvisors, setSelectedAdvisors] = useState([]);
+  const [introductionRequests, setIntroductionRequests] = useState([]);
+  const [directContactList, setDirectContactList] = useState([]);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [introductionLoading, setIntroductionLoading] = useState(false);
+  const [directListLoading, setDirectListLoading] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleSelectAdvisor = (advisorId) => {
     setSelectedAdvisors((prevSelected) => {
       if (prevSelected.includes(advisorId)) {
-        return prevSelected.filter((id) => id !== advisorId)
+        return prevSelected.filter((id) => id !== advisorId);
       } else {
-        return [...prevSelected, advisorId]
+        return [...prevSelected, advisorId];
       }
-    })
-  }
+    });
+  };
 
   const handleBulkIntroduction = async () => {
-    if (selectedAdvisors.length === 0) return
-    
+    if (selectedAdvisors.length === 0) return;
+
     try {
-      setIntroductionLoading(true)
-      const token = localStorage.getItem("access_token")
-      
+      setIntroductionLoading(true);
+      const token = localStorage.getItem("access_token");
+
       const response = await axios.post(
         "https://advisor-seller-backend.vercel.app/api/connections/introduction",
         { advisorIds: selectedAdvisors },
-        { headers: { Authorization: `Bearer ${token}` } },
-      )
-      
-      toast.success(`📧 Introduction emails sent to you and x selected advisors!`)
-      setIntroductionRequests([...introductionRequests, ...selectedAdvisors])
-      setSelectedAdvisors([])
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      toast.success(
+        `📧 Introduction emails sent to you and x selected advisors!`
+      );
+      setIntroductionRequests([...introductionRequests, ...selectedAdvisors]);
+      setSelectedAdvisors([]);
     } catch (error) {
-      toast.error("Failed to send introduction requests")
+      toast.error("Failed to send introduction requests");
     } finally {
-      setIntroductionLoading(false)
+      setIntroductionLoading(false);
     }
-  }
+  };
 
   const handleGetDirectList = async () => {
     try {
-      setDirectListLoading(true)
-      const token = localStorage.getItem("access_token")
+      setDirectListLoading(true);
+      const token = localStorage.getItem("access_token");
       const response = await axios.post(
         "https://advisor-seller-backend.vercel.app/api/connections/direct-list",
         {},
-        { headers: { Authorization: `Bearer ${token}` } },
-      )
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       if (response.status === 200 || response.status === 201) {
         const msg = response.data?.message || `Direct contact list sent!`;
-        const sellerEmail = userProfile?.email || profile?.email || "your email";
+        const sellerEmail =
+          userProfile?.email || profile?.email || "your email";
         toast.success(
           `📧 ${msg}\nCheck your email (${sellerEmail}) for the contact list.`,
           { duration: 5000, id: "direct-list-success" }
@@ -418,53 +509,63 @@ const SellerDashboard = () => {
       }
     } catch (error) {
       if (error.response?.status === 404) {
-        toast.error("No matching advisors found or seller profile not complete")
+        toast.error(
+          "No matching advisors found or seller profile not complete"
+        );
       } else if (error.response?.status === 429) {
-        toast.error("Too many requests. Please try again later.")
+        toast.error("Too many requests. Please try again later.");
       } else {
-        toast.error(error.response?.data?.message || "Failed to request direct list")
+        toast.error(
+          error.response?.data?.message || "Failed to request direct list"
+        );
       }
     } finally {
-      setDirectListLoading(false)
+      setDirectListLoading(false);
     }
-  }
+  };
 
   // Fetch core profile fields (name, email) from API, merge with localStorage for other fields (not name/email)
-  const [profile, setProfile] = useState({})
+  const [profile, setProfile] = useState({});
 
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const token = localStorage.getItem("access_token")
-        if (!token) return
+        const token = localStorage.getItem("access_token");
+        if (!token) return;
 
-        const res = await axios.get("https://advisor-seller-backend.vercel.app/api/auth/profile", {
-          headers: { Authorization: `Bearer ${token}` },
-        })
+        const res = await axios.get(
+          "https://advisor-seller-backend.vercel.app/api/auth/profile",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
 
         if (res.status === 200 && res.data) {
           // Only keep name and email, ignore password
           setUserProfile({
             name: res.data.name,
             email: res.data.email,
-          })
+          });
         }
       } catch (err) {
-        console.error("Failed to fetch user profile:", err)
+        console.error("Failed to fetch user profile:", err);
       }
-    }
-    fetchUserProfile()
-  }, [])
+    };
+    fetchUserProfile();
+  }, []);
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const token = localStorage.getItem("access_token")
+        const token = localStorage.getItem("access_token");
 
         // Get user auth data
-        const authRes = await axios.get("https://advisor-seller-backend.vercel.app/api/auth/profile", {
-          headers: { Authorization: `Bearer ${token}` },
-        })
+        const authRes = await axios.get(
+          "https://advisor-seller-backend.vercel.app/api/auth/profile",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
 
         let combinedProfile = {
           id: authRes.data.id,
@@ -472,13 +573,16 @@ const SellerDashboard = () => {
           email: authRes.data.email,
           role: authRes.data.role,
           isEmailVerified: authRes.data.isEmailVerified,
-        }
+        };
 
         // Try to get seller profile from database
         try {
-          const sellerRes = await axios.get("https://advisor-seller-backend.vercel.app/api/sellers/profile", {
-            headers: { Authorization: `Bearer ${token}` },
-          })
+          const sellerRes = await axios.get(
+            "https://advisor-seller-backend.vercel.app/api/sellers/profile",
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
 
           if (sellerRes.status === 200 && sellerRes.data) {
             combinedProfile = {
@@ -491,63 +595,69 @@ const SellerDashboard = () => {
               annualRevenue: sellerRes.data.annualRevenue,
               currency: sellerRes.data.currency,
               description: sellerRes.data.description,
-            }
+            };
           }
         } catch (sellerErr) {
           // If no seller profile exists, use empty values
-          console.log("No seller profile found in database")
+          console.log("No seller profile found in database");
         }
 
-        setProfile(combinedProfile)
+        setProfile(combinedProfile);
       } catch (err) {
-        console.error("Error fetching profile from API:", err)
+        console.error("Error fetching profile from API:", err);
       }
-    }
-    fetchProfile()
-  }, [profileRefreshTrigger])
+    };
+    fetchProfile();
+  }, [profileRefreshTrigger]);
 
   const fetchMatches = async () => {
     try {
-      setMatchesLoading(true)
-      const token = localStorage.getItem("access_token")
+      setMatchesLoading(true);
+      const token = localStorage.getItem("access_token");
       if (!token) {
-        toast.error("No token found, please log in again.")
-        return
+        toast.error("No token found, please log in again.");
+        return;
       }
 
-      const res = await axios.get(`https://advisor-seller-backend.vercel.app/api/sellers/matches`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      const res = await axios.get(
+        `https://advisor-seller-backend.vercel.app/api/sellers/matches`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
       if (res.status === 200 && res.data) {
-        setMatches(res.data)
+        setMatches(res.data);
       } else {
-        setMatches([])
-        toast.error(res.data?.message || "Failed to fetch matches")
+        setMatches([]);
+        toast.error(res.data?.message || "Failed to fetch matches");
       }
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to fetch matches")
+      toast.error(err.response?.data?.message || "Failed to fetch matches");
     } finally {
-      setMatchesLoading(false)
+      setMatchesLoading(false);
     }
-  }
+  };
 
   // Fetch seller profile
   const fetchSeller = async () => {
     try {
-      setLoading(true)
-      const token = localStorage.getItem("access_token")
+      setLoading(true);
+      const token = localStorage.getItem("access_token");
       if (!token) {
-        toast.error("No token found, please log in again.")
-        return
+        toast.error("No token found, please log in again.");
+        return;
       }
 
-      const res = await axios.get("https://advisor-seller-backend.vercel.app/api/sellers/profile", {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      const res = await axios.get(
+        "https://advisor-seller-backend.vercel.app/api/sellers/profile",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
       if (res.status === 200 && res.data) {
-        setSeller(res.data)
+        setSeller(res.data);
         // Update profile state with new data
         setProfile((prev) => ({
           ...prev,
@@ -561,37 +671,42 @@ const SellerDashboard = () => {
           maxRevenue: res.data.annualRevenue || prev.maxRevenue,
           currency: res.data.currency || prev.currency,
           description: res.data.description || prev.description,
-        }))
-        toast.success("Seller profile loaded successfully", { id: "profile-toast" })
+        }));
+        toast.success("Seller profile loaded successfully", {
+          id: "profile-toast",
+        });
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to fetch seller profile", { id: "profile-error" })
+      toast.error(
+        error.response?.data?.message || "Failed to fetch seller profile",
+        { id: "profile-error" }
+      );
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    fetchSeller()
-    fetchMatches()
-  }, [profileRefreshTrigger])
+    fetchSeller();
+    fetchMatches();
+  }, [profileRefreshTrigger]);
 
   // Always warn on unload while exit guard is enabled (tab close, browser close, URL change)
-  const [unsavedChanges, setUnsavedChanges] = useState(false)
+  const [unsavedChanges, setUnsavedChanges] = useState(false);
   useEffect(() => {
-    console.log('[SellerDashboard] Exit guard mounted')
+    console.log("[SellerDashboard] Exit guard mounted");
     const beforeUnloadHandler = (e) => {
       if (exitGuardEnabledRef.current) {
-        e.preventDefault()
-        e.returnValue = ""
-        return ""
+        e.preventDefault();
+        e.returnValue = "";
+        return "";
       }
-    }
-    window.addEventListener("beforeunload", beforeUnloadHandler)
+    };
+    window.addEventListener("beforeunload", beforeUnloadHandler);
     return () => {
-      window.removeEventListener("beforeunload", beforeUnloadHandler)
-    }
-  }, [])
+      window.removeEventListener("beforeunload", beforeUnloadHandler);
+    };
+  }, []);
 
   // (Removed unstable router blocker; using history/beforeunload guards instead)
 
@@ -599,81 +714,99 @@ const SellerDashboard = () => {
   useEffect(() => {
     // Push a dummy state so back button fires popstate and we can intercept
     try {
-      window.history.pushState({ _guard: true }, document.title, window.location.href)
+      window.history.pushState(
+        { _guard: true },
+        document.title,
+        window.location.href
+      );
     } catch {}
 
     const onPopState = (e) => {
-      if (!exitGuardEnabledRef.current) return
+      if (!exitGuardEnabledRef.current) return;
       // Re-push state to keep user on the page
       try {
-        window.history.pushState({ _guard: true }, document.title, window.location.href)
+        window.history.pushState(
+          { _guard: true },
+          document.title,
+          window.location.href
+        );
       } catch {}
-      alert("Don't exit without deleting the profile. Please delete your profile to leave the dashboard.")
-      toast.error("Delete your profile before exiting.")
-    }
-    window.addEventListener('popstate', onPopState)
+      alert(
+        "Don't exit without deleting the profile. Please delete your profile to leave the dashboard."
+      );
+      toast.error("Delete your profile before exiting.");
+    };
+    window.addEventListener("popstate", onPopState);
     return () => {
-      window.removeEventListener('popstate', onPopState)
-    }
-  }, [])
+      window.removeEventListener("popstate", onPopState);
+    };
+  }, []);
 
   // Block in-app navigation triggered via history.pushState/replaceState (e.g., Links)
   useEffect(() => {
-    const originalPush = window.history.pushState
-    const originalReplace = window.history.replaceState
+    const originalPush = window.history.pushState;
+    const originalReplace = window.history.replaceState;
 
-    const guardWrapper = (original) => function (...args) {
-      if (exitGuardEnabledRef.current) {
-        alert("Don't exit without deleting the profile. Please delete your profile to leave the dashboard.")
-        toast.error("Delete your profile before exiting.")
-        return // cancel navigation
-      }
-      return original.apply(this, args)
-    }
+    const guardWrapper = (original) =>
+      function (...args) {
+        if (exitGuardEnabledRef.current) {
+          alert(
+            "Don't exit without deleting the profile. Please delete your profile to leave the dashboard."
+          );
+          toast.error("Delete your profile before exiting.");
+          return; // cancel navigation
+        }
+        return original.apply(this, args);
+      };
 
     try {
-      window.history.pushState = guardWrapper(originalPush)
-      window.history.replaceState = guardWrapper(originalReplace)
+      window.history.pushState = guardWrapper(originalPush);
+      window.history.replaceState = guardWrapper(originalReplace);
     } catch {}
 
     return () => {
       try {
-        window.history.pushState = originalPush
-        window.history.replaceState = originalReplace
+        window.history.pushState = originalPush;
+        window.history.replaceState = originalReplace;
       } catch {}
-    }
-  }, [])
+    };
+  }, []);
 
   // Block in-app route changes while exit guard is enabled (back button or URL/path changes within SPA)
   useEffect(() => {
-    const currentPath = location.pathname + location.search + location.hash
+    const currentPath = location.pathname + location.search + location.hash;
 
     // Initialize lastPathRef on first render
     if (!lastPathRef.current) {
-      lastPathRef.current = currentPath
-      return
+      lastPathRef.current = currentPath;
+      return;
     }
 
     // If we're reverting a navigation, just record and clear the flag
     if (revertInProgressRef.current) {
-      lastPathRef.current = currentPath
-      revertInProgressRef.current = false
-      return
+      lastPathRef.current = currentPath;
+      revertInProgressRef.current = false;
+      return;
     }
 
     // Detect a path change
     if (currentPath !== lastPathRef.current) {
       if (exitGuardEnabledRef.current) {
         // Notify user and revert navigation if possible
-        alert("Don't exit without deleting the profile. Please delete your profile to leave the dashboard.")
-        toast.error("Delete your profile before exiting.")
-        try { revertInProgressRef.current = true; navigate(-1) } catch {}
-        return
+        alert(
+          "Don't exit without deleting the profile. Please delete your profile to leave the dashboard."
+        );
+        toast.error("Delete your profile before exiting.");
+        try {
+          revertInProgressRef.current = true;
+          navigate(-1);
+        } catch {}
+        return;
       }
       // Allowed navigation (guard disabled)
-      lastPathRef.current = currentPath
+      lastPathRef.current = currentPath;
     }
-  }, [location, navigate])
+  }, [location, navigate]);
 
   // No router blocker component required
 
@@ -684,46 +817,85 @@ const SellerDashboard = () => {
       .max(100, "Company name must not exceed 100 characters")
       .required("Company name is required"),
     phone: Yup.string()
-      .matches(/^\+?[1-9]\d{1,14}$/, "Enter a valid phone number with country code")
+      .matches(
+        /^\+?[1-9]\d{1,14}$/,
+        "Enter a valid phone number with country code"
+      )
       .min(10, "Phone number must be at least 10 digits")
       .required("Phone number is required"),
     website: Yup.string()
       .required("Website is required")
-      .test('url', 'Enter a valid website (e.g., www.example.com or https://example.com)', function(value) {
-        if (!value) return false;
-        const urlPattern = /^(https?:\/\/)?(www\.)?[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.[a-zA-Z]{2,}(\.[a-zA-Z]{2,})?(\/.*)?(\?.*)?(#.*)?$/;
-        return urlPattern.test(value);
-      }),
-    industry: Yup.string().min(1, "Please select an industry").required("Industry selection is required"),
-    geography: Yup.string().min(1, "Please select a geography").required("Geography selection is required"),
+      .test(
+        "url",
+        "Enter a valid website (e.g., www.example.com or https://example.com)",
+        function (value) {
+          if (!value) return false;
+          const urlPattern =
+            /^(https?:\/\/)?(www\.)?[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.[a-zA-Z]{2,}(\.[a-zA-Z]{2,})?(\/.*)?(\?.*)?(#.*)?$/;
+          return urlPattern.test(value);
+        }
+      ),
+    industry: Yup.string()
+      .min(1, "Please select an industry")
+      .required("Industry selection is required"),
+    geography: Yup.string()
+      .min(1, "Please select a geography")
+      .required("Geography selection is required"),
     annualRevenue: Yup.number()
       .nullable()
       .transform((value, originalValue) => {
-        const v = typeof originalValue === 'string' ? originalValue.replace(/,/g, '') : originalValue
-        const n = Number(v)
-        return isNaN(n) || v === '' ? null : n
+        const v =
+          typeof originalValue === "string"
+            ? originalValue.replace(/,/g, "")
+            : originalValue;
+        const n = Number(v);
+        return isNaN(n) || v === "" ? null : n;
       })
       .min(1000, "Annual revenue must be at least $1,000")
       .max(999999999, "Annual revenue is too large")
       .required("Annual revenue is required")
       .typeError("Annual revenue must be a valid number"),
     currency: Yup.string()
-      .oneOf(["USD", "EUR", "JPY", "GBP", "CNY", "AUD", "CAD", "CHF", "HKD", "SGD", "SEK", "NOK", "NZD", "MXN", "ZAR", "TRY", "BRL", "KRW", "INR", "RUB"], "Please select a valid currency")
+      .oneOf(
+        [
+          "USD",
+          "EUR",
+          "JPY",
+          "GBP",
+          "CNY",
+          "AUD",
+          "CAD",
+          "CHF",
+          "HKD",
+          "SGD",
+          "SEK",
+          "NOK",
+          "NZD",
+          "MXN",
+          "ZAR",
+          "TRY",
+          "BRL",
+          "KRW",
+          "INR",
+          "RUB",
+        ],
+        "Please select a valid currency"
+      )
       .required("Currency selection is required"),
     description: Yup.string()
       .min(20, "Description must be at least 20 characters")
       .max(1000, "Description must not exceed 1000 characters")
       .matches(/^(?!\s*$).+/, "Description cannot be empty or just whitespace")
       .required("Description is required"),
-  })
+  });
 
   // Enhanced submit handler with auto-refresh
   const handleEnhancedSubmit = async (values, { setSubmitting }) => {
     try {
-      const token = localStorage.getItem("access_token")
+      const token = localStorage.getItem("access_token");
       if (!token) {
-        toast.error("Unauthorized! Please log in again.")
-        return
+        toast.error("Unauthorized! Please log in again.");
+        return;
       }
 
       const payload = {
@@ -732,23 +904,29 @@ const SellerDashboard = () => {
         website: values.website,
         industry: values.industry,
         geography: values.geography,
-        annualRevenue: Number(String(values.annualRevenue || '').replace(/,/g, '')),
+        annualRevenue: Number(
+          String(values.annualRevenue || "").replace(/,/g, "")
+        ),
         currency: values.currency,
         description: values.description,
-      }
+      };
 
-      const res = await axios.patch("https://advisor-seller-backend.vercel.app/api/sellers/profile", payload, {
-        headers: { Authorization: `Bearer ${token}` },
-        validateStatus: () => true,
-      })
+      const res = await axios.patch(
+        "https://advisor-seller-backend.vercel.app/api/sellers/profile",
+        payload,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          validateStatus: () => true,
+        }
+      );
 
       if (res.status === 200) {
-        toast.success("Seller profile updated successfully")
+        toast.success("Seller profile updated successfully");
 
         // Update localStorage with new data
-        const storedUser = localStorage.getItem("user")
+        const storedUser = localStorage.getItem("user");
         if (storedUser) {
-          const parsedUser = JSON.parse(storedUser)
+          const parsedUser = JSON.parse(storedUser);
           const updatedUser = {
             ...parsedUser,
             companyName: values.companyName,
@@ -759,24 +937,24 @@ const SellerDashboard = () => {
             annualRevenue: values.annualRevenue,
             currency: values.currency,
             description: values.description,
-          }
+          };
 
-          localStorage.setItem("user", JSON.stringify(updatedUser))
+          localStorage.setItem("user", JSON.stringify(updatedUser));
         }
 
         // Refresh data and clear unsaved flag without full reload
-        setProfileRefreshTrigger((prev) => prev + 1)
-        setUnsavedChanges(false)
+        setProfileRefreshTrigger((prev) => prev + 1);
+        setUnsavedChanges(false);
       } else {
-        toast.error(res.data?.message || "Failed to update profile")
+        toast.error(res.data?.message || "Failed to update profile");
       }
     } catch (err) {
-      console.error("Error updating seller profile:", err)
-      toast.error("Something went wrong. Please try again later.")
+      console.error("Error updating seller profile:", err);
+      toast.error("Something went wrong. Please try again later.");
     } finally {
-      setSubmitting(false)
+      setSubmitting(false);
     }
-  }
+  };
 
   // Formik setup for Company Profile (original - keeping for backward compatibility)
   const formik = useFormik({
@@ -794,7 +972,9 @@ const SellerDashboard = () => {
     validationSchema: Yup.object({
       companyName: Yup.string().required("Company name is required"),
       phone: Yup.string().required("Phone is required"),
-      website: Yup.string().url("Enter a valid URL").required("Website is required"),
+      website: Yup.string()
+        .url("Enter a valid URL")
+        .required("Website is required"),
       industry: Yup.string().required("Industry is required"),
       geography: Yup.string().required("Geography is required"),
       annualRevenue: Yup.number()
@@ -806,36 +986,42 @@ const SellerDashboard = () => {
     }),
     onSubmit: async (values) => {
       try {
-        const token = localStorage.getItem("access_token")
-        await axios.patch("https://advisor-seller-backend.vercel.app/api/sellers/profile", values, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        toast.success("Profile updated successfully")
-        await fetchSeller()
+        const token = localStorage.getItem("access_token");
+        await axios.patch(
+          "https://advisor-seller-backend.vercel.app/api/sellers/profile",
+          values,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        toast.success("Profile updated successfully");
+        await fetchSeller();
       } catch (error) {
-        toast.error(error.response?.data?.message || "Failed to update profile")
+        toast.error(
+          error.response?.data?.message || "Failed to update profile"
+        );
       }
     },
-  })
+  });
 
   // Helper component to mark all fields touched after submit
   const ValidationTouched = ({ submitCount, errors, setTouched }) => {
     useEffect(() => {
       if (submitCount > 0 && errors && Object.keys(errors).length) {
-        const all = {}
-        const walk = (o, p = '') => {
-          Object.keys(o).forEach(k => {
-            const path = p ? `${p}.${k}` : k
-            if (o[k] && typeof o[k] === 'object') walk(o[k], path)
-            else all[path] = true
-          })
-        }
-        walk(errors)
-        setTouched(all, true)
+        const all = {};
+        const walk = (o, p = "") => {
+          Object.keys(o).forEach((k) => {
+            const path = p ? `${p}.${k}` : k;
+            if (o[k] && typeof o[k] === "object") walk(o[k], path);
+            else all[path] = true;
+          });
+        };
+        walk(errors);
+        setTouched(all, true);
       }
-    }, [submitCount])
-    return null
-  }
+    }, [submitCount]);
+    return null;
+  };
 
   // Enhanced initial values with comprehensive autofill
   const enhancedInitialValues = {
@@ -847,30 +1033,35 @@ const SellerDashboard = () => {
     industry: profile.industry || seller?.industry || "",
     geography: profile.geography || seller?.geography || "",
     annualRevenue: (() => {
-      const raw = profile.annualRevenue ?? seller?.annualRevenue ?? ""
-      if (raw === "" || raw === null || typeof raw === 'undefined') return ""
-      const num = typeof raw === 'number' ? raw : Number(String(raw).toString().replace(/,/g, ''))
-      if (isNaN(num)) return String(raw)
-      return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+      const raw = profile.annualRevenue ?? seller?.annualRevenue ?? "";
+      if (raw === "" || raw === null || typeof raw === "undefined") return "";
+      const num =
+        typeof raw === "number"
+          ? raw
+          : Number(String(raw).toString().replace(/,/g, ""));
+      if (isNaN(num)) return String(raw);
+      return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     })(),
     currency: profile.currency || seller?.currency || "USD",
     description: profile.description || seller?.description || "",
-  }
+  };
 
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Mobile backdrop */}
       {sidebarOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
-      
-      <aside className={`
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+
+      <aside
+        className={`
+        ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
         fixed lg:static inset-y-0 left-0 z-30 w-72 bg-white flex flex-col border-r border-gray-200 shadow-sm transition-transform duration-300 ease-in-out
-      `}>
+      `}
+      >
         {/* Header */}
         <div className="px-6 py-6 border-b border-gray-100">
           <div className="flex items-center justify-between lg:justify-center mb-4">
@@ -883,8 +1074,18 @@ const SellerDashboard = () => {
               onClick={() => setSidebarOpen(false)}
               className="lg:hidden p-2 rounded-md hover:bg-gray-100"
             >
-              <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <svg
+                className="w-5 h-5 text-gray-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>
@@ -895,7 +1096,9 @@ const SellerDashboard = () => {
           <div className="space-y-6">
             {/* Main Menu */}
             <div className="space-y-1">
-              <p className="px-3 text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">Main Menu</p>
+              <p className="px-3 text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">
+                Main Menu
+              </p>
 
               <button
                 className={`w-full text-left px-4 py-3 rounded-lg transition-all duration-200 flex items-center justify-between ${
@@ -909,7 +1112,12 @@ const SellerDashboard = () => {
                 }}
               >
                 <div className="flex items-center space-x-3">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -919,13 +1127,17 @@ const SellerDashboard = () => {
                   </svg>
                   <div>
                     <span className="font-medium text-sm">Dashboard</span>
-                    <p className="text-xs opacity-70">Select Your Matched Advisors</p>
+                    <p className="text-xs opacity-70">
+                      Select Your Matched Advisors
+                    </p>
                   </div>
                 </div>
                 {matches.length > 0 && (
                   <span
                     className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                      activeTab === "pending" ? "bg-white/20" : "bg-gradient-to-r from-third to-primary text-white"
+                      activeTab === "pending"
+                        ? "bg-white/20"
+                        : "bg-gradient-to-r from-third to-primary text-white"
                     }`}
                   >
                     {matches.length}
@@ -936,7 +1148,9 @@ const SellerDashboard = () => {
 
             {/* Settings */}
             <div className="space-y-1">
-              <p className="px-3 text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">Settings</p>
+              <p className="px-3 text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">
+                Settings
+              </p>
 
               <button
                 className={`w-full text-left px-4 py-3 rounded-lg transition-all duration-200 flex items-center space-x-3 ${
@@ -949,7 +1163,12 @@ const SellerDashboard = () => {
                   setSidebarOpen(false);
                 }}
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -974,15 +1193,18 @@ const SellerDashboard = () => {
 
         {/* Bottom Section */}
         <div className="p-6 border-t border-gray-100 space-y-4">
-          
-
           {/* Delete Profile */}
           <button
             className="w-full px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 transition-colors duration-200 flex items-center justify-center space-x-2 border border-red-200 hover:border-red-300"
             onClick={handleDeleteProfile}
             title="Delete your profile and exit"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -997,7 +1219,6 @@ const SellerDashboard = () => {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col">
-
         {/* Reminder banner removed per request: show only on close/leave attempt */}
 
         {/* Tabs Content */}
@@ -1006,11 +1227,17 @@ const SellerDashboard = () => {
             <div className="bg-gray-50 p-4 rounded-lg border">
               <div className="flex justify-between items-center mb-4">
                 <div className="flex items-center gap-4">
-                  <h3 className="text-lg font-semibold">Select Your Matched Advisors</h3>
+                  <h3 className="text-lg font-semibold">
+                    Select Your Matched Advisors
+                  </h3>
                   {matches.length > 0 && (
                     <div className="flex gap-2">
                       <button
-                        onClick={() => setSelectedAdvisors(matches.map(advisor => advisor.id))}
+                        onClick={() =>
+                          setSelectedAdvisors(
+                            matches.map((advisor) => advisor.id)
+                          )
+                        }
                         className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
                       >
                         Select All
@@ -1028,22 +1255,45 @@ const SellerDashboard = () => {
                   <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 flex-1">
                     <button
                       onClick={handleBulkIntroduction}
-                      disabled={selectedAdvisors.length === 0 || introductionLoading}
+                      disabled={
+                        selectedAdvisors.length === 0 || introductionLoading
+                      }
                       className="px-6 py-3 rounded-xl text-base font-semibold bg-gradient-to-r from-primary to-third text-white shadow-lg hover:from-primary/80 hover:to-third/80 hover:scale-105 hover:shadow-xl active:scale-100 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 min-w-0"
                     >
                       {introductionLoading ? (
                         <>
-                          <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          <svg
+                            className="animate-spin h-4 w-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            ></circle>
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            ></path>
                           </svg>
                           <span className="hidden sm:inline">Sending...</span>
                           <span className="sm:hidden">Sending</span>
                         </>
                       ) : (
                         <>
-                          <span className="hidden sm:inline">Request Advisor To Contact Me ({selectedAdvisors.length})</span>
-                          <span className="sm:hidden">Request Advisor To Contact Me ({selectedAdvisors.length})</span>
+                          <span className="hidden sm:inline">
+                            Request Advisor To Contact Me (
+                            {selectedAdvisors.length})
+                          </span>
+                          <span className="sm:hidden">
+                            Request Advisor To Contact Me (
+                            {selectedAdvisors.length})
+                          </span>
                         </>
                       )}
                     </button>
@@ -1054,9 +1304,24 @@ const SellerDashboard = () => {
                     >
                       {directListLoading ? (
                         <>
-                          <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          <svg
+                            className="animate-spin h-4 w-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            ></circle>
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            ></path>
                           </svg>
                           <span>Sending...</span>
                         </>
@@ -1069,14 +1334,19 @@ const SellerDashboard = () => {
               </div>
 
               {matchesLoading ? (
-                <div className="text-center py-10 text-gray-500">Loading matches...</div>
+                <div className="text-center py-10 text-gray-500">
+                  Loading matches...
+                </div>
               ) : matches.length === 0 ? (
                 <div className="bg-yellow-50 border-l-4 border-yellow-400 p-6 rounded-lg text-center space-y-4">
-                  <h3 className="text-xl font-semibold text-gray-800">No Advisor Matches Yet</h3>
+                  <h3 className="text-xl font-semibold text-gray-800">
+                    No Advisor Matches Yet
+                  </h3>
                   <p className="text-gray-700">
-                    Great opportunities are on their way! While we currently don't have matching advisors for your
-                    profile, keep your details up-to-date and stay tuned. We are committed to finding the perfect
-                    matches for you.
+                    Great opportunities are on their way! While we currently
+                    don't have matching advisors for your profile, keep your
+                    details up-to-date and stay tuned. We are committed to
+                    finding the perfect matches for you.
                   </p>
                   <button
                     onClick={() => fetchMatches()}
@@ -1103,17 +1373,23 @@ const SellerDashboard = () => {
           {/* Introduction Requests */}
           {introductionRequests.length > 0 && (
             <div className="bg-gray-50 p-4 rounded-lg border mt-8">
-              <h3 className="text-lg font-semibold mb-4">Introduction Requests Sent</h3>
+              <h3 className="text-lg font-semibold mb-4">
+                Introduction Requests Sent
+              </h3>
               <ul>
                 {introductionRequests.map((advisorId) => {
-                  const advisor = matches.find((m) => m.id === advisorId)
+                  const advisor = matches.find((m) => m.id === advisorId);
                   return (
                     <li key={advisorId} className="mb-2">
                       <p className="text-gray-700">
-                        Introduction request sent to <strong>{advisor ? advisor.companyName : "An Advisor"}</strong>.
+                        Introduction request sent to{" "}
+                        <strong>
+                          {advisor ? advisor.companyName : "An Advisor"}
+                        </strong>
+                        .
                       </p>
                     </li>
-                  )
+                  );
                 })}
               </ul>
             </div>
@@ -1122,13 +1398,24 @@ const SellerDashboard = () => {
           {/* Direct Contact List */}
           {directContactList.length > 0 && (
             <div className="bg-gray-50 p-4 rounded-lg border mt-8">
-              <h3 className="text-lg font-semibold mb-4">Direct Contact List</h3>
+              <h3 className="text-lg font-semibold mb-4">
+                Direct Contact List
+              </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
                 {directContactList.map((advisor) => (
-                  <div key={advisor.id} className="bg-white shadow-lg rounded-lg overflow-hidden p-6">
-                    <h4 className="text-lg font-semibold text-gray-800">{advisor.companyName}</h4>
-                    <p className="text-sm text-gray-600">{advisor.advisorName}</p>
-                    <p className="text-sm text-gray-600">{advisor.advisorEmail}</p>
+                  <div
+                    key={advisor.id}
+                    className="bg-white shadow-lg rounded-lg overflow-hidden p-6"
+                  >
+                    <h4 className="text-lg font-semibold text-gray-800">
+                      {advisor.companyName}
+                    </h4>
+                    <p className="text-sm text-gray-600">
+                      {advisor.advisorName}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      {advisor.advisorEmail}
+                    </p>
                     <p className="text-sm text-gray-600">{advisor.phone}</p>
                   </div>
                 ))}
@@ -1143,7 +1430,12 @@ const SellerDashboard = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 bg-gradient-to-br from-primary to-third rounded-lg flex items-center justify-center">
-                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg
+                        className="w-6 h-6 text-white"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
@@ -1153,8 +1445,12 @@ const SellerDashboard = () => {
                       </svg>
                     </div>
                     <div>
-                      <h2 className="text-2xl font-bold text-gray-900">Company Profile</h2>
-                      <p className="text-gray-600">Update your business information and preferences</p>
+                      <h2 className="text-2xl font-bold text-gray-900">
+                        Company Profile
+                      </h2>
+                      <p className="text-gray-600">
+                        Update your business information and preferences
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -1168,19 +1464,38 @@ const SellerDashboard = () => {
                   validationSchema={SellerSchema}
                   onSubmit={handleEnhancedSubmit}
                 >
-                  {({ isSubmitting, values, setFieldValue, errors, submitCount, setTouched, dirty }) => (
+                  {({
+                    isSubmitting,
+                    values,
+                    setFieldValue,
+                    errors,
+                    submitCount,
+                    setTouched,
+                    dirty,
+                  }) => (
                     <Form className="p-8 space-y-8">
-                      {submitCount > 0 && Object.keys(errors || {}).length > 0 && (
-                        <div className="mb-4 p-3 rounded border border-red-200 bg-red-50 text-red-700">
-                          Please fix {Object.keys(errors).length} highlighted field{Object.keys(errors).length>1?'s':''}.
-                        </div>
-                      )}
-                      <ValidationTouched submitCount={submitCount} errors={errors} setTouched={setTouched} />
+                      {submitCount > 0 &&
+                        Object.keys(errors || {}).length > 0 && (
+                          <div className="mb-4 p-3 rounded border border-red-200 bg-red-50 text-red-700">
+                            Please fix {Object.keys(errors).length} highlighted
+                            field{Object.keys(errors).length > 1 ? "s" : ""}.
+                          </div>
+                        )}
+                      <ValidationTouched
+                        submitCount={submitCount}
+                        errors={errors}
+                        setTouched={setTouched}
+                      />
                       {unsavedChanges !== dirty && setUnsavedChanges(dirty)}
                       {/* Company Details Section */}
                       <div className="border-b border-gray-200 pb-8">
                         <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center space-x-2">
-                          <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg
+                            className="w-5 h-5 text-primary"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
                             <path
                               strokeLinecap="round"
                               strokeLinejoin="round"
@@ -1193,33 +1508,51 @@ const SellerDashboard = () => {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <div className="space-y-2">
-                            <label className="block text-sm font-medium text-gray-700">Company Name *</label>
+                            <label className="block text-sm font-medium text-gray-700">
+                              Company Name *
+                            </label>
                             <Field
                               name="companyName"
                               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
                               placeholder="Enter your company name"
                             />
-                            <ErrorMessage name="companyName" component="p" className="text-red-500 text-sm" />
+                            <ErrorMessage
+                              name="companyName"
+                              component="p"
+                              className="text-red-500 text-sm"
+                            />
                           </div>
 
                           <div className="space-y-2">
-                            <label className="block text-sm font-medium text-gray-700">Phone Number *</label>
+                            <label className="block text-sm font-medium text-gray-700">
+                              Phone Number *
+                            </label>
                             <Field
                               name="phone"
                               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
                               placeholder="+1 (555) 123-4567"
                             />
-                            <ErrorMessage name="phone" component="p" className="text-red-500 text-sm" />
+                            <ErrorMessage
+                              name="phone"
+                              component="p"
+                              className="text-red-500 text-sm"
+                            />
                           </div>
 
                           <div className="space-y-2 md:col-span-2">
-                            <label className="block text-sm font-medium text-gray-700">Website *</label>
+                            <label className="block text-sm font-medium text-gray-700">
+                              Website *
+                            </label>
                             <Field
                               name="website"
                               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
                               placeholder="https://www.yourcompany.com"
                             />
-                            <ErrorMessage name="website" component="p" className="text-red-500 text-sm" />
+                            <ErrorMessage
+                              name="website"
+                              component="p"
+                              className="text-red-500 text-sm"
+                            />
                           </div>
                         </div>
                       </div>
@@ -1227,7 +1560,12 @@ const SellerDashboard = () => {
                       {/* Financial Information Section */}
                       <div className="border-b border-gray-200 pb-8">
                         <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center space-x-2">
-                          <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg
+                            className="w-5 h-5 text-primary"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
                             <path
                               strokeLinecap="round"
                               strokeLinejoin="round"
@@ -1240,7 +1578,9 @@ const SellerDashboard = () => {
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                           <div className="space-y-2">
-                            <label className="block text-sm font-medium text-gray-700">Currency *</label>
+                            <label className="block text-sm font-medium text-gray-700">
+                              Currency *
+                            </label>
                             <Field
                               as="select"
                               name="currency"
@@ -1249,53 +1589,198 @@ const SellerDashboard = () => {
                               <option value="USD">US Dollar (USD)</option>
                               <option value="EUR">Euro (EUR)</option>
                               <option value="JPY">Japanese Yen (JPY)</option>
-                              <option value="GBP">British Pound Sterling (GBP)</option>
-                              <option value="CNY">Chinese Yuan/Renminbi (CNY)</option>
-                              <option value="AUD">Australian Dollar (AUD)</option>
+                              <option value="GBP">
+                                British Pound Sterling (GBP)
+                              </option>
+                              <option value="CNY">
+                                Chinese Yuan/Renminbi (CNY)
+                              </option>
+                              <option value="AUD">
+                                Australian Dollar (AUD)
+                              </option>
                               <option value="CAD">Canadian Dollar (CAD)</option>
                               <option value="CHF">Swiss Franc (CHF)</option>
-                              <option value="HKD">Hong Kong Dollar (HKD)</option>
-                              <option value="SGD">Singapore Dollar (SGD)</option>
+                              <option value="HKD">
+                                Hong Kong Dollar (HKD)
+                              </option>
+                              <option value="SGD">
+                                Singapore Dollar (SGD)
+                              </option>
                               <option value="SEK">Swedish Krona (SEK)</option>
                               <option value="NOK">Norwegian Krone (NOK)</option>
-                              <option value="NZD">New Zealand Dollar (NZD)</option>
+                              <option value="NZD">
+                                New Zealand Dollar (NZD)
+                              </option>
                               <option value="MXN">Mexican Peso (MXN)</option>
-                              <option value="ZAR">South African Rand (ZAR)</option>
+                              <option value="ZAR">
+                                South African Rand (ZAR)
+                              </option>
                               <option value="TRY">Turkish Lira (TRY)</option>
                               <option value="BRL">Brazilian Real (BRL)</option>
-                              <option value="KRW">South Korean Won (KRW)</option>
+                              <option value="KRW">
+                                South Korean Won (KRW)
+                              </option>
                               <option value="INR">Indian Rupee (INR)</option>
                               <option value="RUB">Russian Ruble (RUB)</option>
                             </Field>
-                            <ErrorMessage name="currency" component="p" className="text-red-500 text-sm" />
+                            <ErrorMessage
+                              name="currency"
+                              component="p"
+                              className="text-red-500 text-sm"
+                            />
                           </div>
 
                           <div className="space-y-2 md:col-span-2">
-                            <label className="block text-sm font-medium text-gray-700">Annual Revenue *</label>
+                            <label className="block text-sm font-medium text-gray-700">
+                              Annual Revenue *
+                            </label>
                             <div className="relative">
                               <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
                                 {{
-                                  USD: '$', EUR: '€', GBP: '£', PKR: '₨', INR: '₹', AUD: '$', CAD: '$', SGD: '$', JPY: '¥', CNY: '¥', CHF: 'CHF', ZAR: 'R', BRL: 'R$', RUB: '₽', SAR: '﷼', AED: 'د.إ', TRY: '₺', EGP: '£', NGN: '₦', MXN: '$', SEK: 'kr', NOK: 'kr', DKK: 'kr', HKD: '$', KRW: '₩', THB: '฿', IDR: 'Rp', MYR: 'RM', TWD: 'NT$', ILS: '₪', PLN: 'zł', CZK: 'Kč', HUF: 'Ft', PHP: '₱', CLP: '$', COP: '$', ARS: '$', VND: '₫', BDT: '৳', LKR: '₨', MMK: 'K', KWD: 'د.ك', QAR: '﷼', OMR: '﷼', BHD: '.د.ب', JOD: 'د.ا', MAD: 'د.م.', TND: 'د.ت', KES: 'KSh', TZS: 'TSh', UGX: 'USh', GHS: '₵', ETB: 'Br', DZD: 'د.ج', SDG: 'ج.س.', AOA: 'Kz', MZN: 'MT', XOF: 'CFA', XAF: 'FCFA', CDF: 'FC', ZMW: 'ZK', BWP: 'P', NAD: '$', MUR: '₨', SCR: '₨', MWK: 'MK', LSL: 'L', SZL: 'L', SLL: 'Le', GMD: 'D', GNF: 'FG', MGA: 'Ar', KMF: 'CF', SOS: 'S', DJF: 'Fdj', ERN: 'Nfk', LYD: 'ل.د', MRU: 'UM', BIF: 'FBu', RWF: 'R₣', XPF: '₣', FJD: '$', WST: 'T', TOP: 'T$', PGK: 'K', SBD: '$', VUV: 'Vt', KZT: '₸', UZS: 'лв', TJS: 'SM', KGS: 'лв', AFN: '؋', NPR: '₨', MNT: '₮', LAK: '₭', KHR: '៛', BND: '$', MOP: 'MOP$', ISK: 'kr', RON: 'lei', BGN: 'лв', HRK: 'kn', RSD: 'Дин.', UAH: '₴', BYN: 'Br', MDL: 'L', GEL: '₾', AZN: '₼', AMD: '֏', ALL: 'L', MKD: 'ден', BAM: 'KM', SSP: '£', KPW: '₩'
+                                  USD: "$",
+                                  EUR: "€",
+                                  GBP: "£",
+                                  PKR: "₨",
+                                  INR: "₹",
+                                  AUD: "$",
+                                  CAD: "$",
+                                  SGD: "$",
+                                  JPY: "¥",
+                                  CNY: "¥",
+                                  CHF: "CHF",
+                                  ZAR: "R",
+                                  BRL: "R$",
+                                  RUB: "₽",
+                                  SAR: "﷼",
+                                  AED: "د.إ",
+                                  TRY: "₺",
+                                  EGP: "£",
+                                  NGN: "₦",
+                                  MXN: "$",
+                                  SEK: "kr",
+                                  NOK: "kr",
+                                  DKK: "kr",
+                                  HKD: "$",
+                                  KRW: "₩",
+                                  THB: "฿",
+                                  IDR: "Rp",
+                                  MYR: "RM",
+                                  TWD: "NT$",
+                                  ILS: "₪",
+                                  PLN: "zł",
+                                  CZK: "Kč",
+                                  HUF: "Ft",
+                                  PHP: "₱",
+                                  CLP: "$",
+                                  COP: "$",
+                                  ARS: "$",
+                                  VND: "₫",
+                                  BDT: "৳",
+                                  LKR: "₨",
+                                  MMK: "K",
+                                  KWD: "د.ك",
+                                  QAR: "﷼",
+                                  OMR: "﷼",
+                                  BHD: ".د.ب",
+                                  JOD: "د.ا",
+                                  MAD: "د.م.",
+                                  TND: "د.ت",
+                                  KES: "KSh",
+                                  TZS: "TSh",
+                                  UGX: "USh",
+                                  GHS: "₵",
+                                  ETB: "Br",
+                                  DZD: "د.ج",
+                                  SDG: "ج.س.",
+                                  AOA: "Kz",
+                                  MZN: "MT",
+                                  XOF: "CFA",
+                                  XAF: "FCFA",
+                                  CDF: "FC",
+                                  ZMW: "ZK",
+                                  BWP: "P",
+                                  NAD: "$",
+                                  MUR: "₨",
+                                  SCR: "₨",
+                                  MWK: "MK",
+                                  LSL: "L",
+                                  SZL: "L",
+                                  SLL: "Le",
+                                  GMD: "D",
+                                  GNF: "FG",
+                                  MGA: "Ar",
+                                  KMF: "CF",
+                                  SOS: "S",
+                                  DJF: "Fdj",
+                                  ERN: "Nfk",
+                                  LYD: "ل.د",
+                                  MRU: "UM",
+                                  BIF: "FBu",
+                                  RWF: "R₣",
+                                  XPF: "₣",
+                                  FJD: "$",
+                                  WST: "T",
+                                  TOP: "T$",
+                                  PGK: "K",
+                                  SBD: "$",
+                                  VUV: "Vt",
+                                  KZT: "₸",
+                                  UZS: "лв",
+                                  TJS: "SM",
+                                  KGS: "лв",
+                                  AFN: "؋",
+                                  NPR: "₨",
+                                  MNT: "₮",
+                                  LAK: "₭",
+                                  KHR: "៛",
+                                  BND: "$",
+                                  MOP: "MOP$",
+                                  ISK: "kr",
+                                  RON: "lei",
+                                  BGN: "лв",
+                                  HRK: "kn",
+                                  RSD: "Дин.",
+                                  UAH: "₴",
+                                  BYN: "Br",
+                                  MDL: "L",
+                                  GEL: "₾",
+                                  AZN: "₼",
+                                  AMD: "֏",
+                                  ALL: "L",
+                                  MKD: "ден",
+                                  BAM: "KM",
+                                  SSP: "£",
+                                  KPW: "₩",
                                 }[values.currency] || values.currency}
                               </span>
-                            <Field name="annualRevenue">
-                              {({ field, form }) => (
-                                <input
-                                  {...field}
-                                  type="text"
-                                  className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
-                                  placeholder="1,000,000"
-                                  onChange={(e) => {
-                                    const digits = e.target.value.replace(/[^\d]/g, '')
-                                    const formatted = digits.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                                    form.setFieldValue(field.name, formatted)
-                                  }}
-                                  value={field.value}
-                                />
-                              )}
-                            </Field>
+                              <Field name="annualRevenue">
+                                {({ field, form }) => (
+                                  <input
+                                    {...field}
+                                    type="text"
+                                    className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
+                                    placeholder="1,000,000"
+                                    onChange={(e) => {
+                                      const digits = e.target.value.replace(
+                                        /[^\d]/g,
+                                        ""
+                                      );
+                                      const formatted = digits.replace(
+                                        /\B(?=(\d{3})+(?!\d))/g,
+                                        ","
+                                      );
+                                      form.setFieldValue(field.name, formatted);
+                                    }}
+                                    value={field.value}
+                                  />
+                                )}
+                              </Field>
                             </div>
-                            <ErrorMessage name="annualRevenue" component="p" className="text-red-500 text-sm" />
+                            <ErrorMessage
+                              name="annualRevenue"
+                              component="p"
+                              className="text-red-500 text-sm"
+                            />
                           </div>
                         </div>
                       </div>
@@ -1303,7 +1788,12 @@ const SellerDashboard = () => {
                       {/* Business Classification Section */}
                       <div className="border-b border-gray-200 pb-8">
                         <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center space-x-2">
-                          <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg
+                            className="w-5 h-5 text-primary"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
                             <path
                               strokeLinecap="round"
                               strokeLinejoin="round"
@@ -1316,31 +1806,49 @@ const SellerDashboard = () => {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                           <div className="space-y-3">
-                            <label className="block text-sm font-medium text-gray-700">Industry Sector *</label>
+                            <label className="block text-sm font-medium text-gray-700">
+                              Industry Sector *
+                            </label>
                             {values.industry && (
                               <div className="mb-2 p-2 bg-primary/10 rounded-lg border border-primary/20">
-                                <span className="text-sm font-medium text-primary">Selected: {values.industry}</span>
+                                <span className="text-sm font-medium text-primary">
+                                  Selected: {values.industry}
+                                </span>
                               </div>
                             )}
                             <IndustryRadioChooser
                               selected={values.industry}
                               onChange={(val) => setFieldValue("industry", val)}
                             />
-                            <ErrorMessage name="industry" component="div" className="text-red-500 text-sm mt-2" />
+                            <ErrorMessage
+                              name="industry"
+                              component="div"
+                              className="text-red-500 text-sm mt-2"
+                            />
                           </div>
 
                           <div className="space-y-3">
-                            <label className="block text-sm font-medium text-gray-700">Geographic Region *</label>
+                            <label className="block text-sm font-medium text-gray-700">
+                              Geographic Region *
+                            </label>
                             {values.geography && (
                               <div className="mb-2 p-2 bg-primary/10 rounded-lg border border-primary/20">
-                                <span className="text-sm font-medium text-primary">Selected: {values.geography}</span>
+                                <span className="text-sm font-medium text-primary">
+                                  Selected: {values.geography}
+                                </span>
                               </div>
                             )}
                             <GeographyRadioChooser
                               selected={values.geography}
-                              onChange={(val) => setFieldValue("geography", val)}
+                              onChange={(val) =>
+                                setFieldValue("geography", val)
+                              }
                             />
-                            <ErrorMessage name="geography" component="div" className="text-red-500 text-sm mt-2" />
+                            <ErrorMessage
+                              name="geography"
+                              component="div"
+                              className="text-red-500 text-sm mt-2"
+                            />
                           </div>
                         </div>
                       </div>
@@ -1348,7 +1856,12 @@ const SellerDashboard = () => {
                       {/* Company Description Section */}
                       <div className="pb-8">
                         <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center space-x-2">
-                          <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg
+                            className="w-5 h-5 text-primary"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
                             <path
                               strokeLinecap="round"
                               strokeLinejoin="round"
@@ -1360,7 +1873,9 @@ const SellerDashboard = () => {
                         </h3>
 
                         <div className="space-y-2">
-                          <label className="block text-sm font-medium text-gray-700">Business Description *</label>
+                          <label className="block text-sm font-medium text-gray-700">
+                            Business Description *
+                          </label>
                           <Field
                             as="textarea"
                             name="description"
@@ -1369,9 +1884,16 @@ const SellerDashboard = () => {
                             placeholder="Provide a detailed description of your business, products/services, target market, and what makes your company unique. This information helps us match you with the most suitable advisors."
                           />
                           <div className="flex justify-between items-center">
-                            <ErrorMessage name="description" component="p" className="text-red-500 text-sm" />
+                            <ErrorMessage
+                              name="description"
+                              component="p"
+                              className="text-red-500 text-sm"
+                            />
                             <span className="text-xs text-gray-500">
-                              {values.description ? values.description.length : 0}/1000 characters
+                              {values.description
+                                ? values.description.length
+                                : 0}
+                              /1000 characters
                             </span>
                           </div>
                         </div>
@@ -1410,8 +1932,18 @@ const SellerDashboard = () => {
                             </>
                           ) : (
                             <>
-                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              <svg
+                                className="w-5 h-5"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M5 13l4 4L19 7"
+                                />
                               </svg>
                               <span>Update Profile</span>
                             </>
@@ -1438,28 +1970,28 @@ const SellerDashboard = () => {
         toastOptions={{
           duration: 4000,
           style: {
-            background: '#fff',
-            color: '#333',
-            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)',
-            borderRadius: '12px',
-            padding: '16px',
+            background: "#fff",
+            color: "#333",
+            boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)",
+            borderRadius: "12px",
+            padding: "16px",
           },
           success: {
             iconTheme: {
-              primary: '#10B981',
-              secondary: '#fff',
+              primary: "#10B981",
+              secondary: "#fff",
             },
           },
           error: {
             iconTheme: {
-              primary: '#EF4444',
-              secondary: '#fff',
+              primary: "#EF4444",
+              secondary: "#fff",
             },
           },
         }}
       />
     </div>
-  )
-}
+  );
+};
 
-export default SellerDashboard
+export default SellerDashboard;

@@ -47,7 +47,7 @@ const AdvisorCard = ({ advisor, onSelect, isSelected }) => {
             <div className="relative flex-shrink-0">
               {advisor.logoUrl ? (
                 <img 
-                  className="h-12 w-12 sm:h-16 sm:w-16 rounded-xl object-cover border-2 border-white shadow-md" 
+                  className="h-12 w-12 sm:h-16 sm:w-16 rounded-xl object-contain border-2 border-white shadow-md" 
                   src={advisor.logoUrl} 
                   alt={advisor.companyName}
                   onError={(e) => {

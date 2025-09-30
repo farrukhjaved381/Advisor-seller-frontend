@@ -36,12 +36,20 @@ const ChangeCardForm = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
+  const validateToken = () => {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      navigate('/advisor-login');
+      return null;
+    }
+    return token;
+  };
+
   useEffect(() => {
     const fetchSetupIntent = async () => {
       try {
-        const token = localStorage.getItem('access_token');
+        const token = validateToken();
         if (!token) {
-          navigate('/advisor-login');
           return;
         }
         const res = await axios.post(
@@ -54,8 +62,16 @@ const ChangeCardForm = () => {
         setClientSecret(res.data?.clientSecret || null);
       } catch (error) {
         console.error('[AdvisorChangeCard] setup intent failed', error);
-        toast.error('Unable to start card update. Please try again.');
-        navigate('/advisor-profile', { replace: true });
+        const errorMessage =
+          error?.response?.data?.message ||
+          error?.message ||
+          'Unable to start card update. Please try again.';
+        toast.error(errorMessage);
+        if (error?.response?.status === 401) {
+          navigate('/advisor-login');
+        } else {
+          navigate('/advisor-profile', { replace: true });
+        }
       } finally {
         setLoading(false);
       }
@@ -66,6 +82,11 @@ const ChangeCardForm = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (!stripe || !elements || !clientSecret) {
+      toast.error('Payment system not ready. Please try again.');
+      return;
+    }
+    const token = validateToken();
+    if (!token) {
       return;
     }
     setSubmitting(true);
@@ -83,18 +104,13 @@ const ChangeCardForm = () => {
         return;
       }
 
-      const paymentMethodId =
-        typeof setupIntent?.payment_method === 'string'
-          ? setupIntent.payment_method
-          : setupIntent?.payment_method?.id;
-
-      if (!paymentMethodId) {
-        toast.error('Stripe did not return a payment method. Please try again.');
+      const paymentMethodId = setupIntent?.payment_method;
+      if (typeof paymentMethodId !== 'string') {
+        toast.error('Invalid payment method received. Please try again.');
         setSubmitting(false);
         return;
       }
 
-      const token = localStorage.getItem('access_token');
       const res = await axios.post(
         `${API_CONFIG.BACKEND_URL}/api/payment/update-payment-method`,
         { paymentMethodId },
@@ -111,10 +127,13 @@ const ChangeCardForm = () => {
       navigate('/advisor-profile', { replace: true });
     } catch (error) {
       console.error('[AdvisorChangeCard] update card failed', error);
-      toast.error(
-        error?.response?.data?.message || 'Unable to update card. Please try again.',
-      );
+      const errorMessage =
+        error?.response?.data?.message || 'Unable to update card. Please try again.';
+      toast.error(errorMessage);
       setSubmitting(false);
+      if (error?.response?.status === 401) {
+        navigate('/advisor-login');
+      }
     }
   };
 
@@ -126,8 +145,21 @@ const ChangeCardForm = () => {
     );
   }
 
-  if (!clientSecret) {
-    return null;
+  if (!clientSecret && !loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">Failed to load payment form</p>
+          <p className="text-gray-600 text-sm mb-4">Please try again later</p>
+          <Link
+            to="/advisor-profile"
+            className="inline-flex items-center text-primary hover:text-third"
+          >
+            <FaArrowLeft className="mr-2" /> Return to Profile
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -169,7 +201,7 @@ const ChangeCardForm = () => {
 
             <button
               type="submit"
-              disabled={submitting || !stripe}
+              disabled={submitting || !stripe || !clientSecret}
               className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-third text-white py-3 rounded-lg font-semibold shadow-md hover:shadow-lg transition disabled:opacity-50"
             >
               {submitting ? (

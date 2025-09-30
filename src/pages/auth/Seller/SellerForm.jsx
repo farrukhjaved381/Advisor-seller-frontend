@@ -105,19 +105,25 @@ const SimpleInput = ({ name, type = "text", placeholder, label, icon }) => {
         {icon && <span className="mr-2 text-primary">{icon}</span>}
         {label}
       </label>
-      <Field
-        type={type}
-        name={name}
-        placeholder={placeholder}
-        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary"
-      />
+      <Field name={name}>
+        {({ field, form: { touched, errors } }) => (
+          <input
+            type={type}
+            {...field}
+            placeholder={placeholder}
+            className={`w-full px-4 py-3 rounded-lg border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary ${
+              touched[name] && errors[name] ? 'border-red-500' : 'border-gray-300'
+            }`}
+          />
+        )}
+      </Field>
       <ErrorMessage name={name} component="p" className="text-red-500 text-sm mt-1" />
     </div>
   );
 };
 
 // Industry Radio Chooser Component
-const IndustryRadioChooser = ({ selected, onChange }) => {
+const IndustryRadioChooser = ({ selected, onChange, hasError }) => {
   const [query, setQuery] = useState("");
   const [expandedSectors, setExpandedSectors] = useState({});
   const industryData = getIndustryData();
@@ -148,7 +154,7 @@ const IndustryRadioChooser = ({ selected, onChange }) => {
         />
         <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-secondary/50" />
       </div>
-      <div className="bg-gray-50 border border-primary/20 rounded-lg p-4 h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-gray-100 shadow-inner">
+      <div className={`bg-gray-50 border rounded-lg p-4 h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-gray-100 shadow-inner ${hasError ? 'border-red-500' : 'border-primary/20'}`}>
         {filteredSectors.length > 0 ? (
           <div className="space-y-2">
             {filteredSectors.map((sector) => (
@@ -226,7 +232,7 @@ const IndustryRadioChooser = ({ selected, onChange }) => {
 };
 
 // Geography Radio Chooser Component
-const GeographyRadioChooser = ({ selected, onChange }) => {
+const GeographyRadioChooser = ({ selected, onChange, hasError }) => {
   const [query, setQuery] = useState("");
   const [expandedCountries, setExpandedCountries] = useState({});
 
@@ -254,7 +260,7 @@ const GeographyRadioChooser = ({ selected, onChange }) => {
         />
         <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-secondary/50" />
       </div>
-      <div className="bg-gray-50 border border-primary/20 rounded-lg p-4 h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-gray-100 shadow-inner">
+      <div className={`bg-gray-50 border rounded-lg p-4 h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-gray-100 shadow-inner ${hasError ? 'border-red-500' : 'border-primary/20'}`}>
         <div className="space-y-2">
           {allCountries.map((country) => {
             let states = State.getStatesOfCountry(country.isoCode);
@@ -337,7 +343,7 @@ const GeographyRadioChooser = ({ selected, onChange }) => {
   );
 };
 
-const SellerForm = () => {
+export const SellerForm = () => {
   const navigate = useNavigate();
 
   const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -412,7 +418,7 @@ const SellerForm = () => {
         validationSchema={SellerSchema}
         onSubmit={onSubmit}
       >
-        {({ isSubmitting, setFieldValue, values }) => (
+        {({ isSubmitting, setFieldValue, values, errors, touched }) => (
           <Form className="space-y-8">
             <ValidationEffects />
             <ErrorBanner />
@@ -503,6 +509,7 @@ const SellerForm = () => {
                     <IndustryRadioChooser
                       selected={values.industry}
                       onChange={(val) => setFieldValue("industry", val)}
+                      hasError={!!(errors.industry && touched.industry)}
                     />
                     <ErrorMessage name="industry" component="div" className="text-red-500 text-sm mt-2" />
                   </div>
@@ -515,6 +522,7 @@ const SellerForm = () => {
                     <GeographyRadioChooser
                       selected={values.geography}
                       onChange={(val) => setFieldValue("geography", val)}
+                      hasError={!!(errors.geography && touched.geography)}
                     />
                     <ErrorMessage name="geography" component="div" className="text-red-500 text-sm mt-2" />
                   </div>
@@ -540,10 +548,10 @@ const SellerForm = () => {
                   </div>
                   <div className="w-40">
                     <Field name="currency">
-                      {({ field }) => (
+                      {({ field, form }) => (
                         <select
                           {...field}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white text-secondary"
+                          className={`w-full px-3 py-2 border rounded-lg text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white text-secondary ${form.errors.currency && form.touched.currency ? 'border-red-500' : 'border-gray-300'}`}
                         >
                           <option value="USD">US Dollar (USD)</option>
                           <option value="EUR">Euro (EUR)</option>
@@ -590,7 +598,7 @@ const SellerForm = () => {
                           {...field}
                           type="text"
                           placeholder="1,000,000"
-                          className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary"
+                          className={`w-full pl-8 pr-4 py-3 border rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary ${form.errors.annualRevenue && form.touched.annualRevenue ? 'border-red-500' : 'border-gray-300'}`}
                           onChange={(e) => {
                             const digits = e.target.value.replace(/[^\d]/g, '');
                             const formatted = digits.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -627,7 +635,7 @@ const SellerForm = () => {
                   name="description"
                   rows={4}
                   placeholder="Describe your company, products, and services..."
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary resize-none"
+                  className={`w-full px-4 py-3 border rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary resize-none ${errors.description && touched.description ? 'border-red-500' : 'border-gray-300'}`}
                 />
                 <ErrorMessage name="description" component="div" className="text-red-500 text-sm mt-1" />
               </motion.div>
@@ -654,5 +662,3 @@ const SellerForm = () => {
     </div>
   );
 };
-
-export default SellerForm;

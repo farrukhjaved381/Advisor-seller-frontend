@@ -4,14 +4,14 @@ import * as Yup from "yup";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { motion } from "framer-motion";
-import { FaChevronDown, FaChevronRight, FaSearch, FaBuilding, FaPhone, FaGlobe, FaCalendarAlt, FaChartLine, FaDollarSign, FaFileAlt, FaCertificate, FaUpload, FaCheckCircle, FaImage, FaQuoteLeft, FaUser, FaPlus, FaTrash, FaVideo } from "react-icons/fa";
+import { FaChevronDown, FaChevronRight, FaSearch, FaBuilding, FaPhone, FaGlobe, FaCalendarAlt, FaChartLine, FaDollarSign, FaFileAlt, FaCertificate, FaUpload, FaCheckCircle, FaImage, FaQuoteLeft, FaUser, FaPlus, FaTrash, FaVideo, FaExclamationTriangle, FaInfoCircle } from "react-icons/fa";
 
 // ✅ Use named imports for static data
 import { getIndustryData } from "../../../components/Static/newIndustryData";
 import { Country, State } from "country-state-city";
 
 // =================== Industry Chooser ===================
-const IndustryChooser = ({ selected, onChange }) => {
+const IndustryChooser = ({ selected, onChange, hasError }) => {
   const [query, setQuery] = useState("");
   const [expandedSectors, setExpandedSectors] = useState({});
   const industryData = getIndustryData();
@@ -79,7 +79,7 @@ const IndustryChooser = ({ selected, onChange }) => {
         />
         <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-secondary/50" />
       </div>
-      <div className="bg-brand-light border border-primary/20 rounded-lg p-4 h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-gray-100 shadow-inner">
+      <div className={`bg-brand-light border rounded-lg p-4 h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-gray-100 shadow-inner ${hasError ? 'border-red-500' : 'border-primary/20'}`}>
         {filteredSectors.length > 0 ? (
           <div className="space-y-2">
             {filteredSectors.map((sector) => (
@@ -153,7 +153,7 @@ const IndustryChooser = ({ selected, onChange }) => {
 };
 
 // =================== Geography Chooser ===================
-const GeographyChooser = ({ selected, onChange }) => {
+const GeographyChooser = ({ selected, onChange, hasError }) => {
   const [query, setQuery] = useState("");
   const [expandedCountries, setExpandedCountries] = useState({});
 
@@ -221,7 +221,7 @@ const GeographyChooser = ({ selected, onChange }) => {
         />
         <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-secondary/50" />
       </div>
-      <div className="bg-brand-light border border-primary/20 rounded-lg p-4 h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-gray-100 shadow-inner">
+      <div className={`bg-brand-light border rounded-lg p-4 h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-gray-100 shadow-inner ${hasError ? 'border-red-500' : 'border-primary/20'}`}>
         <div className="space-y-2">
           {allCountries.map((country) => {
             let states = State.getStatesOfCountry(country.isoCode);
@@ -302,8 +302,9 @@ const GeographyChooser = ({ selected, onChange }) => {
 };
 
 // =================== Advisor Form ===================
-const AdvisorForm = () => {
+export const AdvisorForm = () => {
   const [logoFile, setLogoFile] = useState(null);
+  const [logoError, setLogoError] = useState(false);
   const [introVideoFile, setIntroVideoFile] = useState(null);
   const [introVideoPreview, setIntroVideoPreview] = useState('');
 
@@ -335,6 +336,7 @@ const AdvisorForm = () => {
     ],
     revenueRange: { min: "", max: "" },
     visibleTestimonials: 1,   // 👈 added here
+    workedWithCimamplify: false,
   };
 
   const validationSchema = Yup.object().shape({
@@ -430,9 +432,11 @@ const AdvisorForm = () => {
     try {
       if (!logoFile) {
         toast.error('Company logo is required');
+        setLogoError(true);
         setSubmitting(false);
         return;
       }
+      setLogoError(false);
 
       let logoUrl = "";
       if (logoFile) {
@@ -491,6 +495,7 @@ const AdvisorForm = () => {
         logoUrl,
         testimonials: filteredTestimonials,
         introVideoUrl,
+        workedWithCimamplify: values.workedWithCimamplify,
       };
       
       console.log('Sending payload:', payload);
@@ -537,7 +542,7 @@ const AdvisorForm = () => {
         validationSchema={validationSchema}
         onSubmit={onSubmit}
       >
-        {({ isSubmitting, setFieldValue, values }) => (
+        {({ isSubmitting, setFieldValue, values, errors, touched }) => (
           <Form className="space-y-8">
             <ValidationEffects />
             <ErrorBanner />
@@ -555,7 +560,7 @@ const AdvisorForm = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-secondary mb-2">Company Name</label>
-                  <Field name="companyName" className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary" />
+                  <Field name="companyName" className={`w-full px-4 py-3 border rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary ${errors.companyName && touched.companyName ? 'border-red-500' : 'border-gray-300'}`} />
                   <ErrorMessage name="companyName" component="div" className="text-red-500 text-sm mt-1" />
                 </div>
 
@@ -564,7 +569,7 @@ const AdvisorForm = () => {
                     <FaPhone className="mr-2 text-primary" />
                     Phone
                   </label>
-                  <Field name="phone" className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary" />
+                  <Field name="phone" className={`w-full px-4 py-3 border rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary ${errors.phone && touched.phone ? 'border-red-500' : 'border-gray-300'}`} />
                   <ErrorMessage name="phone" component="div" className="text-red-500 text-sm mt-1" />
                 </div>
 
@@ -573,7 +578,7 @@ const AdvisorForm = () => {
                     <FaGlobe className="mr-2 text-primary" />
                     Website
                   </label>
-                  <Field name="website" className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary" />
+                  <Field name="website" className={`w-full px-4 py-3 border rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary ${errors.website && touched.website ? 'border-red-500' : 'border-gray-300'}`} />
                   <ErrorMessage name="website" component="div" className="text-red-500 text-sm mt-1" />
                 </div>
               </div>
@@ -596,6 +601,7 @@ const AdvisorForm = () => {
                   <IndustryChooser
                     selected={values.industries}
                     onChange={(val) => setFieldValue("industries", val)}
+                    hasError={!!(errors.industries && touched.industries)}
                   />
                   <ErrorMessage name="industries" component="div" className="text-red-500 text-sm mt-2" />
                 </div>
@@ -607,6 +613,7 @@ const AdvisorForm = () => {
                   <GeographyChooser
                     selected={values.geographies}
                     onChange={(val) => setFieldValue("geographies", val)}
+                    hasError={!!(errors.geographies && touched.geographies)}
                   />
                   <ErrorMessage name="geographies" component="div" className="text-red-500 text-sm mt-2" />
                 </div>
@@ -625,6 +632,20 @@ const AdvisorForm = () => {
                 Experience & Performance
               </h3>
               
+              <div className="mb-6 p-4 rounded-lg bg-red-50 border border-red-200 text-red-800">
+                <div className="flex items-start">
+                  <div className="flex-shrink-0">
+                    <FaExclamationTriangle className="h-5 w-5 text-red-400" aria-hidden="true" />
+                  </div>
+                  <div className="ml-3">
+                    <h3 className="text-sm font-medium">Important Requirement</h3>
+                    <div className="mt-2 text-sm">
+                      <p>To ensure the quality of our network, we require all advisors to have a minimum of 5 years of experience and to have completed at least 20 transactions.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-secondary mb-2 flex items-center">
@@ -636,7 +657,7 @@ const AdvisorForm = () => {
                     name="yearsExperience"
                     type="number"
                     min={5}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary"
+                    className={`w-full px-4 py-3 border rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary ${errors.yearsExperience && touched.yearsExperience ? 'border-red-500' : 'border-gray-300'}`}
                   />
                   <ErrorMessage name="yearsExperience" component="div" className="text-red-500 text-sm mt-1" />
                 </div>
@@ -650,7 +671,7 @@ const AdvisorForm = () => {
                     name="numberOfTransactions"
                     type="number"
                     min={20}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary"
+                    className={`w-full px-4 py-3 border rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary ${errors.numberOfTransactions && touched.numberOfTransactions ? 'border-red-500' : 'border-gray-300'}`}
                   />
                   <ErrorMessage name="numberOfTransactions" component="div" className="text-red-500 text-sm mt-1" />
                 </div>
@@ -671,10 +692,10 @@ const AdvisorForm = () => {
                 </h3>
                 <div className="w-20">
                   <Field name="currency">
-                    {({ field }) => (
+                    {({ field, form }) => (
                       <select
                         {...field}
-                        className="w-full px-2 py-2 border border-gray-300 rounded-lg text-xs focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white text-secondary"
+                        className={`w-full px-2 py-2 border rounded-lg text-xs focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white text-secondary ${form.errors.currency && form.touched.currency ? 'border-red-500' : 'border-gray-300'}`}
                       >
                         <option value="USD">USD</option>
                         <option value="EUR">EUR</option>
@@ -711,7 +732,7 @@ const AdvisorForm = () => {
                         {...field}
                         type="text"
                         placeholder="Enter minimum amount"
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary"
+                        className={`w-full px-4 py-3 border rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary ${form.touched.revenueRange?.min && form.errors.revenueRange?.min ? 'border-red-500' : 'border-gray-300'}`}
                         onChange={(e) => {
                           const value = e.target.value.replace(/,/g, '');
                           if (value === '' || /^\d+$/.test(value)) {
@@ -733,7 +754,7 @@ const AdvisorForm = () => {
                         {...field}
                         type="text"
                         placeholder="Enter maximum amount"
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary"
+                        className={`w-full px-4 py-3 border rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary ${form.touched.revenueRange?.max && form.errors.revenueRange?.max ? 'border-red-500' : 'border-gray-300'}`}
                         onChange={(e) => {
                           const value = e.target.value.replace(/,/g, '');
                           if (value === '' || /^\d+$/.test(value)) {
@@ -769,7 +790,7 @@ const AdvisorForm = () => {
                     name="description"
                     rows={4}
                     placeholder="Describe your company, services, and expertise..."
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary resize-none"
+                    className={`w-full px-4 py-3 border rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary resize-none ${errors.description && touched.description ? 'border-red-500' : 'border-gray-300'}`}
                   />
                   <ErrorMessage name="description" component="div" className="text-red-500 text-sm mt-1" />
                 </div>
@@ -797,6 +818,7 @@ const AdvisorForm = () => {
                         const file = e.target.files[0];
                         if (file) {
                           setLogoFile(file);
+                          setLogoError(false);
                         }
                       }}
                       className="hidden"
@@ -804,7 +826,7 @@ const AdvisorForm = () => {
                     />
                     <label
                       htmlFor="logo-upload"
-                      className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-primary/30 rounded-lg cursor-pointer bg-white hover:bg-primary/5 transition-all duration-200"
+                      className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-white hover:bg-primary/5 transition-all duration-200 ${logoError ? 'border-red-500' : 'border-primary/30'}`}
                     >
                       <div className="flex flex-col items-center justify-center pt-5 pb-6">
                         <FaUpload className="w-8 h-8 mb-4 text-primary" />
@@ -850,6 +872,20 @@ const AdvisorForm = () => {
                 <FaVideo className="mr-3 text-primary" />
                 Advisor Introduction Video <span className="ml-2 text-sm text-secondary/70 font-normal">(optional)</span>
               </h3>
+
+              <div className="mb-6 p-4 rounded-lg bg-blue-50 border border-blue-200 text-blue-800">
+                <div className="flex items-start">
+                  <div className="flex-shrink-0">
+                    <FaInfoCircle className="h-5 w-5 text-blue-400" aria-hidden="true" />
+                  </div>
+                  <div className="ml-3">
+                    <h3 className="text-sm font-bold">Video Instructions</h3>
+                    <div className="mt-2 text-sm">
+                      <p>When we present you to a seller this video will be attached. We suggest a quick introduction of your company followed by a story about your favorite company sale.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
               <div className="flex flex-col items-center justify-center">
                 <div className="w-full max-w-xl">
@@ -929,6 +965,29 @@ const AdvisorForm = () => {
               </div>
             </motion.div>
 
+            {/* Cimamplify Ventures Section */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+              className="bg-blue-50 p-6 rounded-2xl border border-blue-200 shadow-sm"
+            >
+              <div className="flex items-start">
+                <Field
+                  type="checkbox"
+                  name="workedWithCimamplify"
+                  id="workedWithCimamplify"
+                  className="h-4 w-4 mt-1 text-primary focus:ring-primary border-gray-300 rounded"
+                />
+                <div className="ml-3 text-sm">
+                  <label htmlFor="workedWithCimamplify" className="font-bold text-blue-800">
+                    Did you previously work with Cimamplify Ventures?
+                  </label>
+                  <p className="text-blue-700">Check this box if you have been engaged in any capacity with Cimamplify Ventures in the past.</p>
+                </div>
+              </div>
+            </motion.div>
+
             {/* Testimonials */}
             <motion.div 
               initial={{ opacity: 0, x: 20 }}
@@ -989,14 +1048,14 @@ const AdvisorForm = () => {
                                 <Field
                                   name={`testimonials[${index}].clientName`}
                                   placeholder="Client Name"
-                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 text-sm bg-white"
+                                  className={`w-full px-3 py-2 border rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 text-sm bg-white ${errors.testimonials?.[index]?.clientName && touched.testimonials?.[index]?.clientName ? 'border-red-500' : 'border-gray-300'}`}
                                 />
                                 <Field
                                   as="textarea"
                                   name={`testimonials[${index}].testimonial`}
                                   placeholder="Write the testimonial here..."
                                   rows="3"
-                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 text-sm bg-white resize-none"
+                                  className={`w-full px-3 py-2 border rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 text-sm bg-white resize-none ${errors.testimonials?.[index]?.testimonial && touched.testimonials?.[index]?.testimonial ? 'border-red-500' : 'border-gray-300'}`}
                                 />
 
                               </div>
@@ -1034,5 +1093,3 @@ const AdvisorForm = () => {
     </div>
   );
 };
-
-export default AdvisorForm;

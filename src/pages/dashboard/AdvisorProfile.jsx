@@ -342,12 +342,6 @@ export default function AdvisorProfile() {
                       Resume Subscription
                     </button>
                   )}
-                  <Link
-                    to="/advisor-change-card"
-                    className="px-4 py-2 text-sm rounded-lg bg-primary text-white hover:opacity-90 flex items-center gap-2"
-                  >
-                    <FaCreditCard /> Change credit card
-                  </Link>
                 </div>
               </div>
 

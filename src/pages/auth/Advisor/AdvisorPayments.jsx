@@ -5,6 +5,8 @@ import * as Yup from "yup";
 import { toast, Toaster } from "react-hot-toast";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import { 
   FaUser, 
   FaGlobe, 
@@ -16,6 +18,7 @@ import {
   FaCheckCircle,
   FaSpinner
 } from "react-icons/fa";
+import { API_CONFIG } from "../../../config/api";
 
 // -------------------- URL Params --------------------
 const getSearchParams = () => new URLSearchParams(window.location.search);
@@ -28,86 +31,37 @@ const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY).ca
 
 // -------------------- CSRF Helper (CRITICALLY REVISED) --------------------
 class SecureAPI {
-  static BACKEND_URL = "https://advisor-seller-backend.vercel.app";
-  static #csrfToken = null; // In-memory cache for the CSRF token
+  static BACKEND_URL = API_CONFIG.BACKEND_URL;
 
-  static getCsrfTokenFromCookie() {
-    console.log('All cookies:', document.cookie);
-    const cookies = document.cookie.split(';');
-    for (let cookie of cookies) {
-      const [name, value] = cookie.trim().split('=');
-      console.log('Cookie found:', name, '=', value);
-      if (name === 'csrf-token') {
-        return decodeURIComponent(value);
-      }
-    }
-    console.log('csrf-token cookie not found');
-    return null;
+  static getToken() {
+    return (
+      localStorage.getItem('access_token') ||
+      localStorage.getItem('token') ||
+      sessionStorage.getItem('access_token') ||
+      sessionStorage.getItem('token') ||
+      null
+    );
   }
 
-  static async getCSRFToken() {
-    // First try to get CSRF token from cookie (set during login)
-    const cookieCsrfToken = this.getCsrfTokenFromCookie();
-    if (cookieCsrfToken) {
-      SecureAPI.#csrfToken = cookieCsrfToken;
-      console.log("Using CSRF token from cookie:", SecureAPI.#csrfToken);
-      return SecureAPI.#csrfToken;
-    }
-
-    // Fallback to localStorage
-    const storedCsrfToken = localStorage.getItem('x-csrf-token');
-    if (storedCsrfToken) {
-      SecureAPI.#csrfToken = storedCsrfToken;
-      console.log("Using CSRF token from storage:", SecureAPI.#csrfToken);
-      return SecureAPI.#csrfToken;
-    }
-
-    if (SecureAPI.#csrfToken) {
-      console.log("Using cached CSRF token from memory:", SecureAPI.#csrfToken);
-      return SecureAPI.#csrfToken;
-    }
-
-    console.warn("No CSRF token available. User needs to login first.");
-    return null; // Return null instead of throwing error
-  }
-
-  // New method to clear the CSRF token cache
-  static clearCsrfToken() {
-    SecureAPI.#csrfToken = null;
-    sessionStorage.removeItem('csrfToken');
-    console.log("CSRF token cache cleared from memory.");
-  }
-
-  // Method to set CSRF token from login
-  static setCsrfToken(token) {
-    SecureAPI.#csrfToken = token;
-    sessionStorage.setItem('csrfToken', token);
-    console.log("CSRF token set from login:", token);
-  }
-
-  static async secureRequest(url, options = {}) {
-    const csrfToken = await this.getCSRFToken();
-    // Get JWT token from where it's actually stored after login
-    const token = localStorage.getItem('access_token') || localStorage.getItem('token') || sessionStorage.getItem('access_token') || sessionStorage.getItem('token');
-    
-    console.log('JWT Token for request:', token ? 'Present' : 'Missing');
-    
-    const defaultHeaders = {
-      "Content-Type": "application/json",
-      "x-csrf-token": csrfToken,
-      ...(token && { "Authorization": `Bearer ${token}` })
+  static async secureRequest(path, options = {}) {
+    const token = this.getToken();
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(options.headers || {}),
     };
-    
-    console.log('Sending CSRF token:', csrfToken);
-    console.log('JWT Token present:', !!token);
 
-    return fetch(`${this.BACKEND_URL}${url}`, {
+    const body = options.body
+      ? typeof options.body === 'string'
+        ? options.body
+        : JSON.stringify(options.body)
+      : undefined;
+
+    return fetch(`${this.BACKEND_URL}${path}`, {
       ...options,
-      credentials: "include",
-      headers: {
-        ...defaultHeaders,
-        ...options.headers,
-      },
+      headers,
+      body,
+      credentials: 'include',
     });
   }
 }
@@ -124,7 +78,7 @@ const PaymentSchema = Yup.object().shape({
 const AdvisorPaymentForm = () => {
   const stripe = useStripe();
   const elements = useElements();
-
+  const navigate = useNavigate();
 
   const [amount, setAmount] = useState(500000); // Amount in cents ($5000)
   const [couponApplied, setCouponApplied] = useState(false);
@@ -138,7 +92,7 @@ const AdvisorPaymentForm = () => {
   const intent = params.get('intent') || 'activate'; // 'renew' | 'resubscribe' | 'activate'
 
   // Autofill user info from localStorage if available
-  let userEmail = "test@example.com";
+  let userEmail = null;
   let defaultFirstName = "";
   let defaultLastName = "";
   try {
@@ -165,7 +119,7 @@ const AdvisorPaymentForm = () => {
       try {
         const token = localStorage.getItem('access_token');
         if (!token) return;
-        const prof = await fetch('https://advisor-seller-backend.vercel.app/api/auth/profile', {
+        const prof = await fetch(`${API_CONFIG.BACKEND_URL}/api/auth/profile`, {
           headers: { Authorization: `Bearer ${token}` },
           credentials: 'include',
         });
@@ -178,7 +132,7 @@ const AdvisorPaymentForm = () => {
               setHasProfile(data.isProfileComplete);
             } else {
               // fallback: try advisors/profile
-              const prof2 = await fetch('https://advisor-seller-backend.vercel.app/api/advisors/profile', {
+              const prof2 = await fetch(`${API_CONFIG.BACKEND_URL}/api/advisors/profile`, {
                 headers: { Authorization: `Bearer ${token}` },
                 credentials: 'include',
               });
@@ -189,6 +143,15 @@ const AdvisorPaymentForm = () => {
       } catch {}
     })();
   }, []);
+
+  const validateToken = () => {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      navigate('/advisor-login', { replace: true });
+      return null;
+    }
+    return token;
+  };
 
   const redirectAfterPayment = () => {
     // If user already has profile or came for renewal/resubscribe, go to returnTo
@@ -258,6 +221,11 @@ const AdvisorPaymentForm = () => {
 
   // Handle payment submission
   const handleSubmitPayment = async (values, { setSubmitting, resetForm }) => {
+    const token = validateToken();
+    if (!token) {
+      setSubmitting(false);
+      return;
+    }
     setSubmitting(true);
     if (!stripe || !elements) {
       toast.error("Stripe.js has not loaded yet. Please try again.");
@@ -265,86 +233,124 @@ const AdvisorPaymentForm = () => {
       return;
     }
 
+    const resolvedEmail = userEmail || (() => {
+      try {
+        const stored = localStorage.getItem('user');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          return parsed?.email || null;
+        }
+      } catch (error) {
+        console.error('Failed to resolve user email from storage', error);
+      }
+      return null;
+    })();
+
     try {
-      // 1️⃣ Create PaymentIntent with backend (CSRF handled by SecureAPI)
-      const intentPayload = values.coupon?.trim() ? { couponCode: values.coupon.trim() } : {};
-      const intentRes = await SecureAPI.secureRequest("/api/payment/create-intent", {
-        method: "POST",
-        body: JSON.stringify(intentPayload),
-      });
-
-      if (!intentRes.ok) {
-        const errorData = await intentRes.json().catch(() => ({ message: "Unknown error" }));
-        toast.error(errorData.message || "Failed to create payment intent ❌");
-        setSubmitting(false);
-        return;
-      }
-      const intentData = await intentRes.json();
-      const clientSecret = intentData.clientSecret;
-
-      if (!clientSecret) {
-        toast.error("Failed to get client secret from backend ❌");
-        setSubmitting(false);
-        return;
-      }
-
       const cardElement = elements.getElement(CardElement);
 
-      // 2️⃣ Confirm payment on Stripe (CLIENT-SIDE) using CardElement
-      const { error: confirmError, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
-        payment_method: { 
-          card: cardElement, 
-          billing_details: { 
-              name: `${values.firstName} ${values.lastName}`,
-              email: userEmail, // IMPORTANT: Ensure this is the actual logged-in user's email
-              address: {
-                  country: values.country
-              }
-          } 
+      const { error: pmError, paymentMethod } = await stripe.createPaymentMethod({
+        type: 'card',
+        card: cardElement,
+        billing_details: {
+          name: `${values.firstName} ${values.lastName}`,
+          email: resolvedEmail,
+          address: {
+            country: values.country,
+          },
         },
-        // The return_url is more critical for PaymentElement or redirects.
-        // For CardElement with confirmCardPayment, the result is usually immediate
-        // without a full page redirect.
       });
 
-      if (confirmError) {
-        toast.error(confirmError.message || "Payment failed during Stripe confirmation ❌");
-        console.error("Stripe client-side confirmation error:", confirmError);
+      if (pmError) {
+        toast.error(pmError.message || 'Unable to verify card.');
+        console.error('Stripe createPaymentMethod error:', pmError);
         setSubmitting(false);
         return;
       }
 
-      // Log the status after client-side confirmation for debugging
-      console.log("Stripe client-side PaymentIntent status:", paymentIntent?.status);
+      const paymentMethodId = paymentMethod?.id;
+      if (!paymentMethodId) {
+        toast.error('Stripe did not return a valid payment method. Please try again.');
+        setSubmitting(false);
+        return;
+      }
 
-      // 3️⃣ If Stripe client-side payment succeeded, tell your backend (with CSRF)
-      if (paymentIntent && paymentIntent.status === 'succeeded') {
-        const confirmBackendRes = await SecureAPI.secureRequest("/api/payment/confirm", {
-          method: "POST",
-          body: JSON.stringify({
-            paymentIntentId: paymentIntent.id // Use the ID returned by Stripe
-          }),
-        });
+      const subscriptionRes = await axios.post(
+        `${API_CONFIG.BACKEND_URL}/api/payment/create-subscription`,
+        {
+          paymentMethodId,
+          couponCode: values.coupon?.trim() || undefined,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
 
-        if (!confirmBackendRes.ok) {
-          const errorData = await confirmBackendRes.json().catch(() => ({ message: "Unknown backend confirmation error" }));
-          toast.error(errorData.message || "Payment confirmed by Stripe, but backend failed to update profile ❌");
-          console.error("Backend confirmation failed:", errorData);
+      let {
+        subscriptionId,
+        clientSecret: subscriptionClientSecret,
+        status,
+      } = subscriptionRes.data || {};
+      console.log('[AdvisorPayments] subscription response', subscriptionRes.data);
+
+      if (subscriptionClientSecret) {
+        const paymentResult = await stripe.confirmCardPayment(
+          subscriptionClientSecret,
+        );
+        if (paymentResult.error) {
+          toast.error(
+            paymentResult.error.message || 'Authentication was not completed.',
+          );
           setSubmitting(false);
           return;
         }
-
-        toast.success("Payment confirmed! 🎉 Redirecting...");
-        resetForm();
-        setTimeout(() => {
-          redirectAfterPayment();
-        }, 1500);
-      } else {
-        toast.error(`Stripe payment not succeeded. Current status: ${paymentIntent?.status || 'unknown'} ❌`);
+        status = paymentResult.paymentIntent?.status || status;
       }
+
+      if (subscriptionId) {
+        try {
+          const finalizeRes = await axios.post(
+            `${API_CONFIG.BACKEND_URL}/api/payment/finalize-subscription`,
+            { subscriptionId },
+            { headers: { Authorization: `Bearer ${token}` } },
+          );
+          status = finalizeRes.data?.status || status;
+        } catch (error) {
+          console.error('Finalize subscription failed:', error);
+          toast.error(
+            error?.response?.data?.message ||
+              'Subscription payment completed, but we could not finalize your account. Please contact support.',
+          );
+          setSubmitting(false);
+          return;
+        }
+      }
+
+      if (!['active', 'trialing'].includes(status)) {
+        toast.error(
+          'We received your card details, but the subscription is not active yet. Please contact support to complete activation.',
+        );
+        setSubmitting(false);
+        return;
+      }
+
+      toast.success(
+        status === 'trialing'
+          ? 'Subscription activated. Enjoy your trial period!'
+          : 'Subscription activated successfully. Redirecting...',
+      );
+
+      resetForm();
+      setTimeout(() => {
+        redirectAfterPayment();
+      }, 1200);
     } catch (err) {
-      console.error("Payment process error:", err);
-      toast.error("An unexpected error occurred during payment ❌");
+      console.error('Payment process error:', err?.response?.data || err);
+      const message =
+        err?.response?.data?.message ||
+        err?.message ||
+        'An unexpected error occurred during payment.';
+      toast.error(message);
     } finally {
       setSubmitting(false);
     }
@@ -650,17 +656,10 @@ const AdvisorPayments = () => {
           return;
         }
         console.log('Stripe loaded successfully');
-        
-        // Try to initialize CSRF token (optional for non-logged users)
-        const csrfToken = await SecureAPI.getCSRFToken();
-        if (!csrfToken) {
-          console.log('No CSRF token available - user needs to login first');
-        }
-        
-        setIsLoading(false);
       } catch (err) {
         console.error("Failed to initialize:", err);
         setStripeError('Failed to initialize payment system. Please refresh the page.');
+      } finally {
         setIsLoading(false);
       }
     };
