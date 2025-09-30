@@ -431,7 +431,7 @@ export const AdvisorForm = () => {
     console.log('Form submitted:', values);
     try {
       if (!logoFile) {
-        toast.error('Company logo is required');
+        toast.error("Company logo is required");
         setLogoError(true);
         setSubmitting(false);
         return;
@@ -440,12 +440,18 @@ export const AdvisorForm = () => {
 
       let logoUrl = "";
       if (logoFile) {
-        logoUrl = await handleFileUpload(logoFile, "https://advisor-seller-backend.vercel.app/api/upload/logo");
+        logoUrl = await handleFileUpload(
+          logoFile,
+          "https://advisor-seller-backend.vercel.app/api/upload/logo"
+        );
       }
 
       let introVideoUrl = "";
       if (introVideoFile) {
-        introVideoUrl = await handleFileUpload(introVideoFile, "https://advisor-seller-backend.vercel.app/api/upload/video");
+        introVideoUrl = await handleFileUpload(
+          introVideoFile,
+          "https://advisor-seller-backend.vercel.app/api/upload/video"
+        );
       }
 
       // Upload testimonial PDFs
@@ -469,13 +475,18 @@ export const AdvisorForm = () => {
         })
       );
 
-      const filteredTestimonials = testimonials.filter(Boolean);
-      if (filteredTestimonials.length < 1) {
-        toast.error('At least one testimonial (client name and text) is required');
+      // Ensure exactly 5 testimonials, all complete
+      if (
+        testimonials.length !== 5 ||
+        testimonials.some((t) => !t.clientName || !t.testimonial)
+      ) {
+        toast.error(
+          "Exactly 5 testimonials with client name and text are required"
+        );
         setSubmitting(false);
         return;
       }
-      
+
       const token = localStorage.getItem("access_token");
       const payload = {
         companyName: values.companyName,
@@ -490,31 +501,35 @@ export const AdvisorForm = () => {
         // licensing: "yes",
         revenueRange: {
           min: Number(values.revenueRange.min),
-          max: Number(values.revenueRange.max)
+          max: Number(values.revenueRange.max),
         },
         logoUrl,
-        testimonials: filteredTestimonials,
+        testimonials,
         introVideoUrl,
         workedWithCimamplify: values.workedWithCimamplify,
       };
-      
-      console.log('Sending payload:', payload);
-      
-      await axios.post("https://advisor-seller-backend.vercel.app/api/advisors/profile", payload, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+
+      console.log("Sending payload:", payload);
+
+      await axios.post(
+        "https://advisor-seller-backend.vercel.app/api/advisors/profile",
+        payload,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
       toast.success("Advisor profile created successfully!");
       resetForm();
       setLogoFile(null);
       setIntroVideoFile(null);
-      setIntroVideoPreview('');
-      
+      setIntroVideoPreview("");
+
       // Wait for backend to update then redirect
       setTimeout(() => {
-        localStorage.removeItem('user');
+        localStorage.removeItem("user");
         sessionStorage.clear();
-        window.location.replace('/advisor-dashboard');
+        window.location.replace("/advisor-dashboard");
       }, 1000);
     } catch (error) {
       console.error('Form submission error:', error.response?.data || error);
