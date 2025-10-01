@@ -464,30 +464,32 @@ const SellerDashboard = () => {
     });
   };
 
-  const handleBulkIntroduction = async () => {
-    if (selectedAdvisors.length === 0) return;
+const handleBulkIntroduction = async () => {
+  if (selectedAdvisors.length === 0) return;
 
-    try {
-      setIntroductionLoading(true);
-      const token = localStorage.getItem("access_token");
+  try {
+    setIntroductionLoading(true);
+    const token = localStorage.getItem("access_token");
 
-      const response = await axios.post(
-        "https://advisor-seller-backend.vercel.app/api/connections/introduction",
-        { advisorIds: selectedAdvisors },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+    const response = await axios.post(
+      "https://advisor-seller-backend.vercel.app/api/connections/introduction",
+      { advisorIds: selectedAdvisors },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
 
-      toast.success(
-        `📧 Introduction emails sent to you and x selected advisors!`
-      );
-      setIntroductionRequests([...introductionRequests, ...selectedAdvisors]);
-      setSelectedAdvisors([]);
-    } catch (error) {
-      toast.error("Failed to send introduction requests");
-    } finally {
-      setIntroductionLoading(false);
-    }
-  };
+    toast.success(
+      `📧 Introduction emails sent to you and ${
+        selectedAdvisors.length
+      } selected advisor${selectedAdvisors.length > 1 ? "s" : ""}!`
+    );
+    setIntroductionRequests([...introductionRequests, ...selectedAdvisors]);
+    setSelectedAdvisors([]);
+  } catch (error) {
+    toast.error("Failed to send introduction requests");
+  } finally {
+    setIntroductionLoading(false);
+  }
+};
 
   const handleGetDirectList = async () => {
     try {
