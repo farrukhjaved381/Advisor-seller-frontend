@@ -1,22 +1,27 @@
 // AdvisorPayments.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { toast, Toaster } from "react-hot-toast";
 import { loadStripe } from "@stripe/stripe-js";
-import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
+import {
+  Elements,
+  CardElement,
+  useStripe,
+  useElements,
+} from "@stripe/react-stripe-js";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { 
-  FaUser, 
-  FaGlobe, 
-  FaMapMarkerAlt, 
-  FaGift, 
-  FaCreditCard, 
+import {
+  FaUser,
+  FaGlobe,
+  FaMapMarkerAlt,
+  FaGift,
+  FaCreditCard,
   FaShieldAlt,
   FaLock,
   FaCheckCircle,
-  FaSpinner
+  FaSpinner,
 } from "react-icons/fa";
 import { API_CONFIG } from "../../../config/api";
 
@@ -24,8 +29,10 @@ import { API_CONFIG } from "../../../config/api";
 const getSearchParams = () => new URLSearchParams(window.location.search);
 
 // -------------------- Stripe --------------------
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY).catch(err => {
-  console.error('Failed to load Stripe:', err);
+const stripePromise = loadStripe(
+  import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY
+).catch((err) => {
+  console.error("Failed to load Stripe:", err);
   return null;
 });
 
@@ -35,10 +42,10 @@ class SecureAPI {
 
   static getToken() {
     return (
-      localStorage.getItem('access_token') ||
-      localStorage.getItem('token') ||
-      sessionStorage.getItem('access_token') ||
-      sessionStorage.getItem('token') ||
+      localStorage.getItem("access_token") ||
+      localStorage.getItem("token") ||
+      sessionStorage.getItem("access_token") ||
+      sessionStorage.getItem("token") ||
       null
     );
   }
@@ -46,13 +53,13 @@ class SecureAPI {
   static async secureRequest(path, options = {}) {
     const token = this.getToken();
     const headers = {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(options.headers || {}),
     };
 
     const body = options.body
-      ? typeof options.body === 'string'
+      ? typeof options.body === "string"
         ? options.body
         : JSON.stringify(options.body)
       : undefined;
@@ -61,17 +68,27 @@ class SecureAPI {
       ...options,
       headers,
       body,
-      credentials: 'include',
+      credentials: "include",
     });
   }
 }
 
 // -------------------- Validation Schema --------------------
 const PaymentSchema = Yup.object().shape({
-  firstName: Yup.string().matches(/^[A-Za-z]+$/, "Only alphabets allowed").min(2).max(20).required("First name is required"),
-  lastName: Yup.string().matches(/^[A-Za-z]+$/, "Only alphabets allowed").min(2).max(20).required("Last name is required"),
+  firstName: Yup.string()
+    .matches(/^[A-Za-z]+$/, "Only alphabets allowed")
+    .min(2)
+    .max(20)
+    .required("First name is required"),
+  lastName: Yup.string()
+    .matches(/^[A-Za-z]+$/, "Only alphabets allowed")
+    .min(2)
+    .max(20)
+    .required("Last name is required"),
   country: Yup.string().required("Country is required"),
-  coupon: Yup.string().matches(/^[A-Za-z0-9]*$/, "Only letters & numbers allowed").notRequired(),
+  coupon: Yup.string()
+    .matches(/^[A-Za-z0-9]*$/, "Only letters & numbers allowed")
+    .notRequired(),
 });
 
 // -------------------- Inner Form Component --------------------
@@ -88,22 +105,22 @@ const AdvisorPaymentForm = () => {
   const [hasProfile, setHasProfile] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
   const params = getSearchParams();
-  const returnTo = params.get('return') || '/advisor-profile';
-  const intent = params.get('intent') || 'activate'; // 'renew' | 'resubscribe' | 'activate'
+  const returnTo = params.get("return") || "/advisor-profile";
+  const intent = params.get("intent") || "activate"; // 'renew' | 'resubscribe' | 'activate'
 
   // Autofill user info from localStorage if available
   let userEmail = null;
   let defaultFirstName = "";
   let defaultLastName = "";
   try {
-    const userStr = localStorage.getItem('user');
+    const userStr = localStorage.getItem("user");
     if (userStr) {
       const user = JSON.parse(userStr);
       if (user.email) userEmail = user.email;
       if (user.name) {
-        const [first, ...rest] = user.name.split(' ');
+        const [first, ...rest] = user.name.split(" ");
         defaultFirstName = first || "";
-        defaultLastName = rest.join(' ') || "";
+        defaultLastName = rest.join(" ") || "";
       } else {
         if (user.firstName) defaultFirstName = user.firstName;
         if (user.lastName) defaultLastName = user.lastName;
@@ -117,25 +134,28 @@ const AdvisorPaymentForm = () => {
   useEffect(() => {
     (async () => {
       try {
-        const token = localStorage.getItem('access_token');
+        const token = localStorage.getItem("access_token");
         if (!token) return;
         const prof = await fetch(`${API_CONFIG.BACKEND_URL}/api/auth/profile`, {
           headers: { Authorization: `Bearer ${token}` },
-          credentials: 'include',
+          credentials: "include",
         });
         if (prof.ok) {
           const data = await prof.json();
           setIsVerified(!!data.isPaymentVerified);
-          if (data.role === 'advisor') {
+          if (data.role === "advisor") {
             // if API exposes isProfileComplete
-            if (typeof data.isProfileComplete === 'boolean') {
+            if (typeof data.isProfileComplete === "boolean") {
               setHasProfile(data.isProfileComplete);
             } else {
               // fallback: try advisors/profile
-              const prof2 = await fetch(`${API_CONFIG.BACKEND_URL}/api/advisors/profile`, {
-                headers: { Authorization: `Bearer ${token}` },
-                credentials: 'include',
-              });
+              const prof2 = await fetch(
+                `${API_CONFIG.BACKEND_URL}/api/advisors/profile`,
+                {
+                  headers: { Authorization: `Bearer ${token}` },
+                  credentials: "include",
+                }
+              );
               setHasProfile(prof2.ok);
             }
           }
@@ -145,9 +165,9 @@ const AdvisorPaymentForm = () => {
   }, []);
 
   const validateToken = () => {
-    const token = localStorage.getItem('access_token');
+    const token = localStorage.getItem("access_token");
     if (!token) {
-      navigate('/advisor-login', { replace: true });
+      navigate("/advisor-login", { replace: true });
       return null;
     }
     return token;
@@ -155,17 +175,25 @@ const AdvisorPaymentForm = () => {
 
   const redirectAfterPayment = () => {
     // If user already has profile or came for renewal/resubscribe, go to returnTo
-    if (hasProfile || isVerified || intent === 'renew' || intent === 'resubscribe') {
-      window.location.href = returnTo || '/advisor-profile';
+    if (
+      hasProfile ||
+      isVerified ||
+      intent === "renew" ||
+      intent === "resubscribe"
+    ) {
+      window.location.href = returnTo || "/advisor-profile";
     } else {
       // Fresh activation flow
-      window.location.href = '/advisor-form';
+      window.location.href = "/advisor-form";
     }
   };
 
   // Helper to format amount with commas
   const formatAmount = (amt) => {
-    return amt.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return amt.toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
   };
   const handleApplyCoupon = async (coupon) => {
     if (!coupon?.trim()) {
@@ -177,15 +205,20 @@ const AdvisorPaymentForm = () => {
 
     try {
       // Check if it's a free trial coupon first
-      if (coupon.trim().toUpperCase() === 'FREETRIAL2025') {
-        const response = await SecureAPI.secureRequest("/api/payment/redeem-coupon", {
-          method: "POST",
-          body: JSON.stringify({ code: coupon.trim() }),
-        });
+      if (coupon.trim().toUpperCase() === "FREETRIAL2024") {
+        const response = await SecureAPI.secureRequest(
+          "/api/payment/redeem-coupon",
+          {
+            method: "POST",
+            body: JSON.stringify({ code: coupon.trim() }),
+          }
+        );
 
         const data = await response.json();
         if (response.ok) {
-          toast.success("Free trial activated! 🎉 Redirecting to create your profile...");
+          toast.success(
+            "Free trial activated! 🎉 Redirecting to create your profile..."
+          );
           setTimeout(() => {
             redirectAfterPayment();
           }, 1500);
@@ -198,16 +231,21 @@ const AdvisorPaymentForm = () => {
 
       // Regular coupon for discount
       const payload = { couponCode: coupon.trim() };
-      const response = await SecureAPI.secureRequest("/api/payment/create-intent", {
-        method: "POST",
-        body: JSON.stringify(payload),
-      });
+      const response = await SecureAPI.secureRequest(
+        "/api/payment/create-intent",
+        {
+          method: "POST",
+          body: JSON.stringify(payload),
+        }
+      );
 
       const data = await response.json();
       if (response.ok && data.amount !== undefined) {
         setAmount(data.amount);
         setCouponApplied(true);
-        toast.success(`Coupon applied! New amount: $${(data.amount / 100).toFixed(2)}`);
+        toast.success(
+          `Coupon applied! New amount: $${(data.amount / 100).toFixed(2)}`
+        );
       } else {
         toast.error(data.message || "Failed to apply coupon ❌");
       }
@@ -233,44 +271,49 @@ const AdvisorPaymentForm = () => {
       return;
     }
 
-    const resolvedEmail = userEmail || (() => {
-      try {
-        const stored = localStorage.getItem('user');
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          return parsed?.email || null;
+    const resolvedEmail =
+      userEmail ||
+      (() => {
+        try {
+          const stored = localStorage.getItem("user");
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            return parsed?.email || null;
+          }
+        } catch (error) {
+          console.error("Failed to resolve user email from storage", error);
         }
-      } catch (error) {
-        console.error('Failed to resolve user email from storage', error);
-      }
-      return null;
-    })();
+        return null;
+      })();
 
     try {
       const cardElement = elements.getElement(CardElement);
 
-      const { error: pmError, paymentMethod } = await stripe.createPaymentMethod({
-        type: 'card',
-        card: cardElement,
-        billing_details: {
-          name: `${values.firstName} ${values.lastName}`,
-          email: resolvedEmail,
-          address: {
-            country: values.country,
+      const { error: pmError, paymentMethod } =
+        await stripe.createPaymentMethod({
+          type: "card",
+          card: cardElement,
+          billing_details: {
+            name: `${values.firstName} ${values.lastName}`,
+            email: resolvedEmail,
+            address: {
+              country: values.country,
+            },
           },
-        },
-      });
+        });
 
       if (pmError) {
-        toast.error(pmError.message || 'Unable to verify card.');
-        console.error('Stripe createPaymentMethod error:', pmError);
+        toast.error(pmError.message || "Unable to verify card.");
+        console.error("Stripe createPaymentMethod error:", pmError);
         setSubmitting(false);
         return;
       }
 
       const paymentMethodId = paymentMethod?.id;
       if (!paymentMethodId) {
-        toast.error('Stripe did not return a valid payment method. Please try again.');
+        toast.error(
+          "Stripe did not return a valid payment method. Please try again."
+        );
         setSubmitting(false);
         return;
       }
@@ -283,7 +326,7 @@ const AdvisorPaymentForm = () => {
         },
         {
           headers: { Authorization: `Bearer ${token}` },
-        },
+        }
       );
 
       let {
@@ -291,15 +334,18 @@ const AdvisorPaymentForm = () => {
         clientSecret: subscriptionClientSecret,
         status,
       } = subscriptionRes.data || {};
-      console.log('[AdvisorPayments] subscription response', subscriptionRes.data);
+      console.log(
+        "[AdvisorPayments] subscription response",
+        subscriptionRes.data
+      );
 
       if (subscriptionClientSecret) {
         const paymentResult = await stripe.confirmCardPayment(
-          subscriptionClientSecret,
+          subscriptionClientSecret
         );
         if (paymentResult.error) {
           toast.error(
-            paymentResult.error.message || 'Authentication was not completed.',
+            paymentResult.error.message || "Authentication was not completed."
           );
           setSubmitting(false);
           return;
@@ -312,32 +358,32 @@ const AdvisorPaymentForm = () => {
           const finalizeRes = await axios.post(
             `${API_CONFIG.BACKEND_URL}/api/payment/finalize-subscription`,
             { subscriptionId },
-            { headers: { Authorization: `Bearer ${token}` } },
+            { headers: { Authorization: `Bearer ${token}` } }
           );
           status = finalizeRes.data?.status || status;
         } catch (error) {
-          console.error('Finalize subscription failed:', error);
+          console.error("Finalize subscription failed:", error);
           toast.error(
             error?.response?.data?.message ||
-              'Subscription payment completed, but we could not finalize your account. Please contact support.',
+              "Subscription payment completed, but we could not finalize your account. Please contact support."
           );
           setSubmitting(false);
           return;
         }
       }
 
-      if (!['active', 'trialing'].includes(status)) {
+      if (!["active", "trialing"].includes(status)) {
         toast.error(
-          'We received your card details, but the subscription is not active yet. Please contact support to complete activation.',
+          "We received your card details, but the subscription is not active yet. Please contact support to complete activation."
         );
         setSubmitting(false);
         return;
       }
 
       toast.success(
-        status === 'trialing'
-          ? 'Subscription activated. Enjoy your trial period!'
-          : 'Subscription activated successfully. Redirecting...',
+        status === "trialing"
+          ? "Subscription activated. Enjoy your trial period!"
+          : "Subscription activated successfully. Redirecting..."
       );
 
       resetForm();
@@ -345,11 +391,11 @@ const AdvisorPaymentForm = () => {
         redirectAfterPayment();
       }, 1200);
     } catch (err) {
-      console.error('Payment process error:', err?.response?.data || err);
+      console.error("Payment process error:", err?.response?.data || err);
       const message =
         err?.response?.data?.message ||
         err?.message ||
-        'An unexpected error occurred during payment.';
+        "An unexpected error occurred during payment.";
       toast.error(message);
     } finally {
       setSubmitting(false);
@@ -359,29 +405,38 @@ const AdvisorPaymentForm = () => {
   return (
     <div className="space-y-8">
       {/* Header Section */}
-      <div className="text-center space-y-4">
-        <div className="mx-auto w-16 h-16 bg-gradient-to-r from-primary to-third rounded-full flex items-center justify-center">
-          <FaShieldAlt className="text-white text-2xl" />
+      <div className="space-y-4 text-center">
+        <div className="flex items-center justify-center w-16 h-16 mx-auto rounded-full bg-gradient-to-r from-primary to-third">
+          <FaShieldAlt className="text-2xl text-white" />
         </div>
         <div>
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Advisor Membership</h1>
-          <p className="text-gray-600">Help us to get in front of "Off Market" and convince sellers to use you</p>
+          <h1 className="mb-2 text-3xl font-bold text-gray-800">
+            Advisor Membership
+          </h1>
+          <p className="text-gray-600">
+            Help us to get in front of "Off Market" and convince sellers to use
+            you
+          </p>
         </div>
-        
+
         {/* Pricing Display */}
-        <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-6 border border-blue-100">
+        <div className="p-6 border border-blue-100 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl">
           <div className="flex items-center justify-center space-x-4">
             {couponApplied && (
               <div className="text-right">
-                <p className="text-sm text-gray-500 line-through">${formatAmount(originalAmount / 100)} USD</p>
+                <p className="text-sm text-gray-500 line-through">
+                  ${formatAmount(originalAmount / 100)} USD
+                </p>
               </div>
             )}
             <div className="text-center">
-              <p className="text-4xl font-bold text-gray-800">${formatAmount(amount / 100)} USD</p>
+              <p className="text-4xl font-bold text-gray-800">
+                ${formatAmount(amount / 100)} USD
+              </p>
               <p className="text-sm text-gray-500">Yearly Subscription</p>
             </div>
             {couponApplied && (
-              <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+              <div className="px-3 py-1 text-sm font-medium text-green-800 bg-green-100 rounded-full">
                 <FaCheckCircle className="inline mr-1" />
                 Discount Applied
               </div>
@@ -395,7 +450,7 @@ const AdvisorPaymentForm = () => {
           firstName: defaultFirstName,
           lastName: defaultLastName,
           country: "",
-          coupon: ""
+          coupon: "",
         }}
         validationSchema={PaymentSchema}
         onSubmit={handleSubmitPayment}
@@ -404,51 +459,67 @@ const AdvisorPaymentForm = () => {
           <Form className="space-y-6">
             {/* Personal Information Section */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+              <h3 className="flex items-center text-lg font-semibold text-gray-800">
                 <FaUser className="mr-2 text-blue-500" />
                 Personal Information
               </h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">First Name</label>
-                  <div className={`relative border-2 rounded-lg transition-colors ${
-                    errors.firstName && touched.firstName 
-                      ? 'border-red-300 bg-red-50' 
-                      : 'border-gray-200 hover:border-blue-300 focus-within:border-blue-500'
-                  }`}>
+                  <label className="block text-sm font-medium text-gray-700">
+                    First Name
+                  </label>
+                  <div
+                    className={`relative border-2 rounded-lg transition-colors ${
+                      errors.firstName && touched.firstName
+                        ? "border-red-300 bg-red-50"
+                        : "border-gray-200 hover:border-blue-300 focus-within:border-blue-500"
+                    }`}
+                  >
                     <div className="flex items-center px-4 py-3">
                       <FaUser className="mr-3 text-gray-400" />
-                      <Field 
-                        name="firstName" 
-                        placeholder="Enter first name" 
-                        className="w-full outline-none bg-transparent text-gray-800"
+                      <Field
+                        name="firstName"
+                        placeholder="Enter first name"
+                        className="w-full text-gray-800 bg-transparent outline-none"
                       />
                     </div>
                   </div>
-                  <ErrorMessage name="firstName" component="p" className="text-red-500 text-sm flex items-center">
+                  <ErrorMessage
+                    name="firstName"
+                    component="p"
+                    className="flex items-center text-sm text-red-500"
+                  >
                     <span className="ml-1">⚠️</span>
                     <span className="ml-1">{errors.firstName}</span>
                   </ErrorMessage>
                 </div>
-                
+
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Last Name</label>
-                  <div className={`relative border-2 rounded-lg transition-colors ${
-                    errors.lastName && touched.lastName 
-                      ? 'border-red-300 bg-red-50' 
-                      : 'border-gray-200 hover:border-blue-300 focus-within:border-blue-500'
-                  }`}>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Last Name
+                  </label>
+                  <div
+                    className={`relative border-2 rounded-lg transition-colors ${
+                      errors.lastName && touched.lastName
+                        ? "border-red-300 bg-red-50"
+                        : "border-gray-200 hover:border-blue-300 focus-within:border-blue-500"
+                    }`}
+                  >
                     <div className="flex items-center px-4 py-3">
                       <FaUser className="mr-3 text-gray-400" />
-                      <Field 
-                        name="lastName" 
-                        placeholder="Enter last name" 
-                        className="w-full outline-none bg-transparent text-gray-800"
+                      <Field
+                        name="lastName"
+                        placeholder="Enter last name"
+                        className="w-full text-gray-800 bg-transparent outline-none"
                       />
                     </div>
                   </div>
-                  <ErrorMessage name="lastName" component="p" className="text-red-500 text-sm flex items-center">
+                  <ErrorMessage
+                    name="lastName"
+                    component="p"
+                    className="flex items-center text-sm text-red-500"
+                  >
                     <span className="ml-1">⚠️</span>
                     <span className="ml-1">{errors.lastName}</span>
                   </ErrorMessage>
@@ -458,22 +529,30 @@ const AdvisorPaymentForm = () => {
 
             {/* Location Information */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+              <h3 className="flex items-center text-lg font-semibold text-gray-800">
                 <FaMapMarkerAlt className="mr-2 text-blue-500" />
                 Location Details
               </h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2 col-span-1 md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700">Country</label>
-                  <div className={`relative border-2 rounded-lg transition-colors ${
-                    errors.country && touched.country 
-                      ? 'border-red-300 bg-red-50' 
-                      : 'border-gray-200 hover:border-blue-300 focus-within:border-blue-500'
-                  }`}>
-                    <div className="flex items-center px-4 py-3 w-full">
+
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="col-span-1 space-y-2 md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Country
+                  </label>
+                  <div
+                    className={`relative border-2 rounded-lg transition-colors ${
+                      errors.country && touched.country
+                        ? "border-red-300 bg-red-50"
+                        : "border-gray-200 hover:border-blue-300 focus-within:border-blue-500"
+                    }`}
+                  >
+                    <div className="flex items-center w-full px-4 py-3">
                       <FaGlobe className="mr-3 text-gray-400" />
-                      <Field as="select" name="country" className="w-full outline-none bg-transparent text-gray-800">
+                      <Field
+                        as="select"
+                        name="country"
+                        className="w-full text-gray-800 bg-transparent outline-none"
+                      >
                         <option value="">Select your country</option>
                         <option value="PK">🇵🇰 Pakistan</option>
                         <option value="US">🇺🇸 United States</option>
@@ -483,7 +562,11 @@ const AdvisorPaymentForm = () => {
                       </Field>
                     </div>
                   </div>
-                  <ErrorMessage name="country" component="p" className="text-red-500 text-sm flex items-center">
+                  <ErrorMessage
+                    name="country"
+                    component="p"
+                    className="flex items-center text-sm text-red-500"
+                  >
                     <span className="ml-1">⚠️</span>
                     <span className="ml-1">{errors.country}</span>
                   </ErrorMessage>
@@ -493,52 +576,59 @@ const AdvisorPaymentForm = () => {
 
             {/* Payment Information */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+              <h3 className="flex items-center text-lg font-semibold text-gray-800">
                 <FaCreditCard className="mr-2 text-blue-500" />
                 Payment Information
               </h3>
-              
+
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Card Details</label>
-                <div className="border-2 rounded-lg px-4 py-4 transition-colors border-gray-200 hover:border-blue-300 focus-within:border-blue-500 bg-white">
+                <label className="block text-sm font-medium text-gray-700">
+                  Card Details
+                </label>
+                <div className="px-4 py-4 transition-colors bg-white border-2 border-gray-200 rounded-lg hover:border-blue-300 focus-within:border-blue-500">
                   {stripe ? (
-                    <CardElement 
-                      options={{ 
+                    <CardElement
+                      options={{
                         hidePostalCode: true,
                         style: {
                           base: {
-                            fontSize: '16px',
-                            color: '#374151',
-                            fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
-                            fontSmoothing: 'antialiased',
-                            '::placeholder': {
-                              color: '#9CA3AF',
+                            fontSize: "16px",
+                            color: "#374151",
+                            fontFamily:
+                              '"Inter", "Segoe UI", system-ui, sans-serif',
+                            fontSmoothing: "antialiased",
+                            "::placeholder": {
+                              color: "#9CA3AF",
                             },
                           },
                           invalid: {
-                            color: '#EF4444',
-                            iconColor: '#EF4444'
+                            color: "#EF4444",
+                            iconColor: "#EF4444",
                           },
                         },
-                      }} 
+                        // 👇 This prevents browser autofill suggestions
+                        disableLink: true, // disables "Autofill" link
+                      }}
                       onReady={() => {
-                        console.log('CardElement ready');
+                        console.log("CardElement ready");
                         setCardReady(true);
                       }}
                       onChange={(event) => {
                         if (event.error) {
-                          console.error('CardElement error:', event.error);
+                          console.error("CardElement error:", event.error);
                         }
                       }}
                     />
                   ) : (
                     <div className="flex items-center justify-center h-12">
-                      <FaSpinner className="animate-spin mr-2 text-blue-500" />
-                      <p className="text-gray-500">Loading secure payment form...</p>
+                      <FaSpinner className="mr-2 text-blue-500 animate-spin" />
+                      <p className="text-gray-500">
+                        Loading secure payment form...
+                      </p>
                     </div>
                   )}
                 </div>
-                <div className="flex items-center text-sm text-gray-500 mt-2">
+                <div className="flex items-center mt-2 text-sm text-gray-500">
                   <FaLock className="mr-2" />
                   <span>Your payment information is encrypted and secure</span>
                 </div>
@@ -547,20 +637,20 @@ const AdvisorPaymentForm = () => {
 
             {/* Coupon Section */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+              <h3 className="flex items-center text-lg font-semibold text-gray-800">
                 <FaGift className="mr-2 text-green-500" />
                 Promotional Code
               </h3>
-              
+
               <div className="flex gap-3">
                 <div className="flex-1 space-y-2">
-                  <div className="border-2 rounded-lg transition-colors border-gray-200 hover:border-green-300 focus-within:border-green-500">
+                  <div className="transition-colors border-2 border-gray-200 rounded-lg hover:border-green-300 focus-within:border-green-500">
                     <div className="flex items-center px-4 py-3">
                       <FaGift className="mr-3 text-gray-400" />
-                      <Field 
-                        name="coupon" 
-                        placeholder="Enter promo code" 
-                        className="w-full outline-none bg-transparent text-gray-800"
+                      <Field
+                        name="coupon"
+                        placeholder="Enter promo code"
+                        className="w-full text-gray-800 bg-transparent outline-none"
                       />
                     </div>
                   </div>
@@ -569,20 +659,19 @@ const AdvisorPaymentForm = () => {
                   type="button"
                   onClick={() => handleApplyCoupon(values.coupon)}
                   disabled={isApplyingCoupon || !values.coupon?.trim()}
-                  className="px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white font-medium rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                  className="flex items-center px-6 py-3 font-medium text-white transition-all duration-200 rounded-lg bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isApplyingCoupon ? (
                     <>
-                      <FaSpinner className="animate-spin mr-2" />
+                      <FaSpinner className="mr-2 animate-spin" />
                       Applying...
                     </>
                   ) : (
-                    'Apply'
+                    "Apply"
                   )}
                 </button>
               </div>
             </div>
-
 
             {/* Submit Button */}
             <div className="pt-4">
@@ -593,7 +682,7 @@ const AdvisorPaymentForm = () => {
               >
                 {isSubmitting ? (
                   <>
-                    <FaSpinner className="animate-spin mr-3" />
+                    <FaSpinner className="mr-3 animate-spin" />
                     Processing Payment...
                   </>
                 ) : (
@@ -606,20 +695,27 @@ const AdvisorPaymentForm = () => {
             </div>
 
             {/* Next Step - Complete Profile */}
-            <div className="mt-5 flex flex-col items-center justify-center">
-              <div className="w-full max-w-md bg-blue-50 border border-blue-100 rounded-xl shadow p-3 flex flex-col items-center">
+            <div className="flex flex-col items-center justify-center mt-5">
+              <div className="flex flex-col items-center w-full max-w-md p-3 border border-blue-100 shadow bg-blue-50 rounded-xl">
                 <div className="flex items-center mb-1">
-                  <FaCheckCircle className="text-green-500 text-lg mr-1" />
-                  <span className="text-base font-semibold text-blue-900">Next step</span>
+                  <FaCheckCircle className="mr-1 text-lg text-green-500" />
+                  <span className="text-base font-semibold text-blue-900">
+                    Next step
+                  </span>
                 </div>
-                <span className="text-base font-bold text-secondary">Complete your profile</span>
-                <span className="text-xs text-gray-500 mt-1 text-center">After payment, you'll finish your advisor profile to activate your account.</span>
+                <span className="text-base font-bold text-secondary">
+                  Complete your profile
+                </span>
+                <span className="mt-1 text-xs text-center text-gray-500">
+                  After payment, you'll finish your advisor profile to activate
+                  your account.
+                </span>
                 <span className="inline-block bg-blue-100 text-blue-700 text-[11px] font-semibold px-2 py-1 rounded mt-2"></span>
               </div>
             </div>
 
             {/* Trust Indicators */}
-            {/* <div className="text-center space-y-2 pt-4 border-t border-gray-200">
+            {/* <div className="pt-4 space-y-2 text-center border-t border-gray-200">
               <div className="flex items-center justify-center space-x-4 text-sm text-gray-500">
                 <div className="flex items-center">
                   <FaShieldAlt className="mr-1" />
@@ -645,6 +741,41 @@ const AdvisorPaymentForm = () => {
 const AdvisorPayments = () => {
   const [stripeError, setStripeError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [showRequirementsModal, setShowRequirementsModal] = useState(true);
+  const modalCloseBtnRef = useRef(null);
+
+  // Focus the close button when modal opens, handle Escape to close, and prevent background scroll
+  useEffect(() => {
+    if (!showRequirementsModal) return;
+
+    const prevOverflow = document.body.style.overflow;
+    // Prevent background scrolling while modal is open
+    document.body.style.overflow = "hidden";
+
+    // Focus the dismiss button for keyboard users
+    const timer = setTimeout(() => {
+      try {
+        modalCloseBtnRef.current?.focus();
+      } catch {
+        // ignore focus errors in some browsers
+        console.debug("Modal focus failed");
+      }
+    }, 50);
+
+    const onKey = (e) => {
+      if (e.key === "Escape" || e.key === "Esc") {
+        setShowRequirementsModal(false);
+      }
+    };
+
+    window.addEventListener("keydown", onKey);
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow || "";
+    };
+  }, [showRequirementsModal]);
 
   useEffect(() => {
     const initializeApp = async () => {
@@ -652,13 +783,15 @@ const AdvisorPayments = () => {
         // Test Stripe loading
         const stripe = await stripePromise;
         if (!stripe) {
-          setStripeError('Failed to load Stripe. Please refresh the page.');
+          setStripeError("Failed to load Stripe. Please refresh the page.");
           return;
         }
-        console.log('Stripe loaded successfully');
+        console.log("Stripe loaded successfully");
       } catch (err) {
         console.error("Failed to initialize:", err);
-        setStripeError('Failed to initialize payment system. Please refresh the page.');
+        setStripeError(
+          "Failed to initialize payment system. Please refresh the page."
+        );
       } finally {
         setIsLoading(false);
       }
@@ -669,14 +802,18 @@ const AdvisorPayments = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50">
-        <div className="text-center space-y-4">
-          <div className="mx-auto w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-            <FaSpinner className="animate-spin text-white text-2xl" />
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
+        <div className="space-y-4 text-center">
+          <div className="flex items-center justify-center w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-blue-500 to-purple-600">
+            <FaSpinner className="text-2xl text-white animate-spin" />
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-gray-800">Initializing Payment System</h2>
-            <p className="text-gray-600">Please wait while we prepare your secure checkout...</p>
+            <h2 className="text-xl font-semibold text-gray-800">
+              Initializing Payment System
+            </h2>
+            <p className="text-gray-600">
+              Please wait while we prepare your secure checkout...
+            </p>
           </div>
         </div>
       </div>
@@ -685,16 +822,18 @@ const AdvisorPayments = () => {
 
   if (stripeError) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-orange-50 p-6">
-        <div className="max-w-md w-full bg-white shadow-2xl rounded-3xl p-8 text-center">
-          <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-6">
-            <FaShieldAlt className="text-red-500 text-2xl" />
+      <div className="flex items-center justify-center min-h-screen p-6 bg-gradient-to-br from-red-50 to-orange-50">
+        <div className="w-full max-w-md p-8 text-center bg-white shadow-2xl rounded-3xl">
+          <div className="flex items-center justify-center w-16 h-16 mx-auto mb-6 bg-red-100 rounded-full">
+            <FaShieldAlt className="text-2xl text-red-500" />
           </div>
-          <h1 className="text-2xl font-bold mb-4 text-red-600">Payment System Error</h1>
-          <p className="text-gray-600 mb-6">{stripeError}</p>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="w-full bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold py-3 px-6 rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-200"
+          <h1 className="mb-4 text-2xl font-bold text-red-600">
+            Payment System Error
+          </h1>
+          <p className="mb-6 text-gray-600">{stripeError}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="w-full px-6 py-3 font-semibold text-white transition-all duration-200 bg-gradient-to-r from-red-500 to-red-600 rounded-xl hover:from-red-600 hover:to-red-700"
           >
             Refresh Page
           </button>
@@ -705,57 +844,97 @@ const AdvisorPayments = () => {
 
   return (
     <Elements stripe={stripePromise}>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-4 sm:p-6">
+      <div className="min-h-screen p-4 bg-gradient-to-br from-blue-50 via-white to-purple-50 sm:p-6">
         <Toaster
           position="top-center"
-          toastOptions={{ 
-            style: { 
-              minWidth: "300px", 
+          toastOptions={{
+            style: {
+              minWidth: "300px",
               maxWidth: "500px",
               borderRadius: "12px",
               fontSize: "14px",
-              padding: "12px 16px"
+              padding: "12px 16px",
             },
             duration: 4000,
             success: {
               iconTheme: {
-                primary: '#10B981',
-                secondary: '#ffffff',
+                primary: "#10B981",
+                secondary: "#ffffff",
               },
             },
             error: {
               iconTheme: {
-                primary: '#EF4444',
-                secondary: '#ffffff',
+                primary: "#EF4444",
+                secondary: "#ffffff",
               },
-            }
+            },
           }}
         />
         <div className="max-w-2xl mx-auto">
-          <div className="bg-white shadow-2xl rounded-3xl overflow-hidden">
+          {/* Requirements Modal - shown on first render and blocks the page until acknowledged */}
+          {showRequirementsModal && (
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="requirements-title"
+              className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50"
+            >
+              <div className="w-full max-w-2xl p-6 mx-auto text-left bg-white shadow-2xl rounded-2xl">
+                <h2
+                  id="requirements-title"
+                  className="mb-3 text-xl font-bold text-center text-gray-900"
+                >
+                  Advisor Requirements
+                </h2>
+                <p className="mb-4 leading-relaxed text-gray-700">
+                  Advisor Chooser requires that you, as an M&amp;A Advisor,
+                  Broker or Investment Banker, have personally been practicing
+                  for at least 5 years and have completed at least 10 company
+                  sale transactions. You will also be required to provide 5
+                  testimonials from customers.
+                </p>
+                <div className="flex items-center justify-center gap-3 mt-4">
+                  <button
+                    ref={modalCloseBtnRef}
+                    onClick={() => {
+                      // Close the modal and allow the page to be used
+                      setShowRequirementsModal(false);
+                    }}
+                    className="px-5 py-3 text-sm font-semibold text-white rounded-lg bg-gradient-to-r from-primary to-third hover:from-blue-700 hover:to-purple-700"
+                  >
+                    I understand
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+          <div
+            className="overflow-hidden bg-white shadow-2xl rounded-3xl"
+            aria-hidden={showRequirementsModal ? "true" : "false"}
+          >
             <div className="px-8 py-10 sm:px-12 sm:py-12">
               <AdvisorPaymentForm />
             </div>
           </div>
-          
+
           {/* Additional Trust Signals */}
-          {/* <div className="mt-8 text-center space-y-4">
+          {/* <div className="mt-8 space-y-4 text-center">
             <div className="flex items-center justify-center space-x-6 text-sm text-gray-500">
               <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                  <FaShieldAlt className="text-blue-500 text-xs" />
+                <div className="flex items-center justify-center w-8 h-8 bg-blue-100 rounded-full">
+                  <FaShieldAlt className="text-xs text-blue-500" />
                 </div>
                 <span>Bank-level Security</span>
               </div>
               <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                  <FaCheckCircle className="text-green-500 text-xs" />
+                <div className="flex items-center justify-center w-8 h-8 bg-green-100 rounded-full">
+                  <FaCheckCircle className="text-xs text-green-500" />
                 </div>
                 <span>Instant Activation</span>
               </div>
               <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
-                  <FaUser className="text-purple-500 text-xs" />
+                <div className="flex items-center justify-center w-8 h-8 bg-purple-100 rounded-full">
+                  <FaUser className="text-xs text-purple-500" />
                 </div>
                 <span>24/7 Support</span>
               </div>

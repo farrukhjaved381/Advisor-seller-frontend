@@ -124,15 +124,7 @@ const IndustryRadioChooser = ({ selected, onChange }) => {
             {filteredSectors.map((sector) => (
               <div key={sector.id} className="border-b border-gray-100 pb-1">
                 <div className="flex items-center">
-                  <input
-                    type="radio"
-                    name="industry"
-                    id={`sector-${sector.id}`}
-                    value={sector.name}
-                    checked={selected === sector.name}
-                    onChange={() => onChange(sector.name)}
-                    className="mr-2 h-4 w-4 text-primary focus:ring-primary form-radio border-gray-300 transition-colors duration-200"
-                  />
+                  
                   <div
                     className="flex items-center cursor-pointer flex-1"
                     onClick={() =>
@@ -302,15 +294,7 @@ const GeographyRadioChooser = ({ selected, onChange }) => {
                 className="border-b border-gray-100 pb-1"
               >
                 <div className="flex items-center">
-                  <input
-                    type="radio"
-                    name="geography"
-                    id={`geo-${country.isoCode}`}
-                    value={country.name}
-                    checked={selected === country.name}
-                    onChange={() => onChange(country.name)}
-                    className="mr-2 h-4 w-4 text-primary focus:ring-primary form-radio border-gray-300 transition-colors duration-200"
-                  />
+                  
                   <div
                     className="flex items-center cursor-pointer flex-1"
                     onClick={() =>

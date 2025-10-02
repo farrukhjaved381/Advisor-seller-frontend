@@ -31,6 +31,7 @@ const centsToUsd = (cents) => {
 export default function AdvisorProfile() {
   const [user, setUser] = useState(null);
   const [history, setHistory] = useState([]);
+  const [advisorProfile, setAdvisorProfile] = useState(null);
   const [subscription, setSubscription] = useState(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -46,13 +47,15 @@ export default function AdvisorProfile() {
         return;
       }
       try {
+        const authHeaders = { Authorization: `Bearer ${token}` };
+
         // Fetch profile and payment history in parallel for faster render
         const [profileRes, histRes] = await Promise.all([
           axios.get(`${API_CONFIG.BACKEND_URL}/api/auth/profile`, {
-            headers: { Authorization: `Bearer ${token}` },
+            headers: authHeaders,
           }),
           axios.get(`${API_CONFIG.BACKEND_URL}/api/payment/history`, {
-            headers: { Authorization: `Bearer ${token}` },
+            headers: authHeaders,
             validateStatus: () => true,
           }),
         ]);
@@ -68,6 +71,24 @@ export default function AdvisorProfile() {
           console.warn('[AdvisorProfile] history API non-2xx:', histRes.status, histRes.data);
         }
         setSubscription(sub);
+
+        try {
+          const advisorRes = await axios.get(
+            `${API_CONFIG.BACKEND_URL}/api/advisors/profile`,
+            {
+              headers: authHeaders,
+              validateStatus: () => true,
+            },
+          );
+          if (advisorRes.status >= 200 && advisorRes.status < 300) {
+            setAdvisorProfile(advisorRes.data);
+          } else {
+            setAdvisorProfile(null);
+          }
+        } catch (advisorError) {
+          console.warn('[AdvisorProfile] advisor profile fetch failed', advisorError);
+          setAdvisorProfile(null);
+        }
       } catch (e) {
         console.error('[AdvisorProfile] profile/history fetch failed', e);
       } finally {
@@ -278,7 +299,17 @@ export default function AdvisorProfile() {
               onClick={() => setProfileDropdownOpen(prev => !prev)}
             >
               <div className="text-right hidden sm:block">
-                <span className="block font-semibold text-gray-900 text-sm">{user?.name || 'Loading...'}</span>
+                <div className="flex items-center justify-end gap-2">
+                  <span className="block font-semibold text-gray-900 text-sm">{user?.name || 'Loading...'}</span>
+                  {advisorProfile?.workedWithCimamplify && (
+                    <img
+                      src="/logo.png"
+                      alt="CIM Amplify Advisor"
+                      className="h-5 w-5"
+                      title="This advisor uses CIM Amplify"
+                    />
+                  )}
+                </div>
                 <span className="block text-xs text-gray-500">Advisor Account</span>
               </div>
               <div className="relative">
@@ -381,8 +412,16 @@ export default function AdvisorProfile() {
                   </Link>
                 </div>
               ) : (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-sm text-yellow-800">
-                  No credit card on file yet. Add one to enable seamless automatic renewals when your subscription ends.
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-sm text-yellow-800">
+                  <span>
+                    No credit card on file yet. Add one now to enable seamless automatic renewals when your subscription ends or your trial period expires.
+                  </span>
+                  <Link
+                    to="/advisor-change-card"
+                    className="inline-flex items-center justify-center px-4 py-2 text-sm font-semibold text-white bg-primary rounded-lg shadow-sm hover:bg-primary/90 transition-colors"
+                  >
+                    Add credit card
+                  </Link>
                 </div>
               )}
             </div>

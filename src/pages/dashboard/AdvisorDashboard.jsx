@@ -254,29 +254,7 @@ const AdvisorDashboard = () => {
 
     const filteredSectors = filterSectors(industryData.sectors, query);
 
-    // Handler for sector checkbox
-    const handleSectorToggle = (sector) => {
-      const sectorName = sector.name;
-      const allGroupNames = sector.industryGroups.map(group => group.name);
-      const isSelected = selected.includes(sectorName);
-      
-      let newSelected;
-      if (isSelected) {
-        newSelected = selected.filter(
-          item => item !== sectorName && !allGroupNames.includes(item)
-        );
-      } else {
-        newSelected = [
-          ...selected.filter(
-            item => item !== sectorName && !allGroupNames.includes(item)
-          ),
-          sectorName,
-          ...allGroupNames,
-        ];
-      }
-      onChange([...new Set(newSelected)]);
-    };
-
+   
     // Handler for industry group checkbox
     const handleGroupToggle = (group) => {
       const groupName = group.name;
@@ -299,25 +277,19 @@ const AdvisorDashboard = () => {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search Industry Sectors"
-            className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-gray-700"
+            className="w-full py-3 pl-10 pr-4 text-gray-700 transition-all duration-200 bg-white border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
           />
-          <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <FaSearch className="absolute w-4 h-4 text-gray-400 transform -translate-y-1/2 left-3 top-1/2" />
         </div>
-        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 h-64 overflow-y-auto">
+        <div className="h-64 p-4 overflow-y-auto border border-gray-200 rounded-lg bg-gray-50">
           {filteredSectors.length > 0 ? (
             <div className="space-y-2">
               {filteredSectors.map((sector) => (
-                <div key={sector.id} className="border-b border-gray-100 pb-1">
+                <div key={sector.id} className="pb-1 border-b border-gray-100">
                   <div className="flex items-center">
-                    <input
-                      type="checkbox"
-                      id={`sector-${sector.id}`}
-                      checked={selected.includes(sector.name)}
-                      onChange={() => handleSectorToggle(sector)}
-                      className="mr-2 h-4 w-4 text-primary focus:ring-primary form-checkbox border-gray-300 rounded transition-colors duration-200"
-                    />
+                   
                     <div
-                      className="flex items-center cursor-pointer flex-1"
+                      className="flex items-center flex-1 cursor-pointer"
                       onClick={() =>
                         setExpandedSectors(prev => ({
                           ...prev,
@@ -326,17 +298,17 @@ const AdvisorDashboard = () => {
                       }
                     >
                       {expandedSectors[sector.id] ? (
-                        <FaChevronDown className="h-4 w-4 mr-1 text-gray-600" />
+                        <FaChevronDown className="w-4 h-4 mr-1 text-gray-600" />
                       ) : (
-                        <FaChevronRight className="h-4 w-4 mr-1 text-gray-600" />
+                        <FaChevronRight className="w-4 h-4 mr-1 text-gray-600" />
                       )}
-                      <label htmlFor={`sector-${sector.id}`} className="text-gray-700 cursor-pointer font-medium">
+                      <label htmlFor={`sector-${sector.id}`} className="font-medium text-gray-700 cursor-pointer">
                         {sector.name}
                       </label>
                     </div>
                   </div>
                   {expandedSectors[sector.id] && (
-                    <div className="ml-6 mt-1 space-y-1">
+                    <div className="mt-1 ml-6 space-y-1">
                       {sector.industryGroups.map((group) => (
                         <div key={group.id} className="pl-2">
                           <div className="flex items-center">
@@ -345,17 +317,17 @@ const AdvisorDashboard = () => {
                               id={`group-${group.id}`}
                               checked={selected.includes(group.name)}
                               onChange={() => handleGroupToggle(group)}
-                              className="mr-2 h-4 w-4 text-primary focus:ring-primary form-checkbox border-gray-300 rounded transition-colors duration-200"
+                              className="w-4 h-4 mr-2 transition-colors duration-200 border-gray-300 rounded text-primary focus:ring-primary form-checkbox"
                             />
                             <label
                               htmlFor={`group-${group.id}`}
-                              className="text-gray-700 cursor-pointer text-sm"
+                              className="text-sm text-gray-700 cursor-pointer"
                             >
                               {group.name}
                             </label>
                           </div>
                           {group.description && (
-                            <div className="text-xs text-gray-500 italic mt-1 ml-6">
+                            <div className="mt-1 ml-6 text-xs italic text-gray-500">
                               {group.description}
                             </div>
                           )}
@@ -367,7 +339,7 @@ const AdvisorDashboard = () => {
               ))}
             </div>
           ) : (
-            <p className="text-gray-500 text-sm text-center py-4">
+            <p className="py-4 text-sm text-center text-gray-500">
               No results found for "{query}".
             </p>
           )}
@@ -395,29 +367,7 @@ const AdvisorDashboard = () => {
     const rest = allCountries.filter(c => !priorityCountries.includes(c.name));
     allCountries = [...priority, ...rest];
 
-    // Handler for country checkbox
-    const handleCountryToggle = (country) => {
-      const countryName = country.name;
-      const states = State.getStatesOfCountry(country.isoCode);
-      const allStateNames = states.map(state => `${country.name} > ${state.name}`);
-      const isSelected = selected.includes(countryName);
-      
-      let newSelected;
-      if (isSelected) {
-        newSelected = selected.filter(
-          item => item !== countryName && !allStateNames.includes(item)
-        );
-      } else {
-        newSelected = [
-          ...selected.filter(
-            item => item !== countryName && !allStateNames.includes(item)
-          ),
-          countryName,
-          ...allStateNames,
-        ];
-      }
-      onChange([...new Set(newSelected)]);
-    };
+  
 
     // Handler for state checkbox
     const handleStateToggle = (country, state) => {
@@ -441,11 +391,11 @@ const AdvisorDashboard = () => {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search Geographies"
-            className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-gray-700"
+            className="w-full py-3 pl-10 pr-4 text-gray-700 transition-all duration-200 bg-white border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
           />
-          <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <FaSearch className="absolute w-4 h-4 text-gray-400 transform -translate-y-1/2 left-3 top-1/2" />
         </div>
-        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 h-64 overflow-y-auto">
+        <div className="h-64 p-4 overflow-y-auto border border-gray-200 rounded-lg bg-gray-50">
           <div className="space-y-2">
             {allCountries.map((country) => {
               let states = State.getStatesOfCountry(country.isoCode);
@@ -459,17 +409,10 @@ const AdvisorDashboard = () => {
               }
               
               return (
-                <div key={country.isoCode} className="border-b border-gray-100 pb-1">
+                <div key={country.isoCode} className="pb-1 border-b border-gray-100">
                   <div className="flex items-center">
-                    <input
-                      type="checkbox"
-                      id={`geo-${country.isoCode}`}
-                      checked={selected.includes(country.name)}
-                      onChange={() => handleCountryToggle(country)}
-                      className="mr-2 h-4 w-4 text-primary focus:ring-primary form-checkbox border-gray-300 rounded transition-colors duration-200"
-                    />
                     <div
-                      className="flex items-center cursor-pointer flex-1"
+                      className="flex items-center flex-1 cursor-pointer"
                       onClick={() =>
                         setExpandedCountries(prev => ({
                           ...prev,
@@ -478,17 +421,17 @@ const AdvisorDashboard = () => {
                       }
                     >
                       {expandedCountries[country.isoCode] ? (
-                        <FaChevronDown className="h-4 w-4 mr-1 text-gray-600" />
+                        <FaChevronDown className="w-4 h-4 mr-1 text-gray-600" />
                       ) : (
-                        <FaChevronRight className="h-4 w-4 mr-1 text-gray-600" />
+                        <FaChevronRight className="w-4 h-4 mr-1 text-gray-600" />
                       )}
-                      <label htmlFor={`geo-${country.isoCode}`} className="text-gray-700 cursor-pointer font-medium">
+                      <label htmlFor={`geo-${country.isoCode}`} className="font-medium text-gray-700 cursor-pointer">
                         {country.name}
                       </label>
                     </div>
                   </div>
                   {expandedCountries[country.isoCode] && (
-                    <div className="ml-6 mt-1 space-y-1">
+                    <div className="mt-1 ml-6 space-y-1">
                       {states
                         .filter(state =>
                           query.trim() === '' ||
@@ -503,11 +446,11 @@ const AdvisorDashboard = () => {
                                 id={`geo-${country.isoCode}-${state.isoCode}`}
                                 checked={selected.includes(`${country.name} > ${state.name}`)}
                                 onChange={() => handleStateToggle(country, state)}
-                                className="mr-2 h-4 w-4 text-primary focus:ring-primary form-checkbox border-gray-300 rounded transition-colors duration-200"
+                                className="w-4 h-4 mr-2 transition-colors duration-200 border-gray-300 rounded text-primary focus:ring-primary form-checkbox"
                               />
                               <label
                                 htmlFor={`geo-${country.isoCode}-${state.isoCode}`}
-                                className="text-gray-700 cursor-pointer text-sm"
+                                className="text-sm text-gray-700 cursor-pointer"
                               >
                                 {state.name}
                               </label>
@@ -657,8 +600,8 @@ const AdvisorDashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-brand to-brand-light">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-brand to-brand-light">
+        <div className="w-32 h-32 border-b-2 rounded-full animate-spin border-primary"></div>
       </div>
     );
   }
@@ -668,7 +611,7 @@ const AdvisorDashboard = () => {
       {/* Mobile backdrop */}
       {sidebarOpen && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
+          className="fixed inset-0 z-20 bg-black bg-opacity-50 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
@@ -680,15 +623,15 @@ const AdvisorDashboard = () => {
       `}>
         {/* Header */}
         <div className="px-6 py-6 border-b border-gray-100">
-          <div className="flex items-center justify-between lg:justify-center mb-4">
+          <div className="flex items-center justify-between mb-4 lg:justify-center">
             <img
               src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=768,fit=crop,q=95/mk3JaNVZEltBD9g4/logo-transparency-mnlJLXr4jxIOR470.png"
               alt="Advisor Chooser"
-              className="h-8 w-auto object-contain"
+              className="object-contain w-auto h-8"
             />
             <button
               onClick={() => setSidebarOpen(false)}
-              className="lg:hidden p-2 rounded-md hover:bg-gray-100"
+              className="p-2 rounded-md lg:hidden hover:bg-gray-100"
             >
               <FaTimes className="w-5 h-5 text-gray-600" />
             </button>
@@ -700,7 +643,7 @@ const AdvisorDashboard = () => {
           <div className="space-y-6">
             {/* Main Menu */}
             <div className="space-y-1">
-              <p className="px-3 text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">Main Menu</p>
+              <p className="px-3 mb-3 text-xs font-medium tracking-wider text-gray-500 uppercase">Main Menu</p>
 
               <button
                 className={`w-full text-left px-4 py-3 rounded-lg transition-all duration-200 flex items-center justify-between ${
@@ -716,7 +659,7 @@ const AdvisorDashboard = () => {
                 <div className="flex items-center space-x-3">
                   <FaChartLine className="w-5 h-5" />
                   <div>
-                    <span className="font-medium text-sm">Lead Management</span>
+                    <span className="text-sm font-medium">Lead Management</span>
                     <p className="text-xs opacity-70">Manage your leads</p>
                   </div>
                 </div>
@@ -736,7 +679,7 @@ const AdvisorDashboard = () => {
                 <div className="flex items-center space-x-3">
                   <FaUser className="w-5 h-5" />
                   <div>
-                    <span className="font-medium text-sm">Profile Overview</span>
+                    <span className="text-sm font-medium">Profile Overview</span>
                     <p className="text-xs opacity-70">View your profile details</p>
                   </div>
                 </div>
@@ -755,13 +698,13 @@ const AdvisorDashboard = () => {
               >
                 <FaCog className="w-5 h-5" />
                 <div>
-                  <span className="font-medium text-sm">Advisor profile</span>
+                  <span className="text-sm font-medium">Advisor profile</span>
                   <p className="text-xs opacity-70">Update your information</p>
                 </div>
               </button>
 
               <button
-                className="w-full text-left px-4 py-3 rounded-lg transition-all duration-200 flex items-center space-x-3 text-gray-700 hover:bg-gray-100"
+                className="flex items-center w-full px-4 py-3 space-x-3 text-left text-gray-700 transition-all duration-200 rounded-lg hover:bg-gray-100"
                 onClick={() => {
                   navigate('/advisor-profile');
                   setSidebarOpen(false);
@@ -769,7 +712,7 @@ const AdvisorDashboard = () => {
               >
                 <FaCreditCard className="w-5 h-5" />
                 <div>
-                  <span className="font-medium text-sm">Subscription Details</span>
+                  <span className="text-sm font-medium">Subscription Details</span>
                   <p className="text-xs opacity-70">Manage subscription and payments</p>
                 </div>
               </button>
@@ -778,32 +721,32 @@ const AdvisorDashboard = () => {
         </nav>
 
         {/* Bottom Section */}
-        <div className="p-6 border-t border-gray-100 space-y-4">
+        <div className="p-6 space-y-4 border-t border-gray-100">
           <button
-            className="w-full px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 transition-colors duration-200 flex items-center justify-center space-x-2 border border-red-200 hover:border-red-300"
+            className="flex items-center justify-center w-full px-4 py-3 space-x-2 text-red-600 transition-colors duration-200 border border-red-200 rounded-lg hover:bg-red-50 hover:border-red-300"
             onClick={handleLogout}
           >
             <FaSignOutAlt className="w-4 h-4" />
-            <span className="font-medium text-sm">Sign Out</span>
+            <span className="text-sm font-medium">Sign Out</span>
           </button>
         </div>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col min-w-0">
+      <main className="flex flex-col flex-1 min-w-0">
         {/* Topbar */}
-        <header className="flex items-center justify-between bg-white shadow-sm border-b border-gray-200 px-4 lg:px-8 py-4">
+        <header className="flex items-center justify-between px-4 py-4 bg-white border-b border-gray-200 shadow-sm lg:px-8">
           <div className="flex items-center space-x-4">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="lg:hidden p-2 rounded-md hover:bg-gray-100"
+              className="p-2 rounded-md lg:hidden hover:bg-gray-100"
             >
               <FaBars className="w-5 h-5 text-gray-600" />
             </button>
             <div className="flex items-center gap-3">
-              <h1 className="text-xl lg:text-2xl font-bold text-gray-900">Advisor Dashboard</h1>
+              <h1 className="text-xl font-bold text-gray-900 lg:text-2xl">Advisor Dashboard</h1>
               {user?.subscription?.status === 'canceled' && user?.subscription?.currentPeriodEnd && (
-                <span className="inline-flex items-center gap-2 text-xs px-2 py-1 rounded-full bg-yellow-100 text-yellow-800 border border-yellow-200">
+                <span className="inline-flex items-center gap-2 px-2 py-1 text-xs text-yellow-800 bg-yellow-100 border border-yellow-200 rounded-full">
                   Canceled • access until {new Date(user.subscription.currentPeriodEnd).toLocaleDateString()}
                   <button
                     onClick={async (e) => {
@@ -828,22 +771,22 @@ const AdvisorDashboard = () => {
           
           <div className="relative">
             <button
-              className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 transition-all duration-200"
+              className="flex items-center gap-3 px-3 py-2 transition-all duration-200 rounded-lg hover:bg-gray-100"
               onClick={() => setProfileDropdownOpen(prev => !prev)}
             >
-              <div className="text-right hidden sm:block">
+              <div className="hidden text-right sm:block">
                 <div className="flex items-center gap-2">
-                  <span className="block font-semibold text-gray-900 text-sm">
+                  <span className="block text-sm font-semibold text-gray-900">
                     {user?.name || "Loading..."}
                   </span>
                   {profile?.workedWithCimamplify && (
-                    <img src="/logo.png" alt="Cimamplify Ventures Partner" className="h-5 w-5" title="Worked with Cimamplify Ventures" />
+                    <img src="/logo.png" alt="Cimamplify Ventures Partner" className="w-5 h-5" title="Worked with Cimamplify Ventures" />
                   )}
                 </div>
                 <span className="block text-xs text-gray-500">Advisor Account</span>
               </div>
               <div className="relative">
-                <div className="w-10 h-10 flex items-center justify-center bg-gradient-to-br from-primary to-third rounded-full text-white font-bold text-sm shadow-md">
+                <div className="flex items-center justify-center w-10 h-10 text-sm font-bold text-white rounded-full shadow-md bg-gradient-to-br from-primary to-third">
                   {(user?.name || "A").charAt(0)}
                 </div>
                 <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
@@ -853,31 +796,31 @@ const AdvisorDashboard = () => {
         </header>
 
         {/* Main Content Area */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 p-6 overflow-y-auto">
           {activeTab === 'overview' && (
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="max-w-7xl mx-auto space-y-8"
+              className="mx-auto space-y-8 max-w-7xl"
             >
               {/* Welcome Header */}
-              <div className="bg-gradient-to-r from-primary via-primary/90 to-third rounded-2xl p-8 text-white">
+              <div className="p-8 text-white bg-gradient-to-r from-primary via-primary/90 to-third rounded-2xl">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h1 className="text-3xl font-bold mb-2">Hey! {user?.name}!</h1>
-                    <p className="text-primary-100 text-lg">Here's your advisor dashboard overview</p>
+                    <h1 className="mb-2 text-3xl font-bold">Hey! {user?.name}!</h1>
+                    <p className="text-lg text-primary-100">Here's your advisor dashboard overview</p>
                   </div>
                   <div className="hidden md:block">
                     {profile?.logoUrl ? (
-                      <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center p-2">
+                      <div className="flex items-center justify-center w-20 h-20 p-2 rounded-full bg-white/20">
                         <img
                           src={profile.logoUrl}
                           alt="Company Logo"
-                          className="w-full h-full object-contain rounded-full"
+                          className="object-contain w-full h-full rounded-full"
                         />
                       </div>
                     ) : (
-                      <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center">
+                      <div className="flex items-center justify-center w-20 h-20 rounded-full bg-white/20">
                         <FaUser className="w-10 h-10 text-white" />
                       </div>
                     )}
@@ -887,19 +830,19 @@ const AdvisorDashboard = () => {
 
               {/* Stats Cards */}
               {profile && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
                   <motion.div 
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 }}
-                    className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
+                    className="p-6 transition-shadow bg-white border border-gray-100 shadow-sm rounded-xl hover:shadow-md"
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium text-gray-500 mb-1">Experience</p>
+                        <p className="mb-1 text-sm font-medium text-gray-500">Experience</p>
                         <p className="text-2xl font-bold text-gray-900">{profile.yearsExperience} years</p>
                       </div>
-                      <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <div className="flex items-center justify-center w-12 h-12 bg-blue-100 rounded-lg">
                         <FaCalendarAlt className="w-6 h-6 text-blue-600" />
                       </div>
                     </div>
@@ -910,15 +853,15 @@ const AdvisorDashboard = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.5 }}
-                    className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow md:col-span-2 lg:col-span-1"
+                    className="p-6 transition-shadow bg-white border border-gray-100 shadow-sm rounded-xl hover:shadow-md md:col-span-2 lg:col-span-1"
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium text-gray-500 mb-1">Subscription</p>
+                        <p className="mb-1 text-sm font-medium text-gray-500">Subscription</p>
                         <p className="text-sm text-gray-900">
                           {user?.isSubscriptionActive ? 'Active' : 'Inactive'}
                         </p>
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="mt-1 text-xs text-gray-500">
                           {(() => {
                             const sub = user?.subscription || {};
                             const now = new Date();
@@ -932,7 +875,7 @@ const AdvisorDashboard = () => {
                       </div>
                       <button
                         onClick={() => navigate('/advisor-profile')}
-                        className="px-3 py-2 text-xs rounded-md bg-primary text-white hover:opacity-90"
+                        className="px-3 py-2 text-xs text-white rounded-md bg-primary hover:opacity-90"
                       >
                         Manage
                       </button>
@@ -943,14 +886,14 @@ const AdvisorDashboard = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
-                    className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
+                    className="p-6 transition-shadow bg-white border border-gray-100 shadow-sm rounded-xl hover:shadow-md"
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium text-gray-500 mb-1">Transactions</p>
+                        <p className="mb-1 text-sm font-medium text-gray-500">Transactions</p>
                         <p className="text-2xl font-bold text-gray-900">{profile.numberOfTransactions}</p>
                       </div>
-                      <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                      <div className="flex items-center justify-center w-12 h-12 bg-green-100 rounded-lg">
                         <FaChartLine className="w-6 h-6 text-green-600" />
                       </div>
                     </div>
@@ -960,14 +903,14 @@ const AdvisorDashboard = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
-                    className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
+                    className="p-6 transition-shadow bg-white border border-gray-100 shadow-sm rounded-xl hover:shadow-md"
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium text-gray-500 mb-1">Industries</p>
+                        <p className="mb-1 text-sm font-medium text-gray-500">Industries</p>
                         <p className="text-2xl font-bold text-gray-900">{profile.industries?.length || 0}</p>
                       </div>
-                      <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                      <div className="flex items-center justify-center w-12 h-12 bg-purple-100 rounded-lg">
                         <FaIndustry className="w-6 h-6 text-purple-600" />
                       </div>
                     </div>
@@ -977,14 +920,14 @@ const AdvisorDashboard = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.4 }}
-                    className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
+                    className="p-6 transition-shadow bg-white border border-gray-100 shadow-sm rounded-xl hover:shadow-md"
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium text-gray-500 mb-1">Geographies</p>
+                        <p className="mb-1 text-sm font-medium text-gray-500">Geographies</p>
                         <p className="text-2xl font-bold text-gray-900">{profile.geographies?.length || 0}</p>
                       </div>
-                      <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                      <div className="flex items-center justify-center w-12 h-12 bg-orange-100 rounded-lg">
                         <FaMapMarkerAlt className="w-6 h-6 text-orange-600" />
                       </div>
                     </div>
@@ -994,21 +937,21 @@ const AdvisorDashboard = () => {
 
               {/* Profile Information Cards */}
               {profile && (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
                   {/* Company Information */}
                   <motion.div 
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.5 }}
-                    className="bg-white rounded-xl shadow-sm border border-gray-100 p-6"
+                    className="p-6 bg-white border border-gray-100 shadow-sm rounded-xl"
                   >
-                    <h3 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                    <h3 className="flex items-center mb-6 text-xl font-semibold text-gray-900">
                       <FaBuilding className="mr-3 text-primary" />
                       Company Information
                     </h3>
                     <div className="space-y-4">
                       <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                        <div className="flex items-center justify-center w-10 h-10 bg-gray-100 rounded-lg">
                           <FaBuilding className="w-5 h-5 text-gray-600" />
                         </div>
                         <div>
@@ -1017,7 +960,7 @@ const AdvisorDashboard = () => {
                         </div>
                       </div>
                       <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                        <div className="flex items-center justify-center w-10 h-10 bg-gray-100 rounded-lg">
                           <FaPhone className="w-5 h-5 text-gray-600" />
                         </div>
                         <div>
@@ -1026,12 +969,12 @@ const AdvisorDashboard = () => {
                         </div>
                       </div>
                       <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                        <div className="flex items-center justify-center w-10 h-10 bg-gray-100 rounded-lg">
                           <FaGlobe className="w-5 h-5 text-gray-600" />
                         </div>
                         <div>
                           <p className="text-sm font-medium text-gray-500">Website</p>
-                          <a href={profile.website} target="_blank" rel="noopener noreferrer" className="text-lg text-primary hover:text-third transition-colors">
+                          <a href={profile.website} target="_blank" rel="noopener noreferrer" className="text-lg transition-colors text-primary hover:text-third">
                             {profile.website}
                           </a>
                         </div>
@@ -1044,25 +987,25 @@ const AdvisorDashboard = () => {
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.6 }}
-                    className="bg-white rounded-xl shadow-sm border border-gray-100 p-6"
+                    className="p-6 bg-white border border-gray-100 shadow-sm rounded-xl"
                   >
-                    <h3 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                    <h3 className="flex items-center mb-6 text-xl font-semibold text-gray-900">
                       <FaDollarSign className="mr-3 text-primary" />
                      Revenue Range and Performance
                     </h3>
                     <div className="space-y-4">
-                      <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
-                        <p className="text-sm font-medium text-green-700 mb-1">Revenue Range</p>
+                      <div className="p-4 border border-green-200 rounded-lg bg-gradient-to-r from-green-50 to-emerald-50">
+                        <p className="mb-1 text-sm font-medium text-green-700">Revenue Range</p>
                         <p className="text-xl font-bold text-green-900">
                           {profile.currency} {profile.revenueRange?.min?.toLocaleString()} - {profile.revenueRange?.max?.toLocaleString()}
                         </p>
                       </div>
                       <div className="grid grid-cols-2 gap-4">
-                        <div className="text-center p-3 bg-blue-50 rounded-lg">
+                        <div className="p-3 text-center rounded-lg bg-blue-50">
                           <p className="text-2xl font-bold text-blue-900">{profile.yearsExperience}</p>
                           <p className="text-sm text-blue-700">Years Experience</p>
                         </div>
-                        <div className="text-center p-3 bg-purple-50 rounded-lg">
+                        <div className="p-3 text-center rounded-lg bg-purple-50">
                           <p className="text-2xl font-bold text-purple-900">{profile.numberOfTransactions}</p>
                           <p className="text-sm text-purple-700">Transactions</p>
                         </div>
@@ -1074,20 +1017,20 @@ const AdvisorDashboard = () => {
 
               {/* Expertise Areas */}
               {profile && (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
                   <motion.div 
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.7 }}
-                    className="bg-white rounded-xl shadow-sm border border-gray-100 p-6"
+                    className="p-6 bg-white border border-gray-100 shadow-sm rounded-xl"
                   >
-                    <h3 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                    <h3 className="flex items-center mb-6 text-xl font-semibold text-gray-900">
                       <FaIndustry className="mr-3 text-primary" />
                       Industries
                     </h3>
                     <div className="flex flex-wrap gap-2">
                       {(showAllIndustries ? profile.industries : (profile.industries || []).slice(0, 10))?.map((industry, index) => (
-                        <span key={index} className="px-3 py-2 bg-blue-100 text-blue-800 rounded-lg text-sm font-medium border border-blue-200">
+                        <span key={index} className="px-3 py-2 text-sm font-medium text-blue-800 bg-blue-100 border border-blue-200 rounded-lg">
                           {industry}
                         </span>
                       ))}
@@ -1109,15 +1052,15 @@ const AdvisorDashboard = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.8 }}
-                    className="bg-white rounded-xl shadow-sm border border-gray-100 p-6"
+                    className="p-6 bg-white border border-gray-100 shadow-sm rounded-xl"
                   >
-                    <h3 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                    <h3 className="flex items-center mb-6 text-xl font-semibold text-gray-900">
                       <FaMapMarkerAlt className="mr-3 text-primary" />
                       Geographies
                     </h3>
                     <div className="flex flex-wrap gap-2">
                       {profile.geographies?.map((geography, index) => (
-                        <span key={index} className="px-3 py-2 bg-green-100 text-green-800 rounded-lg text-sm font-medium border border-green-200">
+                        <span key={index} className="px-3 py-2 text-sm font-medium text-green-800 bg-green-100 border border-green-200 rounded-lg">
                           {geography}
                         </span>
                       ))}
@@ -1132,27 +1075,27 @@ const AdvisorDashboard = () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.9 }}
-                  className="bg-white rounded-xl shadow-sm border border-gray-100 p-6"
+                  className="p-6 bg-white border border-gray-100 shadow-sm rounded-xl"
                 >
-                  <h3 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                  <h3 className="flex items-center mb-6 text-xl font-semibold text-gray-900">
                     <FaQuoteLeft className="mr-3 text-primary" />
                     Client Testimonials
                   </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                     {profile.testimonials.map((testimonial, index) => (
-                      <div key={index} className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                      <div key={index} className="p-4 border border-gray-200 rounded-lg bg-gray-50">
                         <div className="flex items-start space-x-3">
-                          <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                          <div className="flex items-center justify-center flex-shrink-0 w-10 h-10 rounded-full bg-primary/10">
                             <FaUser className="w-5 h-5 text-primary" />
                           </div>
                           <div className="flex-1">
-                            <h4 className="font-semibold text-gray-900 mb-2">{testimonial.clientName}</h4>
-                            <p className="text-gray-600 text-sm italic mb-3">"{testimonial.testimonial}"</p>
+                            <h4 className="mb-2 font-semibold text-gray-900">{testimonial.clientName}</h4>
+                            <p className="mb-3 text-sm italic text-gray-600">"{testimonial.testimonial}"</p>
                             {testimonial.pdfUrl && (
                               <a 
                                 href={testimonial.pdfUrl} 
                                 download
-                                className="inline-flex items-center px-3 py-1 bg-primary text-white text-xs rounded hover:bg-primary/90 transition-colors"
+                                className="inline-flex items-center px-3 py-1 text-xs text-white transition-colors rounded bg-primary hover:bg-primary/90"
                               >
                                 <FaFilePdf className="mr-1" />
                                 Download PDF
@@ -1172,28 +1115,28 @@ const AdvisorDashboard = () => {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="max-w-7xl mx-auto space-y-8"
+              className="mx-auto space-y-8 max-w-7xl"
             >
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+              <div className="p-6 bg-white border border-gray-100 shadow-sm rounded-xl">
+                <div className="flex flex-col gap-4 mb-6 lg:flex-row lg:items-center lg:justify-between">
                   <div>
-                    <h2 className="text-2xl font-bold text-gray-900 flex items-center">
+                    <h2 className="flex items-center text-2xl font-bold text-gray-900">
                       <FaChartLine className="mr-3 text-primary" />
                       Lead Management
                     </h2>
-                    <p className="text-gray-600 mt-1">
+                    <p className="mt-1 text-gray-600">
                       Manage your lead preferences and keep an eye on performance.
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
                     {leadError && (
-                      <span className="text-sm text-red-600 bg-red-50 border border-red-200 px-3 py-1 rounded-lg">
+                      <span className="px-3 py-1 text-sm text-red-600 border border-red-200 rounded-lg bg-red-50">
                         {leadError}
                       </span>
                     )}
                     <button
                       onClick={() => fetchLeadOverview(true)}
-                      className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-sm font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
+                      className="px-4 py-2 text-sm font-semibold text-white transition-colors rounded-lg bg-primary hover:bg-primary/90 disabled:opacity-60 disabled:cursor-not-allowed"
                       disabled={leadsLoading}
                     >
                       {leadsLoading ? 'Refreshing…' : 'Refresh'}
@@ -1201,10 +1144,10 @@ const AdvisorDashboard = () => {
                   </div>
                 </div>
                 {profile && (
-                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
-                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                  <div className="p-6 border border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl">
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">Lead Reception Status</h3>
+                        <h3 className="mb-2 text-lg font-semibold text-gray-900">Lead Reception Status</h3>
                         <p className="text-gray-600">
                           {profile.sendLeads ? (
                             <span className="text-green-700">✅ You are currently receiving new leads from sellers</span>
@@ -1212,7 +1155,7 @@ const AdvisorDashboard = () => {
                             <span className="text-yellow-700">⏸️ Lead delivery is currently paused</span>
                           )}
                         </p>
-                        <p className="text-sm text-gray-500 mt-1">
+                        <p className="mt-1 text-sm text-gray-500">
                           Toggle this setting to control whether you receive new leads.
                         </p>
                       </div>
@@ -1256,17 +1199,17 @@ const AdvisorDashboard = () => {
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="bg-white rounded-xl shadow-sm border border-gray-100 p-6"
+                  className="p-6 bg-white border border-gray-100 shadow-sm rounded-xl"
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-500 mb-1">Total Leads</p>
+                      <p className="mb-1 text-sm font-medium text-gray-500">Total Leads</p>
                       <p className="text-3xl font-bold text-gray-900">{totalLeads}</p>
-                      <p className="text-sm text-gray-500 mt-1">
+                      <p className="mt-1 text-sm text-gray-500">
                         {lastLeadDate ? `Last lead on ${lastLeadDate.toLocaleDateString()}` : 'Awaiting first lead'}
                       </p>
                     </div>
-                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <div className="flex items-center justify-center w-12 h-12 bg-blue-100 rounded-lg">
                       <FaUser className="w-6 h-6 text-blue-600" />
                     </div>
                   </div>
@@ -1275,15 +1218,15 @@ const AdvisorDashboard = () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 }}
-                  className="bg-white rounded-xl shadow-sm border border-gray-100 p-6"
+                  className="p-6 bg-white border border-gray-100 shadow-sm rounded-xl"
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-500 mb-1">This Month</p>
+                      <p className="mb-1 text-sm font-medium text-gray-500">This Month</p>
                       <p className="text-3xl font-bold text-gray-900">{leadsThisMonth}</p>
                       <p className={`text-sm mt-1 ${monthDeltaColor}`}>{monthDeltaLabel}</p>
                     </div>
-                    <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                    <div className="flex items-center justify-center w-12 h-12 bg-green-100 rounded-lg">
                       <FaChartLine className="w-6 h-6 text-green-600" />
                     </div>
                   </div>
@@ -1292,40 +1235,40 @@ const AdvisorDashboard = () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 }}
-                  className="bg-white rounded-xl shadow-sm border border-gray-100 p-6"
+                  className="p-6 bg-white border border-gray-100 shadow-sm rounded-xl"
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-500 mb-1">This Week</p>
+                      <p className="mb-1 text-sm font-medium text-gray-500">This Week</p>
                       <p className="text-3xl font-bold text-gray-900">{leadsThisWeek}</p>
-                      <p className="text-sm text-gray-500 mt-1">
+                      <p className="mt-1 text-sm text-gray-500">
                         {topLeadType ? `${topLeadType.count} ${topLeadTypeLabel} leads overall` : 'No lead type data yet'}
                       </p>
                     </div>
-                    <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <div className="flex items-center justify-center w-12 h-12 bg-purple-100 rounded-lg">
                       <FaDollarSign className="w-6 h-6 text-purple-600" />
                     </div>
                   </div>
                 </motion.div>
               </div>
               {monthlyTrend.length > 0 && (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Monthly Lead Trend</h3>
+                <div className="p-6 bg-white border border-gray-100 shadow-sm rounded-xl">
+                  <h3 className="mb-4 text-lg font-semibold text-gray-900">Monthly Lead Trend</h3>
                   <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-6">
                     {monthlyTrend.map((entry, index) => (
-                      <div key={index} className="bg-gray-50 rounded-lg p-3 border border-gray-200 text-center">
-                        <p className="text-xs text-gray-500 mb-1">{entry.month}</p>
+                      <div key={index} className="p-3 text-center border border-gray-200 rounded-lg bg-gray-50">
+                        <p className="mb-1 text-xs text-gray-500">{entry.month}</p>
                         <p className="text-xl font-semibold text-gray-900">{entry.count}</p>
                       </div>
                     ))}
                   </div>
                 </div>
               )}
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-                <div className="p-6 border-b border-gray-100 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+              <div className="bg-white border border-gray-100 shadow-sm rounded-xl">
+                <div className="flex flex-col gap-3 p-6 border-b border-gray-100 md:flex-row md:items-center md:justify-between">
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900">Recent Leads</h3>
-                    <p className="text-gray-600 text-sm mt-1">Your latest lead opportunities</p>
+                    <p className="mt-1 text-sm text-gray-600">Your latest lead opportunities</p>
                   </div>
                   <div className="text-sm text-gray-500">
                     Showing {Math.min(recentLeads.length, 10)} of {totalLeads} leads
@@ -1333,20 +1276,20 @@ const AdvisorDashboard = () => {
                 </div>
                 <div className="p-6">
                   {leadsLoading ? (
-                    <div className="py-12 text-center text-gray-500 text-sm">Loading leads…</div>
+                    <div className="py-12 text-sm text-center text-gray-500">Loading leads…</div>
                   ) : recentLeads.length > 0 ? (
                     <div className="overflow-x-auto">
-                      <table className="min-w-full divide-y divide-gray-200 text-sm">
+                      <table className="min-w-full text-sm divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                           <tr>
-                            <th className="px-4 py-3 text-left font-semibold text-gray-600">Seller</th>
-                            <th className="px-4 py-3 text-left font-semibold text-gray-600">Industry</th>
-                            <th className="px-4 py-3 text-left font-semibold text-gray-600">Geography</th>
-                            <th className="px-4 py-3 text-left font-semibold text-gray-600">Revenue</th>
-                            <th className="px-4 py-3 text-left font-semibold text-gray-600">Email</th>
-                            <th className="px-4 py-3 text-left font-semibold text-gray-600">Phone</th>
-                            <th className="px-4 py-3 text-left font-semibold text-gray-600">Website</th>
-                            <th className="px-4 py-3 text-left font-semibold text-gray-600">Received</th>
+                            <th className="px-4 py-3 font-semibold text-left text-gray-600">Seller</th>
+                            <th className="px-4 py-3 font-semibold text-left text-gray-600">Industry</th>
+                            <th className="px-4 py-3 font-semibold text-left text-gray-600">Geography</th>
+                            <th className="px-4 py-3 font-semibold text-left text-gray-600">Revenue</th>
+                            <th className="px-4 py-3 font-semibold text-left text-gray-600">Email</th>
+                            <th className="px-4 py-3 font-semibold text-left text-gray-600">Phone</th>
+                            <th className="px-4 py-3 font-semibold text-left text-gray-600">Website</th>
+                            <th className="px-4 py-3 font-semibold text-left text-gray-600">Received</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
@@ -1368,11 +1311,11 @@ const AdvisorDashboard = () => {
                             const contactEmail = seller.contactEmail || seller.email;
                             return (
                               <tr key={lead._id}>
-                                <td className="px-4 py-3 text-gray-900 font-medium">
+                                <td className="px-4 py-3 font-medium text-gray-900">
                                   <div className="flex flex-col">
                                     <span>{seller.companyName || 'Unknown seller'}</span>
                                     {seller.contactName && (
-                                      <span className="text-xs text-gray-500 font-normal">
+                                      <span className="text-xs font-normal text-gray-500">
                                         {seller.contactName}
                                       </span>
                                     )}
@@ -1385,7 +1328,7 @@ const AdvisorDashboard = () => {
                                   {contactEmail ? (
                                     <a
                                       href={`mailto:${contactEmail}`}
-                                      className="text-primary hover:text-third underline"
+                                      className="underline text-primary hover:text-third"
                                     >
                                       {contactEmail}
                                     </a>
@@ -1411,7 +1354,7 @@ const AdvisorDashboard = () => {
                                       href={websiteUrl}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="text-primary hover:text-third underline"
+                                      className="underline text-primary hover:text-third"
                                     >
                                       {websiteUrl}
                                     </a>
@@ -1429,18 +1372,18 @@ const AdvisorDashboard = () => {
                       </table>
                     </div>
                   ) : (
-                    <div className="text-center py-12">
-                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <div className="py-12 text-center">
+                      <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full">
                         <FaUser className="w-8 h-8 text-gray-400" />
                       </div>
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">No leads yet</h3>
-                      <p className="text-gray-500 mb-6 max-w-md mx-auto">
+                      <h3 className="mb-2 text-lg font-medium text-gray-900">No leads yet</h3>
+                      <p className="max-w-md mx-auto mb-6 text-gray-500">
                         When sellers match your expertise and criteria, their leads will appear here. Make sure your profile is complete and lead reception is enabled.
                       </p>
                       <div className="flex justify-center space-x-4">
                         <button
                           onClick={() => setActiveTab('settings')}
-                          className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors font-medium"
+                          className="px-6 py-3 font-medium text-white transition-colors rounded-lg bg-primary hover:bg-primary/90"
                         >
                           Update Profile
                         </button>
@@ -1462,7 +1405,7 @@ const AdvisorDashboard = () => {
                                 toast.error('Failed to enable leads');
                               }
                             }}
-                            className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                            className="px-6 py-3 font-medium text-white transition-colors bg-green-600 rounded-lg hover:bg-green-700"
                           >
                             Enable Leads
                           </button>
@@ -1503,36 +1446,36 @@ const AdvisorDashboard = () => {
                 {({ isSubmitting, values, setFieldValue, submitCount, errors, setTouched }) => (
                   <Form className="space-y-8" key={JSON.stringify(profile?.industries) + '|' + JSON.stringify(profile?.geographies)}>
                     {submitCount > 0 && Object.keys(errors || {}).length > 0 && (
-                      <div className="mb-4 p-3 rounded border border-red-200 bg-red-50 text-red-700">
+                      <div className="p-3 mb-4 text-red-700 border border-red-200 rounded bg-red-50">
                         Please fix {Object.keys(errors).length} highlighted field{Object.keys(errors).length>1?'s':''}.
                       </div>
                     )}
                     <ValidationTouched submitCount={submitCount} errors={errors} setTouched={setTouched} />
                     {/* Personal Information */}
-                    <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                      <h3 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                    <div className="p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
+                      <h3 className="flex items-center mb-6 text-xl font-semibold text-gray-900">
                         <FaUser className="mr-3 text-primary" />
                         Personal Information
                       </h3>
                       
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                          <label className="block mb-2 text-sm font-medium text-gray-700">Full Name</label>
                           <Field
                             name="name"
                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                           />
-                          <ErrorMessage name="name" component="div" className="text-red-500 text-sm mt-1" />
+                          <ErrorMessage name="name" component="div" className="mt-1 text-sm text-red-500" />
                         </div>
                       </div>
 
-                      <div className="mt-6 p-6 rounded-2xl bg-blue-50 border border-blue-200 shadow-sm">
+                      <div className="p-6 mt-6 border border-blue-200 shadow-sm rounded-2xl bg-blue-50">
                         <div className="flex items-start">
                           <Field
                             type="checkbox"
                             name="workedWithCimamplify"
                             id="workedWithCimamplify-edit"
-                            className="h-4 w-4 mt-1 text-primary focus:ring-primary border-gray-300 rounded"
+                            className="w-4 h-4 mt-1 border-gray-300 rounded text-primary focus:ring-primary"
                           />
                           <div className="ml-3 text-sm">
                             <label htmlFor="workedWithCimamplify-edit" className="font-bold text-blue-800">
@@ -1545,119 +1488,107 @@ const AdvisorDashboard = () => {
                     </div>
 
                     {/* Company Information */}
-                    <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                      <h3 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                    <div className="p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
+                      <h3 className="flex items-center mb-6 text-xl font-semibold text-gray-900">
                         <FaBuilding className="mr-3 text-primary" />
                         Company Information
                       </h3>
                       
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Company Name</label>
+                          <label className="block mb-2 text-sm font-medium text-gray-700">Company Name</label>
                           <Field
                             name="companyName"
                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                           />
-                          <ErrorMessage name="companyName" component="div" className="text-red-500 text-sm mt-1" />
+                          <ErrorMessage name="companyName" component="div" className="mt-1 text-sm text-red-500" />
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+                          <label className="block mb-2 text-sm font-medium text-gray-700">Phone</label>
                           <Field
                             name="phone"
                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                           />
-                          <ErrorMessage name="phone" component="div" className="text-red-500 text-sm mt-1" />
+                          <ErrorMessage name="phone" component="div" className="mt-1 text-sm text-red-500" />
                         </div>
 
                         <div className="md:col-span-2">
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Website</label>
+                          <label className="block mb-2 text-sm font-medium text-gray-700">Website</label>
                           <Field
                             name="website"
                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                           />
-                          <ErrorMessage name="website" component="div" className="text-red-500 text-sm mt-1" />
+                          <ErrorMessage name="website" component="div" className="mt-1 text-sm text-red-500" />
                         </div>
                       </div>
                     </div>
 
                     {/* Industries & Geographies */}
-                    <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                      <h3 className="text-xl font-semibold text-gray-900 mb-6">Expertise Areas</h3>
+                    <div className="p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
+                      <h3 className="mb-6 text-xl font-semibold text-gray-900">Expertise Areas</h3>
                       
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                      <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-3">
+                          <label className="block mb-3 text-sm font-medium text-gray-700">
                             Industries
                           </label>
                           <IndustryChooser
                             selected={values.industries}
                             onChange={(val) => setFieldValue("industries", val)}
                           />
-                          <ErrorMessage name="industries" component="div" className="text-red-500 text-sm mt-2" />
+                          <ErrorMessage name="industries" component="div" className="mt-2 text-sm text-red-500" />
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-3">
+                          <label className="block mb-3 text-sm font-medium text-gray-700">
                             Geographies
                           </label>
                           <GeographyChooser
                             selected={values.geographies}
                             onChange={(val) => setFieldValue("geographies", val)}
                           />
-                          <ErrorMessage name="geographies" component="div" className="text-red-500 text-sm mt-2" />
+                          <ErrorMessage name="geographies" component="div" className="mt-2 text-sm text-red-500" />
                         </div>
                       </div>
                     </div>
 
                     {/* Experience & Performance */}
-                    <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                      <h3 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                    <div className="p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
+                      <h3 className="flex items-center mb-6 text-xl font-semibold text-gray-900">
                         <FaChartLine className="mr-3 text-primary" />
                         Experience & Performance
                       </h3>
                       
-                      <div className="mb-6 p-4 rounded-lg bg-red-50 border border-red-200 text-red-800">
-                        <div className="flex items-start">
-                          <div className="flex-shrink-0">
-                            <FaExclamationTriangle className="h-5 w-5 text-red-400" aria-hidden="true" />
-                          </div>
-                          <div className="ml-3">
-                            <h3 className="text-sm font-medium">Important Requirement</h3>
-                            <div className="mt-2 text-sm">
-                              <p>To ensure the quality of our network, we require all advisors to have a minimum of 5 years of experience and to have completed at least 20 transactions.</p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                    
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Years of Experience</label>
+                          <label className="block mb-2 text-sm font-medium text-gray-700">Years of Experience</label>
                           <Field
                             name="yearsExperience"
                             type="number"
                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                           />
-                          <ErrorMessage name="yearsExperience" component="div" className="text-red-500 text-sm mt-1" />
+                          <ErrorMessage name="yearsExperience" component="div" className="mt-1 text-sm text-red-500" />
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Number of Transactions</label>
+                          <label className="block mb-2 text-sm font-medium text-gray-700">Number of Transactions</label>
                           <Field
                             name="numberOfTransactions"
                             type="number"
                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                           />
-                          <ErrorMessage name="numberOfTransactions" component="div" className="text-red-500 text-sm mt-1" />
+                          <ErrorMessage name="numberOfTransactions" component="div" className="mt-1 text-sm text-red-500" />
                         </div>
                       </div>
                     </div>
 
                     {/* Revenue Range */}
-                    <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                    <div className="p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
                       <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-xl font-semibold text-gray-900 flex items-center">
+                        <h3 className="flex items-center text-xl font-semibold text-gray-900">
                           <FaDollarSign className="mr-3 text-primary" />
                           Revenue Size Range
                         </h3>
@@ -1666,7 +1597,7 @@ const AdvisorDashboard = () => {
                             {({ field }) => (
                               <select
                                 {...field}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                               >
                                 <option value="USD">US Dollar (USD)</option>
                                 <option value="EUR">Euro (EUR)</option>
@@ -1694,9 +1625,9 @@ const AdvisorDashboard = () => {
                         </div>
                       </div>
                       
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Minimum Revenue</label>
+                          <label className="block mb-2 text-sm font-medium text-gray-700">Minimum Revenue</label>
                           <Field name="revenueRange.min">
                             {({ field, form }) => (
                               <input
@@ -1713,11 +1644,11 @@ const AdvisorDashboard = () => {
                               />
                             )}
                           </Field>
-                          <ErrorMessage name="revenueRange.min" component="div" className="text-red-500 text-sm mt-1" />
+                          <ErrorMessage name="revenueRange.min" component="div" className="mt-1 text-sm text-red-500" />
                         </div>
                         
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Maximum Revenue</label>
+                          <label className="block mb-2 text-sm font-medium text-gray-700">Maximum Revenue</label>
                           <Field name="revenueRange.max">
                             {({ field, form }) => (
                               <input
@@ -1734,36 +1665,36 @@ const AdvisorDashboard = () => {
                               />
                             )}
                           </Field>
-                          <ErrorMessage name="revenueRange.max" component="div" className="text-red-500 text-sm mt-1" />
+                          <ErrorMessage name="revenueRange.max" component="div" className="mt-1 text-sm text-red-500" />
                         </div>
                       </div>
                     </div>
 
                     {/* Description*/}
-                    <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                      <h3 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                    <div className="p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
+                      <h3 className="flex items-center mb-6 text-xl font-semibold text-gray-900">
                         <FaFileAlt className="mr-3 text-primary" />
                         Additional Information
                       </h3>
                       
                       <div className="space-y-6">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Company Description</label>
+                          <label className="block mb-2 text-sm font-medium text-gray-700">Company Description</label>
                           <Field
                             as="textarea"
                             name="description"
                             rows={4}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg resize-none focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                           />
-                          <ErrorMessage name="description" component="div" className="text-red-500 text-sm mt-1" />
+                          <ErrorMessage name="description" component="div" className="mt-1 text-sm text-red-500" />
                         </div>
 
                       </div>
                     </div>
 
                     {/* Logo Upload */}
-                    <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                      <h3 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                    <div className="p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
+                      <h3 className="flex items-center mb-6 text-xl font-semibold text-gray-900">
                         <FaFileAlt className="mr-3 text-primary" />
                         Company Logo
                       </h3>
@@ -1777,10 +1708,10 @@ const AdvisorDashboard = () => {
                                 <img
                                   src={profile.logoUrl}
                                   alt="Current Logo"
-                                  className="max-w-32 max-h-32 object-contain rounded-lg border border-gray-200 shadow-sm"
+                                  className="object-contain border border-gray-200 rounded-lg shadow-sm max-w-32 max-h-32"
                                 />
                               </div>
-                              <p className="text-sm text-gray-600 text-center">Current Logo</p>
+                              <p className="text-sm text-center text-gray-600">Current Logo</p>
                             </div>
                           )}
                           
@@ -1798,7 +1729,7 @@ const AdvisorDashboard = () => {
                           />
                           <label
                             htmlFor="logo-upload"
-                            className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-primary/30 rounded-lg cursor-pointer bg-white hover:bg-primary/5 transition-all duration-200"
+                            className="flex flex-col items-center justify-center w-full h-32 transition-all duration-200 bg-white border-2 border-dashed rounded-lg cursor-pointer border-primary/30 hover:bg-primary/5"
                           >
                             <div className="flex flex-col items-center justify-center pt-5 pb-6">
                               <FaFileAlt className="w-8 h-8 mb-4 text-primary" />
@@ -1815,13 +1746,13 @@ const AdvisorDashboard = () => {
                                 <img
                                   src={URL.createObjectURL(logoFile)}
                                   alt="New Logo Preview"
-                                  className="max-w-32 max-h-32 object-contain rounded-lg border border-gray-200 shadow-sm"
+                                  className="object-contain border border-gray-200 rounded-lg shadow-sm max-w-32 max-h-32"
                                 />
                               </div>
-                              <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                              <div className="p-3 border border-green-200 rounded-lg bg-green-50">
                                 <div className="flex items-center">
-                                  <FaUser className="text-green-500 mr-2" />
-                                  <span className="text-sm text-green-700 font-medium">
+                                  <FaUser className="mr-2 text-green-500" />
+                                  <span className="text-sm font-medium text-green-700">
                                     {logoFile.name}
                                   </span>
                                 </div>
@@ -1833,16 +1764,16 @@ const AdvisorDashboard = () => {
                     </div>
 
                     {/* Introduction Video Upload */}
-                    <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                      <h3 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                    <div className="p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
+                      <h3 className="flex items-center mb-6 text-xl font-semibold text-gray-900">
                         <FaFileAlt className="mr-3 text-primary" />
                         Advisor Introduction Video (optional)
                       </h3>
 
-                      <div className="mb-6 p-4 rounded-lg bg-blue-50 border border-blue-200 text-blue-800">
+                      <div className="p-4 mb-6 text-blue-800 border border-blue-200 rounded-lg bg-blue-50">
                         <div className="flex items-start">
                           <div className="flex-shrink-0">
-                            <FaInfoCircle className="h-5 w-5 text-blue-400" aria-hidden="true" />
+                            <FaInfoCircle className="w-5 h-5 text-blue-400" aria-hidden="true" />
                           </div>
                           <div className="ml-3">
                             <h3 className="text-sm font-bold">Video Instructions</h3>
@@ -1858,10 +1789,10 @@ const AdvisorDashboard = () => {
                           {/* Existing video preview if available and no new file */}
                           {profile.introVideoUrl && !introVideoFile && (
                             <div className="mb-4">
-                              <div className="relative aspect-video bg-black rounded-lg overflow-hidden border border-gray-200 shadow-sm">
-                                <video src={profile.introVideoUrl} controls className="w-full h-full object-contain bg-black" />
+                              <div className="relative overflow-hidden bg-black border border-gray-200 rounded-lg shadow-sm aspect-video">
+                                <video src={profile.introVideoUrl} controls className="object-contain w-full h-full bg-black" />
                               </div>
-                              <p className="text-sm text-gray-600 mt-2 text-center">Current intro video</p>
+                              <p className="mt-2 text-sm text-center text-gray-600">Current intro video</p>
                             </div>
                           )}
 
@@ -1890,7 +1821,7 @@ const AdvisorDashboard = () => {
                           />
                           <label
                             htmlFor="intro-video-upload"
-                            className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-primary/30 rounded-lg cursor-pointer bg-white hover:bg-primary/5 transition-all duration-200"
+                            className="flex flex-col items-center justify-center w-full h-32 transition-all duration-200 bg-white border-2 border-dashed rounded-lg cursor-pointer border-primary/30 hover:bg-primary/5"
                           >
                             <div className="flex flex-col items-center justify-center pt-5 pb-6">
                               <FaFileAlt className="w-8 h-8 mb-2 text-primary" />
@@ -1904,14 +1835,14 @@ const AdvisorDashboard = () => {
                           {introVideoFile && (
                             <div className="mt-4 space-y-3">
                               {introVideoPreview && (
-                                <div className="relative aspect-video bg-black rounded-lg overflow-hidden border border-gray-200 shadow-sm">
-                                  <video src={introVideoPreview} controls className="w-full h-full object-contain bg-black" />
+                                <div className="relative overflow-hidden bg-black border border-gray-200 rounded-lg shadow-sm aspect-video">
+                                  <video src={introVideoPreview} controls className="object-contain w-full h-full bg-black" />
                                 </div>
                               )}
-                              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between">
+                              <div className="flex items-center justify-between p-3 border border-blue-200 rounded-lg bg-blue-50">
                                 <div className="flex items-center">
-                                  <FaUser className="text-blue-500 mr-2" />
-                                  <span className="text-sm text-blue-800 font-medium">{introVideoFile.name}</span>
+                                  <FaUser className="mr-2 text-blue-500" />
+                                  <span className="text-sm font-medium text-blue-800">{introVideoFile.name}</span>
                                 </div>
                                 <button
                                   type="button"
@@ -1920,7 +1851,7 @@ const AdvisorDashboard = () => {
                                     setIntroVideoFile(null);
                                     setIntroVideoPreview('');
                                   }}
-                                  className="text-xs text-blue-700 hover:text-blue-900 font-semibold"
+                                  className="text-xs font-semibold text-blue-700 hover:text-blue-900"
                                 >
                                   Remove
                                 </button>
@@ -1932,8 +1863,8 @@ const AdvisorDashboard = () => {
                     </div>
 
                     {/* Testimonials */}
-                    <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                      <h3 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                    <div className="p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
+                      <h3 className="flex items-center mb-6 text-xl font-semibold text-gray-900">
                         <FaQuoteLeft className="mr-3 text-primary" />
                         Client Testimonials
                       </h3>
@@ -1945,9 +1876,9 @@ const AdvisorDashboard = () => {
                               <h4 className="text-sm font-semibold text-gray-700">Testimonial {index + 1}</h4>
                             </div>
                             
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                               <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Client Name</label>
+                                <label className="block mb-1 text-sm font-medium text-gray-700">Client Name</label>
                                 <Field
                                   name={`testimonials[${index}].clientName`}
                                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
@@ -1955,38 +1886,38 @@ const AdvisorDashboard = () => {
                                 <ErrorMessage
                                   name={`testimonials[${index}].clientName`}
                                   component="div"
-                                  className="text-red-500 text-xs mt-1"
+                                  className="mt-1 text-xs text-red-500"
                                 />
                               </div>
                               
                               <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Testimonial</label>
+                                <label className="block mb-1 text-sm font-medium text-gray-700">Testimonial</label>
                                 <Field
                                   as="textarea"
                                   name={`testimonials[${index}].testimonial`}
                                   rows={3}
-                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg resize-none focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                                 />
                                 <ErrorMessage
                                   name={`testimonials[${index}].testimonial`}
                                   component="div"
-                                  className="text-red-500 text-xs mt-1"
+                                  className="mt-1 text-xs text-red-500"
                                 />
                               </div>
                               
                               {/* <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">PDF Document</label>
+                                <label className="block mb-1 text-sm font-medium text-gray-700">PDF Document</label>
                                 {testimonial.existingPdfUrl && (
-                                  <div className="mb-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                  <div className="p-3 mb-2 border border-blue-200 rounded-lg bg-blue-50">
                                     <div className="flex items-center justify-between">
                                       <div className="flex items-center">
-                                        <FaFilePdf className="text-blue-600 mr-2" />
-                                        <span className="text-sm text-blue-800 font-medium">Current PDF</span>
+                                        <FaFilePdf className="mr-2 text-blue-600" />
+                                        <span className="text-sm font-medium text-blue-800">Current PDF</span>
                                       </div>
                                       <a 
                                         href={testimonial.existingPdfUrl} 
                                         download
-                                        className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition-colors"
+                                        className="px-3 py-1 text-xs text-white transition-colors bg-green-600 rounded hover:bg-green-700"
                                       >
                                         Download PDF
                                       </a>
@@ -2021,7 +1952,7 @@ const AdvisorDashboard = () => {
                       <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="px-8 py-3 bg-gradient-to-r from-primary to-third text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                        className="px-8 py-3 font-semibold text-white transition-all duration-300 transform rounded-lg shadow-lg bg-gradient-to-r from-primary to-third hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                       >
                         {isSubmitting ? "Updating..." : "Update Profile"}
                       </button>

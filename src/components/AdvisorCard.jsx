@@ -97,6 +97,18 @@ const AdvisorCard = ({ advisor, onSelect, isSelected }) => {
                   </div>
                 )}
               </div>
+              {advisor.workedWithCimamplify && (
+                <div className="mt-3 inline-flex items-center gap-2 bg-indigo-50 border border-indigo-200 text-indigo-700 rounded-lg px-3 py-2">
+                  <img
+                    src="/logo.png"
+                    alt="CIM Amplify"
+                    className="h-5 w-auto"
+                  />
+                  <span className="text-xs sm:text-sm font-semibold">
+                    This Advisor uses CIM Amplify to find more buyers
+                  </span>
+                </div>
+              )}
             </div>
           </div>
           <div className="flex items-start pt-1 flex-shrink-0">

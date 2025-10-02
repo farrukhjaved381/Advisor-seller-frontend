@@ -59,28 +59,7 @@ const IndustryChooser = ({ selected, onChange, hasError }) => {
 
   const filteredSectors = filterSectors(industryData.sectors, query);
 
-  // Handler for sector checkbox
-  const handleSectorToggle = (sector) => {
-    const sectorName = sector.name;
-    const allGroupNames = sector.industryGroups.map((group) => group.name);
-    const isSelected = selected.includes(sectorName);
-
-    let newSelected;
-    if (isSelected) {
-      newSelected = selected.filter(
-        (item) => item !== sectorName && !allGroupNames.includes(item)
-      );
-    } else {
-      newSelected = [
-        ...selected.filter(
-          (item) => item !== sectorName && !allGroupNames.includes(item)
-        ),
-        sectorName,
-        ...allGroupNames,
-      ];
-    }
-    onChange([...new Set(newSelected)]);
-  };
+  
 
   // Handler for industry group checkbox
   const handleGroupToggle = (group) => {
@@ -104,9 +83,9 @@ const IndustryChooser = ({ selected, onChange, hasError }) => {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search Industry Sectors"
-          className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-brand text-secondary"
+          className="w-full py-3 pl-10 pr-4 transition-all duration-200 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 bg-brand text-secondary"
         />
-        <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-secondary/50" />
+        <FaSearch className="absolute w-4 h-4 transform -translate-y-1/2 left-3 top-1/2 text-secondary/50" />
       </div>
       <div
         className={`bg-brand-light border rounded-lg p-4 h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-gray-100 shadow-inner ${
@@ -116,17 +95,10 @@ const IndustryChooser = ({ selected, onChange, hasError }) => {
         {filteredSectors.length > 0 ? (
           <div className="space-y-2">
             {filteredSectors.map((sector) => (
-              <div key={sector.id} className="border-b border-gray-100 pb-1">
+              <div key={sector.id} className="pb-1 border-b border-gray-100">
                 <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id={`sector-${sector.id}`}
-                    checked={selected.includes(sector.name)}
-                    onChange={() => handleSectorToggle(sector)}
-                    className="mr-2 h-4 w-4 text-primary focus:ring-primary form-checkbox border-gray-300 rounded transition-colors duration-200"
-                  />
                   <div
-                    className="flex items-center cursor-pointer flex-1"
+                    className="flex items-center flex-1 cursor-pointer"
                     onClick={() =>
                       setExpandedSectors((prev) => ({
                         ...prev,
@@ -135,20 +107,20 @@ const IndustryChooser = ({ selected, onChange, hasError }) => {
                     }
                   >
                     {expandedSectors[sector.id] ? (
-                      <FaChevronDown className="h-4 w-4 mr-1 text-secondary/60" />
+                      <FaChevronDown className="w-4 h-4 mr-1 text-secondary/60" />
                     ) : (
-                      <FaChevronRight className="h-4 w-4 mr-1 text-secondary/60" />
+                      <FaChevronRight className="w-4 h-4 mr-1 text-secondary/60" />
                     )}
                     <label
                       htmlFor={`sector-${sector.id}`}
-                      className="text-secondary cursor-pointer font-medium"
+                      className="font-medium cursor-pointer text-secondary"
                     >
                       {sector.name}
                     </label>
                   </div>
                 </div>
                 {expandedSectors[sector.id] && (
-                  <div className="ml-6 mt-1 space-y-1">
+                  <div className="mt-1 ml-6 space-y-1">
                     {sector.industryGroups.map((group) => (
                       <div key={group.id} className="pl-2">
                         <div className="flex items-center">
@@ -157,17 +129,17 @@ const IndustryChooser = ({ selected, onChange, hasError }) => {
                             id={`group-${group.id}`}
                             checked={selected.includes(group.name)}
                             onChange={() => handleGroupToggle(group)}
-                            className="mr-2 h-4 w-4 text-primary focus:ring-primary form-checkbox border-gray-300 rounded transition-colors duration-200"
+                            className="w-4 h-4 mr-2 transition-colors duration-200 border-gray-300 rounded text-primary focus:ring-primary form-checkbox"
                           />
                           <label
                             htmlFor={`group-${group.id}`}
-                            className="text-secondary cursor-pointer text-sm"
+                            className="text-sm cursor-pointer text-secondary"
                           >
                             {group.name}
                           </label>
                         </div>
                         {group.description && (
-                          <div className="text-xs text-secondary/70 italic mt-1 ml-6">
+                          <div className="mt-1 ml-6 text-xs italic text-secondary/70">
                             {group.description}
                           </div>
                         )}
@@ -179,7 +151,7 @@ const IndustryChooser = ({ selected, onChange, hasError }) => {
             ))}
           </div>
         ) : (
-          <p className="text-secondary/60 text-sm text-center py-4">
+          <p className="py-4 text-sm text-center text-secondary/60">
             No results found for "{query}".
           </p>
         )}
@@ -213,32 +185,6 @@ const GeographyChooser = ({ selected, onChange, hasError }) => {
   const rest = allCountries.filter((c) => !priorityCountries.includes(c.name));
   allCountries = [...priority, ...rest];
 
-  // Handler for country checkbox
-  const handleCountryToggle = (country) => {
-    const countryName = country.name;
-    const states = State.getStatesOfCountry(country.isoCode);
-    const allStateNames = states.map(
-      (state) => `${country.name} > ${state.name}`
-    );
-    const isSelected = selected.includes(countryName);
-
-    let newSelected;
-    if (isSelected) {
-      newSelected = selected.filter(
-        (item) => item !== countryName && !allStateNames.includes(item)
-      );
-    } else {
-      newSelected = [
-        ...selected.filter(
-          (item) => item !== countryName && !allStateNames.includes(item)
-        ),
-        countryName,
-        ...allStateNames,
-      ];
-    }
-    onChange([...new Set(newSelected)]);
-  };
-
   // Handler for state checkbox
   const handleStateToggle = (country, state) => {
     const stateName = `${country.name} > ${state.name}`;
@@ -261,9 +207,9 @@ const GeographyChooser = ({ selected, onChange, hasError }) => {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search Geographies"
-          className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-brand text-secondary"
+          className="w-full py-3 pl-10 pr-4 transition-all duration-200 border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 bg-brand text-secondary"
         />
-        <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-secondary/50" />
+        <FaSearch className="absolute w-4 h-4 transform -translate-y-1/2 left-3 top-1/2 text-secondary/50" />
       </div>
       <div
         className={`bg-brand-light border rounded-lg p-4 h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-gray-100 shadow-inner ${
@@ -336,18 +282,11 @@ const GeographyChooser = ({ selected, onChange, hasError }) => {
             return (
               <div
                 key={country.isoCode}
-                className="border-b border-gray-100 pb-1"
+                className="pb-1 border-b border-gray-100"
               >
                 <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id={`geo-${country.isoCode}`}
-                    checked={selected.includes(country.name)}
-                    onChange={() => handleCountryToggle(country)}
-                    className="mr-2 h-4 w-4 text-primary focus:ring-primary form-checkbox border-gray-300 rounded transition-colors duration-200"
-                  />
                   <div
-                    className="flex items-center cursor-pointer flex-1"
+                    className="flex items-center flex-1 cursor-pointer"
                     onClick={() =>
                       setExpandedCountries((prev) => ({
                         ...prev,
@@ -356,20 +295,20 @@ const GeographyChooser = ({ selected, onChange, hasError }) => {
                     }
                   >
                     {expandedCountries[country.isoCode] ? (
-                      <FaChevronDown className="h-4 w-4 mr-1 text-secondary/60" />
+                      <FaChevronDown className="w-4 h-4 mr-1 text-secondary/60" />
                     ) : (
-                      <FaChevronRight className="h-4 w-4 mr-1 text-secondary/60" />
+                      <FaChevronRight className="w-4 h-4 mr-1 text-secondary/60" />
                     )}
                     <label
                       htmlFor={`geo-${country.isoCode}`}
-                      className="text-secondary cursor-pointer font-medium"
+                      className="font-medium cursor-pointer text-secondary"
                     >
                       {country.name}
                     </label>
                   </div>
                 </div>
                 {expandedCountries[country.isoCode] && (
-                  <div className="ml-6 mt-1 space-y-1">
+                  <div className="mt-1 ml-6 space-y-1">
                     {states
                       .filter(
                         (state) =>
@@ -389,11 +328,11 @@ const GeographyChooser = ({ selected, onChange, hasError }) => {
                                 `${country.name} > ${state.name}`
                               )}
                               onChange={() => handleStateToggle(country, state)}
-                              className="mr-2 h-4 w-4 text-primary focus:ring-primary form-checkbox border-gray-300 rounded transition-colors duration-200"
+                              className="w-4 h-4 mr-2 transition-colors duration-200 border-gray-300 rounded text-primary focus:ring-primary form-checkbox"
                             />
                             <label
                               htmlFor={`geo-${country.isoCode}-${state.isoCode}`}
-                              className="text-secondary cursor-pointer text-sm"
+                              className="text-sm cursor-pointer text-secondary"
                             >
                               {state.name}
                             </label>
@@ -447,6 +386,7 @@ export const AdvisorForm = () => {
     revenueRange: { min: "", max: "" },
     visibleTestimonials: 1, // 👈 added here
     workedWithCimamplify: false,
+    logoFile: null, // <-- added to Formik
   };
 
   const validationSchema = Yup.object().shape({
@@ -467,7 +407,12 @@ export const AdvisorForm = () => {
       .min(5, "Must be at least 5 years")
       .required("Required"),
     numberOfTransactions: Yup.number()
-      .min(20, "Must be at least 20")
+      .typeError("Must be a number")
+      .integer("Must be an integer")
+      .transform((value, originalValue) =>
+        originalValue === "" ? undefined : Number(originalValue)
+      )
+      .min(10, "Must be at least 10")
       .required("Required"),
     currency: Yup.string().required("Required"),
     description: Yup.string().required("Required"),
@@ -482,34 +427,59 @@ export const AdvisorForm = () => {
       .length(5, "Exactly 5 testimonials are required"),
 
     revenueRange: Yup.object().shape({
-      min: Yup.number().required("Required"),
-      max: Yup.number().required("Required"),
+      min: Yup.number().typeError("Required").required("Required"),
+      max: Yup.number().typeError("Required").required("Required"),
     }),
+
+    logoFile: Yup.mixed().required("Company logo is required"), // <-- required logo
   });
 
   // Show all validation errors after submit and scroll to first
   const ValidationEffects = () => {
-    const { submitCount, errors, setTouched, isSubmitting } =
+    const { submitCount, errors, setTouched, isSubmitting, setFieldTouched } =
       useFormikContext();
     useEffect(() => {
       if (submitCount > 0 && errors && Object.keys(errors).length) {
-        const all = {};
-        const walk = (o, p = "") => {
-          Object.keys(o).forEach((k) => {
-            const path = p ? `${p}.${k}` : k;
-            if (o[k] && typeof o[k] === "object") walk(o[k], path);
-            else all[path] = true;
+        // Walk errors and set touched on each field using setFieldTouched
+        const collectPaths = (obj, parent = "") => {
+          Object.keys(obj).forEach((k) => {
+            const path = parent ? `${parent}.${k}` : k;
+            if (obj[k] && typeof obj[k] === "object" && !Array.isArray(obj[k])) {
+              collectPaths(obj[k], path);
+            } else if (obj[k] && typeof obj[k] === "object" && Array.isArray(obj[k])) {
+              // arrays: iterate indexes
+              obj[k].forEach((item, idx) => {
+                if (item && typeof item === "object") {
+                  collectPaths(item, `${path}.${idx}`);
+                } else if (item) {
+                  const bracket = `${path}[${idx}]`;
+                  // mark array scalar
+                  setFieldTouched(bracket, true, true);
+                }
+              });
+            } else {
+              // leaf error - convert dotted indices to bracket notation for Formik field names
+              const bracket = path.replace(/\.(\d+)/g, "[$1]");
+              setFieldTouched(bracket, true, true);
+            }
           });
         };
-        walk(errors);
-        setTouched(all, true);
-        const first = Object.keys(all)[0];
-        if (first && !isSubmitting) {
-          const el = document.querySelector(
-            `[name="${first}"],[data-field="${first}"]`
-          );
-          if (el && el.scrollIntoView)
+
+        collectPaths(errors);
+
+        // find first field using both notations (dotted and bracket) and scroll to it
+        // create a selector from first error path
+        const firstErrorPath = Object.keys(errors)[0];
+        if (firstErrorPath && !isSubmitting) {
+          // generate candidate selectors
+          const dottedToBracket = (p) => p.replace(/\.(\d+)/g, "[$1]");
+          const maybeBracket = dottedToBracket(firstErrorPath);
+          const maybeDotted = firstErrorPath;
+          const selector = `[name="${maybeBracket}"],[name="${maybeDotted}"],[data-field="${maybeBracket}"],[data-field="${maybeDotted}"]`;
+          const el = document.querySelector(selector);
+          if (el && el.scrollIntoView) {
             el.scrollIntoView({ behavior: "smooth", block: "center" });
+          }
         }
       }
     }, [submitCount]);
@@ -531,7 +501,7 @@ export const AdvisorForm = () => {
     const ec = count(errors);
     if (submitCount > 0 && ec > 0) {
       return (
-        <div className="mb-4 p-3 rounded border border-red-200 bg-red-50 text-red-700">
+        <div className="p-3 mb-4 text-red-700 border border-red-200 rounded bg-red-50">
           Please fix {ec} highlighted field{ec > 1 ? "s" : ""}.
         </div>
       );
@@ -557,7 +527,7 @@ export const AdvisorForm = () => {
   const onSubmit = async (values, { setSubmitting, resetForm }) => {
     console.log("Form submitted:", values);
     try {
-      if (!logoFile) {
+      if (!values.logoFile) {
         toast.error("Company logo is required");
         setLogoError(true);
         setSubmitting(false);
@@ -566,9 +536,9 @@ export const AdvisorForm = () => {
       setLogoError(false);
 
       let logoUrl = "";
-      if (logoFile) {
+      if (values.logoFile) {
         logoUrl = await handleFileUpload(
-          logoFile,
+          values.logoFile,
           "https://advisor-seller-backend.vercel.app/api/upload/logo"
         );
       }
@@ -667,18 +637,18 @@ export const AdvisorForm = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-brand to-brand-light py-8">
+    <div className="min-h-screen py-8 bg-gradient-to-br from-brand to-brand-light">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-5xl mx-auto p-8 bg-brand-light shadow-2xl rounded-3xl border border-primary/10"
+        className="max-w-5xl p-8 mx-auto border shadow-2xl bg-brand-light rounded-3xl border-primary/10"
       >
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-secondary mb-2">
+        <div className="mb-8 text-center">
+          <h1 className="mb-2 text-4xl font-bold text-secondary">
             Advisor Profile
           </h1>
 
-          <div className="w-24 h-1 bg-gradient-to-r from-primary to-third mx-auto mt-4 rounded-full"></div>
+          <div className="w-24 h-1 mx-auto mt-4 rounded-full bg-gradient-to-r from-primary to-third"></div>
         </div>
 
         <Formik
@@ -694,16 +664,16 @@ export const AdvisorForm = () => {
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="bg-brand-light p-6 rounded-2xl border border-primary/10 shadow-sm"
+                className="p-6 border shadow-sm bg-brand-light rounded-2xl border-primary/10"
               >
-                <h3 className="text-xl font-semibold text-secondary mb-6 flex items-center">
+                <h3 className="flex items-center mb-6 text-xl font-semibold text-secondary">
                   <FaBuilding className="mr-3 text-primary" />
                   Company Information
                 </h3>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                   <div>
-                    <label className="block text-sm font-medium text-secondary mb-2">
+                    <label className="block mb-2 text-sm font-medium text-secondary">
                       Company Name
                     </label>
                     <Field
@@ -717,12 +687,12 @@ export const AdvisorForm = () => {
                     <ErrorMessage
                       name="companyName"
                       component="div"
-                      className="text-red-500 text-sm mt-1"
+                      className="mt-1 text-sm text-red-500"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-secondary mb-2 flex items-center">
+                    <label className="flex items-center block mb-2 text-sm font-medium text-secondary">
                       <FaPhone className="mr-2 text-primary" />
                       Phone
                     </label>
@@ -737,12 +707,12 @@ export const AdvisorForm = () => {
                     <ErrorMessage
                       name="phone"
                       component="div"
-                      className="text-red-500 text-sm mt-1"
+                      className="mt-1 text-sm text-red-500"
                     />
                   </div>
 
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-secondary mb-2 flex items-center">
+                    <label className="flex items-center block mb-2 text-sm font-medium text-secondary">
                       <FaGlobe className="mr-2 text-primary" />
                       Website
                     </label>
@@ -757,7 +727,7 @@ export const AdvisorForm = () => {
                     <ErrorMessage
                       name="website"
                       component="div"
-                      className="text-red-500 text-sm mt-1"
+                      className="mt-1 text-sm text-red-500"
                     />
                   </div>
                 </div>
@@ -768,15 +738,15 @@ export const AdvisorForm = () => {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.1 }}
-                className="bg-brand-light p-6 rounded-2xl border border-primary/10 shadow-sm"
+                className="p-6 border shadow-sm bg-brand-light rounded-2xl border-primary/10"
               >
-                <h3 className="text-xl font-semibold text-secondary mb-6">
+                <h3 className="mb-6 text-xl font-semibold text-secondary">
                   Expertise Areas
                 </h3>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
                   <div>
-                    <label className="block text-sm font-medium text-secondary mb-3">
+                    <label className="block mb-3 text-sm font-medium text-secondary">
                       Industries
                     </label>
                     <IndustryChooser
@@ -787,12 +757,12 @@ export const AdvisorForm = () => {
                     <ErrorMessage
                       name="industries"
                       component="div"
-                      className="text-red-500 text-sm mt-2"
+                      className="mt-2 text-sm text-red-500"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-secondary mb-3">
+                    <label className="block mb-3 text-sm font-medium text-secondary">
                       Geographies
                     </label>
                     <GeographyChooser
@@ -803,7 +773,7 @@ export const AdvisorForm = () => {
                     <ErrorMessage
                       name="geographies"
                       component="div"
-                      className="text-red-500 text-sm mt-2"
+                      className="mt-2 text-sm text-red-500"
                     />
                   </div>
                 </div>
@@ -814,42 +784,21 @@ export const AdvisorForm = () => {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.2 }}
-                className="bg-brand-light p-6 rounded-2xl border border-primary/10 shadow-sm"
+                className="p-6 border shadow-sm bg-brand-light rounded-2xl border-primary/10"
               >
-                <h3 className="text-xl font-semibold text-secondary mb-6 flex items-center">
+                <h3 className="flex items-center mb-6 text-xl font-semibold text-secondary">
                   <FaChartLine className="mr-3 text-primary" />
                   Experience & Performance
                 </h3>
 
-                <div className="mb-6 p-4 rounded-lg bg-red-50 border border-red-200 text-red-800">
-                  <div className="flex items-start">
-                    <div className="flex-shrink-0">
-                      <FaExclamationTriangle
-                        className="h-5 w-5 text-red-400"
-                        aria-hidden="true"
-                      />
-                    </div>
-                    <div className="ml-3">
-                      <h3 className="text-sm font-medium">
-                        Important Requirement
-                      </h3>
-                      <div className="mt-2 text-sm">
-                        <p>
-                          To ensure the quality of our network, we require all
-                          advisors to have a minimum of 5 years of experience
-                          and to have completed at least 20 transactions.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                   <div>
-                    <label className="block text-sm font-medium text-secondary mb-2 flex items-center">
+                    <label className="flex items-center block mb-2 text-sm font-medium text-secondary">
                       <FaCalendarAlt className="mr-2 text-primary" />
                       Years of Experience
-                      <span className="ml-2 text-xs text-primary font-semibold">
+                      <span className="ml-2 text-xs font-semibold text-primary">
                         (Minimum 5)
                       </span>
                     </label>
@@ -866,21 +815,22 @@ export const AdvisorForm = () => {
                     <ErrorMessage
                       name="yearsExperience"
                       component="div"
-                      className="text-red-500 text-sm mt-1"
+                      className="mt-1 text-sm text-red-500"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-secondary mb-2 flex items-center">
+                    <label className="flex items-center block mb-2 text-sm font-medium text-secondary">
                       Number of Transactions
-                      <span className="ml-2 text-xs text-primary font-semibold">
-                        (Minimum 20)
+                      <span className="ml-2 text-xs font-semibold text-primary">
+                        (Minimum 10)
                       </span>
                     </label>
                     <Field
                       name="numberOfTransactions"
                       type="number"
-                      min={20}
+                      min={10}          // changed from 20 -> 10
+                      step={1}          // enforce integer stepping
                       className={`w-full px-4 py-3 border rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary ${
                         errors.numberOfTransactions &&
                         touched.numberOfTransactions
@@ -891,7 +841,7 @@ export const AdvisorForm = () => {
                     <ErrorMessage
                       name="numberOfTransactions"
                       component="div"
-                      className="text-red-500 text-sm mt-1"
+                      className="mt-1 text-sm text-red-500"
                     />
                   </div>
                 </div>
@@ -902,10 +852,10 @@ export const AdvisorForm = () => {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.3 }}
-                className="bg-brand-light p-6 rounded-2xl border border-primary/10 shadow-sm"
+                className="p-6 border shadow-sm bg-brand-light rounded-2xl border-primary/10"
               >
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-semibold text-secondary flex items-center">
+                  <h3 className="flex items-center text-xl font-semibold text-secondary">
                     <FaDollarSign className="mr-3 text-primary" />
                     Client Revenue Size Range
                   </h3>
@@ -946,9 +896,9 @@ export const AdvisorForm = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                   <div>
-                    <label className="block text-sm font-medium text-secondary mb-2">
+                    <label className="block mb-2 text-sm font-medium text-secondary">
                       Minimum Revenue
                     </label>
                     <Field name="revenueRange.min">
@@ -980,12 +930,12 @@ export const AdvisorForm = () => {
                     <ErrorMessage
                       name="revenueRange.min"
                       component="div"
-                      className="text-red-500 text-sm mt-1"
+                      className="mt-1 text-sm text-red-500"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-secondary mb-2">
+                    <label className="block mb-2 text-sm font-medium text-secondary">
                       Maximum Revenue
                     </label>
                     <Field name="revenueRange.max">
@@ -1017,7 +967,7 @@ export const AdvisorForm = () => {
                     <ErrorMessage
                       name="revenueRange.max"
                       component="div"
-                      className="text-red-500 text-sm mt-1"
+                      className="mt-1 text-sm text-red-500"
                     />
                   </div>
                 </div>
@@ -1028,16 +978,16 @@ export const AdvisorForm = () => {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.4 }}
-                className="bg-brand-light p-6 rounded-2xl border border-primary/10 shadow-sm"
+                className="p-6 border shadow-sm bg-brand-light rounded-2xl border-primary/10"
               >
-                <h3 className="text-xl font-semibold text-secondary mb-6 flex items-center">
+                <h3 className="flex items-center mb-6 text-xl font-semibold text-secondary">
                   <FaFileAlt className="mr-3 text-primary" />
                   Additional Information
                 </h3>
 
                 <div className="space-y-6">
                   <div>
-                    <label className="block text-sm font-medium text-secondary mb-2">
+                    <label className="block mb-2 text-sm font-medium text-secondary">
                       Company Description
                     </label>
                     <Field
@@ -1054,7 +1004,7 @@ export const AdvisorForm = () => {
                     <ErrorMessage
                       name="description"
                       component="div"
-                      className="text-red-500 text-sm mt-1"
+                      className="mt-1 text-sm text-red-500"
                     />
                   </div>
                 </div>
@@ -1064,9 +1014,9 @@ export const AdvisorForm = () => {
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="bg-brand-light p-6 rounded-2xl border border-primary/10 shadow-sm"
+                className="p-6 border shadow-sm bg-brand-light rounded-2xl border-primary/10"
               >
-                <h3 className="text-xl font-semibold text-secondary mb-6 flex items-center">
+                <h3 className="flex items-center mb-6 text-xl font-semibold text-secondary">
                   <FaImage className="mr-3 text-primary" />
                   Company Logo
                 </h3>
@@ -1082,6 +1032,8 @@ export const AdvisorForm = () => {
                           if (file) {
                             setLogoFile(file);
                             setLogoError(false);
+                            // set Formik value as well
+                            setFieldValue("logoFile", file);
                           }
                         }}
                         className="hidden"
@@ -1090,7 +1042,9 @@ export const AdvisorForm = () => {
                       <label
                         htmlFor="logo-upload"
                         className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-white hover:bg-primary/5 transition-all duration-200 ${
-                          logoError ? "border-red-500" : "border-primary/30"
+                          (errors.logoFile && touched.logoFile) || logoError
+                            ? "border-red-500"
+                            : "border-primary/30"
                         }`}
                       >
                         <div className="flex flex-col items-center justify-center pt-5 pb-6">
@@ -1114,19 +1068,26 @@ export const AdvisorForm = () => {
                           <img
                             src={URL.createObjectURL(logoFile)}
                             alt="Logo Preview"
-                            className="max-w-32 max-h-32 object-contain rounded-lg border border-gray-200 shadow-sm"
+                            className="object-contain border border-gray-200 rounded-lg shadow-sm max-w-32 max-h-32"
                           />
                         </div>
-                        <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                        <div className="p-3 border border-green-200 rounded-lg bg-green-50">
                           <div className="flex items-center">
-                            <FaCheckCircle className="text-green-500 mr-2" />
-                            <span className="text-sm text-green-700 font-medium">
+                            <FaCheckCircle className="mr-2 text-green-500" />
+                            <span className="text-sm font-medium text-green-700">
                               {logoFile.name}
                             </span>
                           </div>
                         </div>
                       </div>
                     )}
+
+                    {/* show Formik validation error for logo */}
+                    <ErrorMessage
+                      name="logoFile"
+                      component="div"
+                      className="mt-2 text-sm text-red-500"
+                    />
                   </div>
                 </div>
               </motion.div>
@@ -1136,21 +1097,21 @@ export const AdvisorForm = () => {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.05 }}
-                className="bg-brand-light p-6 rounded-2xl border border-primary/10 shadow-sm"
+                className="p-6 border shadow-sm bg-brand-light rounded-2xl border-primary/10"
               >
-                <h3 className="text-xl font-semibold text-secondary mb-6 flex items-center">
+                <h3 className="flex items-center mb-6 text-xl font-semibold text-secondary">
                   <FaVideo className="mr-3 text-primary" />
                   Advisor Introduction Video{" "}
-                  <span className="ml-2 text-sm text-secondary/70 font-normal">
+                  <span className="ml-2 text-sm font-normal text-secondary/70">
                     (optional)
                   </span>
                 </h3>
 
-                <div className="mb-6 p-4 rounded-lg bg-blue-50 border border-blue-200 text-blue-800">
+                <div className="p-4 mb-6 text-blue-800 border border-blue-200 rounded-lg bg-blue-50">
                   <div className="flex items-start">
                     <div className="flex-shrink-0">
                       <FaInfoCircle
-                        className="h-5 w-5 text-blue-400"
+                        className="w-5 h-5 text-blue-400"
                         aria-hidden="true"
                       />
                     </div>
@@ -1198,11 +1159,11 @@ export const AdvisorForm = () => {
                       />
                       <label
                         htmlFor="intro-video-upload"
-                        className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-primary/30 rounded-lg cursor-pointer bg-white hover:bg-primary/5 transition-all duration-200"
+                        className="flex flex-col items-center justify-center w-full h-32 transition-all duration-200 bg-white border-2 border-dashed rounded-lg cursor-pointer border-primary/30 hover:bg-primary/5"
                       >
                         <div className="flex flex-col items-center justify-center pt-5 pb-6">
                           <FaUpload className="w-8 h-8 mb-4 text-primary" />
-                          <p className="mb-2 text-sm text-secondary text-center">
+                          <p className="mb-2 text-sm text-center text-secondary">
                             <span className="font-semibold">
                               Click to upload
                             </span>{" "}
@@ -1218,18 +1179,18 @@ export const AdvisorForm = () => {
                     {introVideoFile && (
                       <div className="mt-4 space-y-3">
                         {introVideoPreview && (
-                          <div className="relative aspect-video bg-black rounded-lg overflow-hidden border border-gray-200 shadow-sm">
+                          <div className="relative overflow-hidden bg-black border border-gray-200 rounded-lg shadow-sm aspect-video">
                             <video
                               src={introVideoPreview}
                               controls
-                              className="w-full h-full object-contain bg-black"
+                              className="object-contain w-full h-full bg-black"
                             />
                           </div>
                         )}
-                        <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between">
+                        <div className="flex items-center justify-between p-3 border border-blue-200 rounded-lg bg-blue-50">
                           <div className="flex items-center">
-                            <FaCheckCircle className="text-blue-500 mr-2" />
-                            <span className="text-sm text-blue-800 font-medium">
+                            <FaCheckCircle className="mr-2 text-blue-500" />
+                            <span className="text-sm font-medium text-blue-800">
                               {introVideoFile.name}
                             </span>
                           </div>
@@ -1242,7 +1203,7 @@ export const AdvisorForm = () => {
                               setIntroVideoFile(null);
                               setIntroVideoPreview("");
                             }}
-                            className="text-xs text-blue-700 hover:text-blue-900 font-semibold"
+                            className="text-xs font-semibold text-blue-700 hover:text-blue-900"
                           >
                             Remove
                           </button>
@@ -1258,14 +1219,14 @@ export const AdvisorForm = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.15 }}
-                className="bg-blue-50 p-6 rounded-2xl border border-blue-200 shadow-sm"
+                className="p-6 border border-blue-200 shadow-sm bg-blue-50 rounded-2xl"
               >
                 <div className="flex items-start">
                   <Field
                     type="checkbox"
                     name="workedWithCimamplify"
                     id="workedWithCimamplify"
-                    className="h-4 w-4 mt-1 text-primary focus:ring-primary border-gray-300 rounded"
+                    className="w-4 h-4 mt-1 border-gray-300 rounded text-primary focus:ring-primary"
                   />
                   <div className="ml-3 text-sm">
                     <label
@@ -1287,7 +1248,7 @@ export const AdvisorForm = () => {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.1 }}
-                className="bg-brand-light p-6 rounded-2xl border border-primary/10 shadow-sm"
+                className="p-6 border shadow-sm bg-brand-light rounded-2xl border-primary/10"
               >
                 <FieldArray name="testimonials">
                   {({ push, remove }) => {
@@ -1298,18 +1259,18 @@ export const AdvisorForm = () => {
                     return (
                       <div>
                         <div className="flex items-center justify-between mb-6">
-                          <h3 className="text-xl font-semibold text-secondary flex items-center">
+                          <h3 className="flex items-center text-xl font-semibold text-secondary">
                             <FaQuoteLeft className="mr-3 text-primary" />
                             Client Testimonials
                           </h3>
-                          <div className="bg-primary/10 px-3 py-1 rounded-full">
-                            <span className="text-primary font-medium text-sm">
+                          <div className="px-3 py-1 rounded-full bg-primary/10">
+                            <span className="text-sm font-medium text-primary">
                               {completedTestimonials}/5 completed
                             </span>
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                           {values.testimonials.map((testimonial, index) => {
                             const isCompleted =
                               testimonial.clientName && testimonial.testimonial;
@@ -1327,7 +1288,7 @@ export const AdvisorForm = () => {
                                 }`}
                               >
                                 <div className="flex items-center justify-between mb-4">
-                                  <h4 className="text-sm font-semibold text-secondary flex items-center">
+                                  <h4 className="flex items-center text-sm font-semibold text-secondary">
                                     <FaUser className="mr-2 text-primary" />
                                     Testimonial {index + 1}
                                   </h4>
@@ -1384,7 +1345,7 @@ export const AdvisorForm = () => {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-8 py-4 bg-gradient-to-r from-primary to-third text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-primary/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  className="px-8 py-4 font-semibold text-white transition-all duration-300 transform shadow-lg bg-gradient-to-r from-primary to-third rounded-xl hover:shadow-xl hover:scale-105 focus:outline-none focus:ring-4 focus:ring-primary/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                 >
                   {isSubmitting
                     ? "Creating Profile..."
@@ -1398,3 +1359,4 @@ export const AdvisorForm = () => {
     </div>
   );
 };
+

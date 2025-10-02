@@ -89,7 +89,7 @@ const ErrorBanner = () => {
   const ec = count(errors);
   if (submitCount > 0 && ec > 0) {
     return (
-      <div className="mb-4 p-3 rounded border border-red-200 bg-red-50 text-red-700">
+      <div className="p-3 mb-4 text-red-700 border border-red-200 rounded bg-red-50">
         Please fix {ec} highlighted field{ec>1?'s':''}.
       </div>
     );
@@ -101,7 +101,7 @@ const ErrorBanner = () => {
 const SimpleInput = ({ name, type = "text", placeholder, label, icon }) => {
   return (
     <div className="w-full">
-      <label className="block text-sm font-medium text-secondary mb-2 flex items-center">
+      <label className="flex items-center block mb-2 text-sm font-medium text-secondary">
         {icon && <span className="mr-2 text-primary">{icon}</span>}
         {label}
       </label>
@@ -117,7 +117,7 @@ const SimpleInput = ({ name, type = "text", placeholder, label, icon }) => {
           />
         )}
       </Field>
-      <ErrorMessage name={name} component="p" className="text-red-500 text-sm mt-1" />
+      <ErrorMessage name={name} component="p" className="mt-1 text-sm text-red-500" />
     </div>
   );
 };
@@ -150,27 +150,19 @@ const IndustryRadioChooser = ({ selected, onChange, hasError }) => {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search Industry Sectors"
-          className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary"
+          className="w-full py-3 pl-10 pr-4 transition-all duration-200 bg-white border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 text-secondary"
         />
-        <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-secondary/50" />
+        <FaSearch className="absolute w-4 h-4 transform -translate-y-1/2 left-3 top-1/2 text-secondary/50" />
       </div>
       <div className={`bg-gray-50 border rounded-lg p-4 h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-gray-100 shadow-inner ${hasError ? 'border-red-500' : 'border-primary/20'}`}>
         {filteredSectors.length > 0 ? (
           <div className="space-y-2">
             {filteredSectors.map((sector) => (
-              <div key={sector.id} className="border-b border-gray-100 pb-1">
+              <div key={sector.id} className="pb-1 border-b border-gray-100">
                 <div className="flex items-center">
-                  <input
-                    type="radio"
-                    name="industry"
-                    id={`sector-${sector.id}`}
-                    value={sector.name}
-                    checked={selected === sector.name}
-                    onChange={() => onChange(sector.name)}
-                    className="mr-2 h-4 w-4 text-primary focus:ring-primary form-radio border-gray-300 transition-colors duration-200"
-                  />
+                  
                   <div
-                    className="flex items-center cursor-pointer flex-1"
+                    className="flex items-center flex-1 cursor-pointer"
                     onClick={() =>
                       setExpandedSectors(prev => ({
                         ...prev,
@@ -179,17 +171,17 @@ const IndustryRadioChooser = ({ selected, onChange, hasError }) => {
                     }
                   >
                     {expandedSectors[sector.id] ? (
-                      <FaChevronDown className="h-4 w-4 mr-1 text-secondary/60" />
+                      <FaChevronDown className="w-4 h-4 mr-1 text-secondary/60" />
                     ) : (
-                      <FaChevronRight className="h-4 w-4 mr-1 text-secondary/60" />
+                      <FaChevronRight className="w-4 h-4 mr-1 text-secondary/60" />
                     )}
-                    <label htmlFor={`sector-${sector.id}`} className="text-secondary cursor-pointer font-medium">
+                    <label htmlFor={`sector-${sector.id}`} className="font-medium cursor-pointer text-secondary">
                       {sector.name}
                     </label>
                   </div>
                 </div>
                 {expandedSectors[sector.id] && (
-                  <div className="ml-6 mt-1 space-y-1">
+                  <div className="mt-1 ml-6 space-y-1">
                     {sector.industryGroups.map((group) => (
                       <div key={group.id} className="pl-2">
                         <div className="flex items-center">
@@ -200,17 +192,17 @@ const IndustryRadioChooser = ({ selected, onChange, hasError }) => {
                             value={group.name}
                             checked={selected === group.name}
                             onChange={() => onChange(group.name)}
-                            className="mr-2 h-4 w-4 text-primary focus:ring-primary form-radio border-gray-300 transition-colors duration-200"
+                            className="w-4 h-4 mr-2 transition-colors duration-200 border-gray-300 text-primary focus:ring-primary form-radio"
                           />
                           <label
                             htmlFor={`group-${group.id}`}
-                            className="text-secondary cursor-pointer text-sm"
+                            className="text-sm cursor-pointer text-secondary"
                           >
                             {group.name}
                           </label>
                         </div>
                         {group.description && (
-                          <div className="text-xs text-secondary/70 italic mt-1 ml-6">
+                          <div className="mt-1 ml-6 text-xs italic text-secondary/70">
                             {group.description}
                           </div>
                         )}
@@ -222,7 +214,7 @@ const IndustryRadioChooser = ({ selected, onChange, hasError }) => {
             ))}
           </div>
         ) : (
-          <p className="text-secondary/60 text-sm text-center py-4">
+          <p className="py-4 text-sm text-center text-secondary/60">
             No results found for "{query}".
           </p>
         )}
@@ -256,9 +248,9 @@ const GeographyRadioChooser = ({ selected, onChange, hasError }) => {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search Geographies"
-          className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary"
+          className="w-full py-3 pl-10 pr-4 transition-all duration-200 bg-white border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 text-secondary"
         />
-        <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-secondary/50" />
+        <FaSearch className="absolute w-4 h-4 transform -translate-y-1/2 left-3 top-1/2 text-secondary/50" />
       </div>
       <div className={`bg-gray-50 border rounded-lg p-4 h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-gray-100 shadow-inner ${hasError ? 'border-red-500' : 'border-primary/20'}`}>
         <div className="space-y-2">
@@ -273,19 +265,11 @@ const GeographyRadioChooser = ({ selected, onChange, hasError }) => {
             }
             
             return (
-              <div key={country.isoCode} className="border-b border-gray-100 pb-1">
+              <div key={country.isoCode} className="pb-1 border-b border-gray-100">
                 <div className="flex items-center">
-                  <input
-                    type="radio"
-                    name="geography"
-                    id={`geo-${country.isoCode}`}
-                    value={country.name}
-                    checked={selected === country.name}
-                    onChange={() => onChange(country.name)}
-                    className="mr-2 h-4 w-4 text-primary focus:ring-primary form-radio border-gray-300 transition-colors duration-200"
-                  />
+                 
                   <div
-                    className="flex items-center cursor-pointer flex-1"
+                    className="flex items-center flex-1 cursor-pointer"
                     onClick={() =>
                       setExpandedCountries(prev => ({
                         ...prev,
@@ -294,17 +278,17 @@ const GeographyRadioChooser = ({ selected, onChange, hasError }) => {
                     }
                   >
                     {expandedCountries[country.isoCode] ? (
-                      <FaChevronDown className="h-4 w-4 mr-1 text-secondary/60" />
+                      <FaChevronDown className="w-4 h-4 mr-1 text-secondary/60" />
                     ) : (
-                      <FaChevronRight className="h-4 w-4 mr-1 text-secondary/60" />
+                      <FaChevronRight className="w-4 h-4 mr-1 text-secondary/60" />
                     )}
-                    <label htmlFor={`geo-${country.isoCode}`} className="text-secondary cursor-pointer font-medium">
+                    <label htmlFor={`geo-${country.isoCode}`} className="font-medium cursor-pointer text-secondary">
                       {country.name}
                     </label>
                   </div>
                 </div>
                 {expandedCountries[country.isoCode] && (
-                  <div className="ml-6 mt-1 space-y-1">
+                  <div className="mt-1 ml-6 space-y-1">
                     {states
                       .filter(state =>
                         query.trim() === '' ||
@@ -321,11 +305,11 @@ const GeographyRadioChooser = ({ selected, onChange, hasError }) => {
                               value={`${country.name} > ${state.name}`}
                               checked={selected === `${country.name} > ${state.name}`}
                               onChange={() => onChange(`${country.name} > ${state.name}`)}
-                              className="mr-2 h-4 w-4 text-primary focus:ring-primary form-radio border-gray-300 transition-colors duration-200"
+                              className="w-4 h-4 mr-2 transition-colors duration-200 border-gray-300 text-primary focus:ring-primary form-radio"
                             />
                             <label
                               htmlFor={`geo-${country.isoCode}-${state.isoCode}`}
-                              className="text-secondary cursor-pointer text-sm"
+                              className="text-sm cursor-pointer text-secondary"
                             >
                               {state.name}
                             </label>
@@ -401,16 +385,16 @@ export const SellerForm = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-brand to-brand-light py-8">
+    <div className="min-h-screen py-8 bg-gradient-to-br from-brand to-brand-light">
       <Toaster position="top-right" />
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-5xl mx-auto p-8 bg-white shadow-2xl rounded-3xl border border-primary/10"
+        className="max-w-5xl p-8 mx-auto bg-white border shadow-2xl rounded-3xl border-primary/10"
       >
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-secondary mb-2">Profile</h1>
-          <div className="w-24 h-1 bg-gradient-to-r from-primary to-third mx-auto mt-4 rounded-full"></div>
+        <div className="mb-8 text-center">
+          <h1 className="mb-2 text-4xl font-bold text-secondary">Profile</h1>
+          <div className="w-24 h-1 mx-auto mt-4 rounded-full bg-gradient-to-r from-primary to-third"></div>
         </div>
 
       <Formik
@@ -427,11 +411,11 @@ export const SellerForm = () => {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.1 }}
-                className="bg-gray-50 p-6 rounded-2xl border border-primary/10 shadow-sm"
+                className="p-6 border shadow-sm bg-gray-50 rounded-2xl border-primary/10"
               >
-                <div className="flex items-center mb-6 pb-3 border-b border-primary/20">
-                  <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-primary to-third rounded-xl shadow-lg mr-4">
-                    <HiOfficeBuilding className="text-white text-xl" />
+                <div className="flex items-center pb-3 mb-6 border-b border-primary/20">
+                  <div className="flex items-center justify-center w-12 h-12 mr-4 shadow-lg bg-gradient-to-br from-primary to-third rounded-xl">
+                    <HiOfficeBuilding className="text-xl text-white" />
                   </div>
                   <div>
                     <h3 className="text-xl font-bold text-secondary">Company Information</h3>
@@ -439,7 +423,7 @@ export const SellerForm = () => {
                   </div>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                   <SimpleInput
                     name="contactName"
                     label="Primary Contact Name"
@@ -488,11 +472,11 @@ export const SellerForm = () => {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.2 }}
-                className="bg-gray-50 p-6 rounded-2xl border border-primary/10 shadow-sm"
+                className="p-6 border shadow-sm bg-gray-50 rounded-2xl border-primary/10"
               >
-                <div className="flex items-center mb-6 pb-3 border-b border-primary/20">
-                  <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-primary to-third rounded-xl shadow-lg mr-4">
-                    <FaIndustry className="text-white text-xl" />
+                <div className="flex items-center pb-3 mb-6 border-b border-primary/20">
+                  <div className="flex items-center justify-center w-12 h-12 mr-4 shadow-lg bg-gradient-to-br from-primary to-third rounded-xl">
+                    <FaIndustry className="text-xl text-white" />
                   </div>
                   <div>
                     <h3 className="text-xl font-bold text-secondary">Business Areas</h3>
@@ -500,10 +484,10 @@ export const SellerForm = () => {
                   </div>
                 </div>
                 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
                   <div>
-                    <label className="block text-sm font-medium text-secondary mb-3 flex items-center">
-                      <FaIndustry className="mr-2 text-primary text-xs" />
+                    <label className="flex items-center block mb-3 text-sm font-medium text-secondary">
+                      <FaIndustry className="mr-2 text-xs text-primary" />
                       Industry 
                     </label>
                     <IndustryRadioChooser
@@ -511,12 +495,12 @@ export const SellerForm = () => {
                       onChange={(val) => setFieldValue("industry", val)}
                       hasError={!!(errors.industry && touched.industry)}
                     />
-                    <ErrorMessage name="industry" component="div" className="text-red-500 text-sm mt-2" />
+                    <ErrorMessage name="industry" component="div" className="mt-2 text-sm text-red-500" />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-secondary mb-3 flex items-center">
-                      <FaMapMarkerAlt className="mr-2 text-primary text-xs" />
+                    <label className="flex items-center block mb-3 text-sm font-medium text-secondary">
+                      <FaMapMarkerAlt className="mr-2 text-xs text-primary" />
                       Geography
                     </label>
                     <GeographyRadioChooser
@@ -524,7 +508,7 @@ export const SellerForm = () => {
                       onChange={(val) => setFieldValue("geography", val)}
                       hasError={!!(errors.geography && touched.geography)}
                     />
-                    <ErrorMessage name="geography" component="div" className="text-red-500 text-sm mt-2" />
+                    <ErrorMessage name="geography" component="div" className="mt-2 text-sm text-red-500" />
                   </div>
                 </div>
               </motion.div>
@@ -534,16 +518,15 @@ export const SellerForm = () => {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.3 }}
-                className="bg-gray-50 p-6 rounded-2xl border border-primary/10 shadow-sm"
+                className="p-6 border shadow-sm bg-gray-50 rounded-2xl border-primary/10"
               >
-                <div className="flex items-center justify-between mb-6 pb-3 border-b border-primary/20">
+                <div className="flex items-center justify-between pb-3 mb-6 border-b border-primary/20">
                   <div className="flex items-center">
-                    <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-primary to-third rounded-xl shadow-lg mr-4">
-                      <HiCurrencyDollar className="text-white text-xl" />
+                    <div className="flex items-center justify-center w-12 h-12 mr-4 shadow-lg bg-gradient-to-br from-primary to-third rounded-xl">
+                      <HiCurrencyDollar className="text-xl text-white" />
                     </div>
                     <div>
                       <h3 className="text-xl font-bold text-secondary">Revenue Information</h3>
-                      <p className="text-sm text-gray-600">Financial details about your company</p>
                     </div>
                   </div>
                   <div className="w-40">
@@ -580,12 +563,12 @@ export const SellerForm = () => {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-secondary mb-2 flex items-center">
-                    <FaChartLine className="mr-2 text-primary text-xs" />
+                  <label className="flex items-center block mb-2 text-sm font-medium text-secondary">
+                    <FaChartLine className="mr-2 text-xs text-primary" />
                     Annual Revenue
                   </label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+                    <span className="absolute text-gray-500 -translate-y-1/2 left-3 top-1/2">
                       {{
                         USD: '$', EUR: '€', GBP: '£', JPY: '¥', CNY: '¥', AUD: '$', CAD: '$', CHF: 'CHF', 
                         HKD: '$', SGD: '$', SEK: 'kr', NOK: 'kr', NZD: '$', MXN: '$', ZAR: 'R', 
@@ -609,7 +592,7 @@ export const SellerForm = () => {
                       )}
                     </Field>
                   </div>
-                  <ErrorMessage name="annualRevenue" component="div" className="text-red-500 text-sm mt-1" />
+                  <ErrorMessage name="annualRevenue" component="div" className="mt-1 text-sm text-red-500" />
                 </div>
               </motion.div>
 
@@ -618,11 +601,11 @@ export const SellerForm = () => {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.4 }}
-                className="bg-gray-50 p-6 rounded-2xl border border-primary/10 shadow-sm"
+                className="p-6 border shadow-sm bg-gray-50 rounded-2xl border-primary/10"
               >
-                <div className="flex items-center mb-6 pb-3 border-b border-primary/20">
-                  <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-primary to-third rounded-xl shadow-lg mr-4">
-                    <HiDocumentText className="text-white text-xl" />
+                <div className="flex items-center pb-3 mb-6 border-b border-primary/20">
+                  <div className="flex items-center justify-center w-12 h-12 mr-4 shadow-lg bg-gradient-to-br from-primary to-third rounded-xl">
+                    <HiDocumentText className="text-xl text-white" />
                   </div>
                   <div>
                     <h3 className="text-xl font-bold text-secondary">Company Description</h3>
@@ -637,7 +620,7 @@ export const SellerForm = () => {
                   placeholder="Describe your company, products, and services..."
                   className={`w-full px-4 py-3 border rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary resize-none ${errors.description && touched.description ? 'border-red-500' : 'border-gray-300'}`}
                 />
-                <ErrorMessage name="description" component="div" className="text-red-500 text-sm mt-1" />
+                <ErrorMessage name="description" component="div" className="mt-1 text-sm text-red-500" />
               </motion.div>
 
               {/* Submit Button */}
@@ -650,7 +633,7 @@ export const SellerForm = () => {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-8 py-4 bg-gradient-to-r from-primary to-third text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-primary/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  className="px-8 py-4 font-semibold text-white transition-all duration-300 transform shadow-lg bg-gradient-to-r from-primary to-third rounded-xl hover:shadow-xl hover:scale-105 focus:outline-none focus:ring-4 focus:ring-primary/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                 >
                   {isSubmitting ? "Showing your Advisor Matches..." : "Show my Advisor Matches"}
                 </button>
