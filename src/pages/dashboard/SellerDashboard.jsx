@@ -1345,10 +1345,7 @@ const handleBulkIntroduction = async () => {
                     No Advisor Matches Yet
                   </h3>
                   <p className="text-gray-700">
-                    Great opportunities are on their way! While we currently
-                    don't have matching advisors for your profile, keep your
-                    details up-to-date and stay tuned. We are committed to
-                    finding the perfect matches for you.
+                    Great opportunities are on their way! While we currently don't have matching advisors for your profile, please come back and try again as we are vetting and adding new Advisors all the time.
                   </p>
                   <button
                     onClick={() => fetchMatches()}

@@ -177,7 +177,7 @@ const AdvisorPaymentForm = () => {
 
     try {
       // Check if it's a free trial coupon first
-      if (coupon.trim().toUpperCase() === 'FREETRIAL2024') {
+      if (coupon.trim().toUpperCase() === 'FREETRIAL2025') {
         const response = await SecureAPI.secureRequest("/api/payment/redeem-coupon", {
           method: "POST",
           body: JSON.stringify({ code: coupon.trim() }),
