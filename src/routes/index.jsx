@@ -18,6 +18,7 @@ import ProtectedRoute from "../components/ProtectedRoute.jsx";
 import AdvisorProfile from "../pages/dashboard/AdvisorProfile.jsx";
 import AdvisorChangeCard from "../pages/dashboard/AdvisorChangeCard.jsx";
 import { Navigate } from "react-router-dom";
+import AdvisorAddCard from "../pages/dashboard/AdvisorAddCard.jsx";
 export const AppRoutes = () => {
     return (
         <Routes>
@@ -68,6 +69,11 @@ export const AppRoutes = () => {
                     <AdvisorChangeCard />
                 </ProtectedRoute>
             } />
+            <Route path="/advisor-add-card" element={
+                <ProtectedRoute requiredRole="advisor">
+                    <AdvisorAddCard />
+                </ProtectedRoute>
+            } />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/continue" element={<Continue />} />
@@ -80,4 +86,3 @@ export const AppRoutes = () => {
         </Routes>
     );
 };
-

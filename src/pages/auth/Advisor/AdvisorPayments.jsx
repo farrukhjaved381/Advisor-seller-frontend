@@ -872,37 +872,119 @@ const AdvisorPayments = () => {
         />
         <div className="max-w-2xl mx-auto">
           {/* Requirements Modal - shown on first render and blocks the page until acknowledged */}
+         {/* Requirements Modal - shown on first render and blocks the page until acknowledged */}
           {showRequirementsModal && (
             <div
               role="dialog"
               aria-modal="true"
               aria-labelledby="requirements-title"
-              className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50"
+              className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 animate-fadeIn"
+              style={{
+                animation: 'fadeIn 0.3s ease-out'
+              }}
             >
-              <div className="w-full max-w-2xl p-6 mx-auto text-left bg-white shadow-2xl rounded-2xl">
-                <h2
-                  id="requirements-title"
-                  className="mb-3 text-xl font-bold text-center text-gray-900"
-                >
-                  Advisor Requirements
-                </h2>
-                <p className="mb-4 leading-relaxed text-gray-700">
-                  Advisor Chooser requires that you, as an M&amp;A Advisor,
-                  Broker or Investment Banker, have personally been practicing
-                  for at least 5 years and have completed at least 10 company
-                  sale transactions. You will also be required to provide 5
-                  testimonials from customers.
-                </p>
-                <div className="flex items-center justify-center gap-3 mt-4">
+              <style>{`
+                @keyframes fadeIn {
+                  from { opacity: 0; }
+                  to { opacity: 1; }
+                }
+                @keyframes slideUp {
+                  from { 
+                    opacity: 0;
+                    transform: translateY(20px) scale(0.95);
+                  }
+                  to { 
+                    opacity: 1;
+                    transform: translateY(0) scale(1);
+                  }
+                }
+                @keyframes checkPulse {
+                  0%, 100% { transform: scale(1); }
+                  50% { transform: scale(1.1); }
+                }
+                .modal-content {
+                  animation: slideUp 0.4s ease-out;
+                }
+                .requirement-item {
+                  animation: slideUp 0.5s ease-out backwards;
+                }
+                .requirement-item:nth-child(1) { animation-delay: 0.1s; }
+                .requirement-item:nth-child(2) { animation-delay: 0.2s; }
+                .requirement-item:nth-child(3) { animation-delay: 0.3s; }
+              `}</style>
+              <div className="w-full max-w-2xl p-8 mx-auto text-left bg-white shadow-2xl modal-content rounded-3xl">
+                {/* Header with Icon */}
+                <div className="flex flex-col items-center mb-6">
+                  <div className="flex items-center justify-center w-16 h-16 mb-4 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 shadow-lg">
+                    <FaShieldAlt className="text-2xl text-white" />
+                  </div>
+                  <h2
+                    id="requirements-title"
+                    className="text-2xl font-bold text-center text-gray-900"
+                  >
+                    Advisor Requirements
+                  </h2>
+                  <p className="mt-2 text-sm text-center text-gray-500">
+                    Please review the following qualifications
+                  </p>
+                </div>
+
+                {/* Requirements List */}
+                <div className="mb-6 space-y-4">
+                  <div className="requirement-item flex items-start p-4 transition-all duration-300 border-2 border-blue-100 rounded-xl bg-blue-50 hover:bg-blue-100 hover:border-blue-200">
+                    <div className="flex items-center justify-center flex-shrink-0 w-8 h-8 mr-3 bg-blue-500 rounded-full">
+                      <FaCheckCircle className="text-sm text-white" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-900">Experience Required</h3>
+                      <p className="mt-1 text-sm leading-relaxed text-gray-700">
+                        Minimum of <span className="font-bold text-blue-600">5 years</span> practicing as an M&A Advisor, Broker, or Investment Banker
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="requirement-item flex items-start p-4 transition-all duration-300 border-2 border-green-100 rounded-xl bg-green-50 hover:bg-green-100 hover:border-green-200">
+                    <div className="flex items-center justify-center flex-shrink-0 w-8 h-8 mr-3 bg-green-500 rounded-full">
+                      <FaCheckCircle className="text-sm text-white" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-900">Transaction History</h3>
+                      <p className="mt-1 text-sm leading-relaxed text-gray-700">
+                        Successfully completed at least <span className="font-bold text-green-600">10 company sale transactions</span>
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="requirement-item flex items-start p-4 transition-all duration-300 border-2 border-purple-100 rounded-xl bg-purple-50 hover:bg-purple-100 hover:border-purple-200">
+                    <div className="flex items-center justify-center flex-shrink-0 w-8 h-8 mr-3 bg-purple-500 rounded-full">
+                      <FaCheckCircle className="text-sm text-white" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-900">Client Testimonials</h3>
+                      <p className="mt-1 text-sm leading-relaxed text-gray-700">
+                        Provide <span className="font-bold text-purple-600">5 customer testimonials</span> from previous clients
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer Note */}
+                <div className="p-4 mb-6 border-l-4 border-blue-500 rounded-r-lg bg-blue-50">
+                  <p className="text-sm text-gray-700">
+                    <span className="font-semibold text-blue-900">Important:</span> These requirements ensure we maintain the highest quality standards for our advisor network.
+                  </p>
+                </div>
+
+                {/* Action Button */}
+                <div className="flex items-center justify-center">
                   <button
                     ref={modalCloseBtnRef}
                     onClick={() => {
-                      // Close the modal and allow the page to be used
                       setShowRequirementsModal(false);
                     }}
-                    className="px-5 py-3 text-sm font-semibold text-white rounded-lg bg-gradient-to-r from-primary to-third hover:from-blue-700 hover:to-purple-700"
+                    className="px-8 py-4 text-base font-semibold text-white transition-all duration-300 transform rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 hover:scale-105 shadow-lg hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-blue-300"
                   >
-                    I understand
+                    I Understand & Agree to Continue
                   </button>
                 </div>
               </div>

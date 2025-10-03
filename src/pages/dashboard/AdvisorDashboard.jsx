@@ -75,8 +75,9 @@ const AdvisorDashboard = () => {
       : 'text-red-600'
     : 'text-gray-500';
   const allLeads = leadOverview?.leads ?? [];
-  const recentLeads = allLeads.filter(
-    (lead) => (lead.type || 'introduction') === 'introduction',
+  const recentLeads = allLeads;
+  const directOutreachLeads = recentLeads.filter(
+    (lead) => (lead.type || 'introduction') === 'direct-list',
   );
   const lastLeadDate = recentLeads.length > 0 && recentLeads[0]?.createdAt
     ? new Date(recentLeads[0].createdAt)
@@ -1279,6 +1280,13 @@ const AdvisorDashboard = () => {
                     <div className="py-12 text-sm text-center text-gray-500">Loading leads…</div>
                   ) : recentLeads.length > 0 ? (
                     <div className="overflow-x-auto">
+                      {directOutreachLeads.length > 0 && (
+                        <div className="mb-4 rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-3 text-xs sm:text-sm text-indigo-800">
+                          {directOutreachLeads.length === 1
+                            ? 'One seller chose to reach out directly. Their contact details stay hidden until they request an introduction.'
+                            : `${directOutreachLeads.length} sellers chose to reach out directly. Their contact details stay hidden until they request an introduction.`}
+                        </div>
+                      )}
                       <table className="min-w-full text-sm divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                           <tr>
@@ -1299,24 +1307,41 @@ const AdvisorDashboard = () => {
                               : (lead.sellerId && typeof lead.sellerId === 'object')
                                 ? lead.sellerId
                                 : {};
+                            const leadType = (lead.type || 'introduction').toLowerCase();
+                            const isDirectLead = leadType === 'direct-list' || lead.contactHidden;
+                            const sellerName = isDirectLead
+                              ? 'Seller will reach out directly'
+                              : seller.companyName || 'Unknown seller';
+                            const contactNameDisplay = !isDirectLead
+                              ? seller.contactName
+                              : null;
                             const websiteUrl = seller.website
                               ? seller.website.startsWith('http')
                                 ? seller.website
                                 : `https://${seller.website}`
                               : '';
+                            const websiteLabel = seller.website || websiteUrl;
                             const revenueText = formatCurrencyValue(
                               seller.annualRevenue,
                               seller.currency,
                             );
-                            const contactEmail = seller.contactEmail || seller.email;
+                            const contactEmail = !isDirectLead
+                              ? seller.contactEmail || seller.email
+                              : null;
+                            const phoneNumber = !isDirectLead ? seller.phone : null;
                             return (
                               <tr key={lead._id}>
                                 <td className="px-4 py-3 font-medium text-gray-900">
                                   <div className="flex flex-col">
-                                    <span>{seller.companyName || 'Unknown seller'}</span>
-                                    {seller.contactName && (
+                                    <span>{sellerName}</span>
+                                    {contactNameDisplay && (
                                       <span className="text-xs font-normal text-gray-500">
-                                        {seller.contactName}
+                                        {contactNameDisplay}
+                                      </span>
+                                    )}
+                                    {isDirectLead && (
+                                      <span className="mt-1 inline-flex items-center gap-1 self-start rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-indigo-700">
+                                        Direct outreach
                                       </span>
                                     )}
                                   </div>
@@ -1333,33 +1358,45 @@ const AdvisorDashboard = () => {
                                       {contactEmail}
                                     </a>
                                   ) : (
-                                    '—'
+                                    <span className={isDirectLead ? 'text-gray-400 italic' : ''}>
+                                      {isDirectLead
+                                        ? 'Hidden until introduction requested'
+                                        : '—'}
+                                    </span>
                                   )}
                                 </td>
                                 <td className="px-4 py-3 text-gray-600">
-                                  {seller.phone ? (
+                                  {phoneNumber ? (
                                     <a
-                                      href={`tel:${seller.phone}`}
+                                      href={`tel:${phoneNumber}`}
                                       className="text-primary hover:text-third"
                                     >
-                                      {seller.phone}
+                                      {phoneNumber}
                                     </a>
                                   ) : (
-                                    '—'
+                                    <span className={isDirectLead ? 'text-gray-400 italic' : ''}>
+                                      {isDirectLead
+                                        ? 'Hidden until introduction requested'
+                                        : '—'}
+                                    </span>
                                   )}
                                 </td>
                                 <td className="px-4 py-3 text-gray-600">
-                                  {websiteUrl ? (
+                                  {websiteUrl && !isDirectLead ? (
                                     <a
                                       href={websiteUrl}
                                       target="_blank"
                                       rel="noopener noreferrer"
                                       className="underline text-primary hover:text-third"
                                     >
-                                      {websiteUrl}
+                                      {websiteLabel}
                                     </a>
                                   ) : (
-                                    '—'
+                                    <span className={isDirectLead ? 'text-gray-400 italic' : ''}>
+                                      {isDirectLead
+                                        ? 'Hidden until introduction requested'
+                                        : '—'}
+                                    </span>
                                   )}
                                 </td>
                                 <td className="px-4 py-3 text-gray-600">

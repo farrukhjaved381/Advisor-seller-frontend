@@ -417,7 +417,7 @@ export default function AdvisorProfile() {
                     No credit card on file yet. Add one now to enable seamless automatic renewals when your subscription ends or your trial period expires.
                   </span>
                   <Link
-                    to="/advisor-change-card"
+                    to="/advisor-add-card"
                     className="inline-flex items-center justify-center px-4 py-2 text-sm font-semibold text-white bg-primary rounded-lg shadow-sm hover:bg-primary/90 transition-colors"
                   >
                     Add credit card

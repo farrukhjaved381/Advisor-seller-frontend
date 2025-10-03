@@ -71,7 +71,7 @@ const ChangeCardForm = () => {
         const errorMessage =
           error?.response?.data?.message ||
           error?.message ||
-          'Unable to start card update. Please try again.';
+          'Unable to start card Add. Please try again.';
         toast.error(errorMessage);
         if (error?.response?.status === 401) {
           navigate('/advisor-login');
@@ -124,17 +124,17 @@ const ChangeCardForm = () => {
       );
 
       if (res.data?.subscription) {
-        toast.success('Card updated and membership renewed.');
+        toast.success('Card addedd and membership renewed.');
       } else if (res.data?.autoChargeFailed) {
-        toast.success('Card updated. We will retry your renewal shortly.');
+        toast.success('Card added. We will retry your renewal shortly.');
       } else {
-        toast.success('Card updated successfully.');
+        toast.success('Card added successfully.');
       }
       navigate('/advisor-profile', { replace: true });
     } catch (error) {
-      console.error('[AdvisorChangeCard] update card failed', error);
+      console.error('[AdvisorChangeCard] add card failed', error);
       const errorMessage =
-        error?.response?.data?.message || 'Unable to update card. Please try again.';
+        error?.response?.data?.message || 'Unable to add card. Please try again.';
       toast.error(errorMessage);
       setSubmitting(false);
       if (error?.response?.status === 401) {
@@ -200,8 +200,8 @@ const ChangeCardForm = () => {
               <FaCreditCard />
             </div>
             <div>
-              <h1 className="text-2xl font-extrabold text-gray-900">Update Payment Card</h1>
-              <p className="text-sm text-gray-500 mt-0.5">Securely update your card for seamless subscription renewal.</p>
+              <h1 className="text-2xl font-extrabold text-gray-900">Add Payment Card</h1>
+              <p className="text-sm text-gray-500 mt-0.5">Securely add your card for seamless subscription renewal.</p>
             </div>
           </div>
 
@@ -231,7 +231,7 @@ const ChangeCardForm = () => {
             >
               {submitting ? (
                 <>
-                  <FaSpinner className="animate-spin text-lg" /> Processing Update...
+                  <FaSpinner className="animate-spin text-lg" /> Processing...
                 </>
               ) : (
                 'Save New Card'
