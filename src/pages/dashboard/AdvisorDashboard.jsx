@@ -1774,7 +1774,7 @@ const AdvisorDashboard = () => {
                             const leadType = (lead.type || 'introduction').toLowerCase();
                             const isDirectLead = leadType === 'direct-list' || lead.contactHidden;
                             const sellerName = isDirectLead
-                              ? 'Seller will reach out directly'
+                              ? 'Hidden until introduction requested'
                               : seller.companyName || 'Unknown seller';
                             const contactNameDisplay = !isDirectLead
                               ? seller.contactName
