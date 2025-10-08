@@ -38,7 +38,7 @@ const ResetPassword = () => {
     const fetchProfile = async (authToken) => {
       try {
         const res = await axios.get(
-          "http://localhost:3000/api/auth/profile",
+          "https://advisor-seller-backend.vercel.app/api/auth/profile",
           {
             headers: { Authorization: `Bearer ${authToken}` },
             validateStatus: () => true,
@@ -88,7 +88,7 @@ const ResetPassword = () => {
     try {
       const payload = { token, newPassword: values.newPassword }
       const res = await axios.post(
-        "http://localhost:3000/api/auth/reset-password",
+        "https://advisor-seller-backend.vercel.app/api/auth/reset-password",
         payload,
         { validateStatus: () => true }
       )

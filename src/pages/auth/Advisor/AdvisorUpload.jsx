@@ -16,7 +16,7 @@ const AdvisorUpload = () => {
             try {
                 const token = localStorage.getItem("access_token");
                 const userRes = await axios.get(
-                    "http://localhost:3000/api/auth/profile",
+                    "https://advisor-seller-backend.vercel.app/api/auth/profile",
                     { headers: { Authorization: `Bearer ${token}` } }
                 );
                 
@@ -83,7 +83,7 @@ const AdvisorUpload = () => {
             // Check if profile already exists
             try {
                 const userRes = await axios.get(
-                    "http://localhost:3000/api/auth/profile",
+                    "https://advisor-seller-backend.vercel.app/api/auth/profile",
                     { headers: { Authorization: `Bearer ${token}` } }
                 );
                 
@@ -104,7 +104,7 @@ const AdvisorUpload = () => {
             if (logoFile) {
                 logoUrl = await handleFileUpload(
                     logoFile,
-                    "http://localhost:3000/api/upload/logo"
+                    "https://advisor-seller-backend.vercel.app/api/upload/logo"
                 );
             } else {
                 toast.error("Logo is required");
@@ -117,7 +117,7 @@ const AdvisorUpload = () => {
                     if (t.clientName && t.testimonial && t.pdfFile) {
                         const pdfUrl = await handleFileUpload(
                             t.pdfFile,
-                            "http://localhost:3000/api/upload/testimonial"
+                            "https://advisor-seller-backend.vercel.app/api/upload/testimonial"
                         );
                         return {
                             clientName: t.clientName,
@@ -144,7 +144,7 @@ const AdvisorUpload = () => {
             };
 
             await axios.post(
-                "http://localhost:3000/api/advisors/profile",
+                "https://advisor-seller-backend.vercel.app/api/advisors/profile",
                 payload,
                 {
                     headers: {

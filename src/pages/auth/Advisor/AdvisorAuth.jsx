@@ -73,7 +73,7 @@ const Auth = () => {
       try {
         // Login request
         const res = await axios.post(
-          "http://localhost:3000/api/auth/login",
+          "https://advisor-seller-backend.vercel.app/api/auth/login",
           { email, password },
           { withCredentials: true, validateStatus: () => true }
         );
@@ -93,7 +93,7 @@ const Auth = () => {
 
           // Get CSRF token with Authorization header
           const csrfRes = await axios.get(
-            "http://localhost:3000/api/auth/csrf-token",
+            "https://advisor-seller-backend.vercel.app/api/auth/csrf-token",
             {
               headers: { Authorization: `Bearer ${accessToken}` },
               withCredentials: true,
@@ -112,7 +112,7 @@ const Auth = () => {
 
           // Fetch fresh user data to get current profile status
           const userRes = await axios.get(
-            "http://localhost:3000/api/auth/profile",
+            "https://advisor-seller-backend.vercel.app/api/auth/profile",
             { headers: { Authorization: `Bearer ${accessToken}` } }
           );
           
@@ -134,7 +134,7 @@ const Auth = () => {
               // Check if advisor profile exists by trying to fetch it
               try {
                 const profileRes = await axios.get(
-                  "http://localhost:3000/api/advisors/profile",
+                  "https://advisor-seller-backend.vercel.app/api/advisors/profile",
                   { headers: { Authorization: `Bearer ${accessToken}` } }
                 );
                 

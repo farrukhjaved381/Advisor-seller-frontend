@@ -17,7 +17,7 @@ const AdvisorCard = ({ advisor, onSelect, isSelected }) => {
       setLoading(true);
       const token = localStorage.getItem('access_token');
       await axios.post(
-        'http://localhost:3000/api/connections/introduction',
+        'https://advisor-seller-backend.vercel.app/api/connections/introduction',
         { advisorIds: [advisor.id] },
         { headers: { Authorization: `Bearer ${token}` } }
       );

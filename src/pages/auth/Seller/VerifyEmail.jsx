@@ -262,7 +262,7 @@ const VerifyEmail = () => {
       try {
         // Step 1: Verify Email using GET + query string
         const verifyRes = await axios.get(
-          `http://localhost:3000/api/auth/verify-email?token=${token}`,
+          `https://advisor-seller-backend.vercel.app/api/auth/verify-email?token=${token}`,
           { validateStatus: () => true }
         );
 
@@ -277,7 +277,7 @@ const VerifyEmail = () => {
           
           // Step 2: Log the user in by calling the login endpoint with the token
           const loginRes = await axios.post(
-            "http://localhost:3000/api/auth/login-with-token",
+            "https://advisor-seller-backend.vercel.app/api/auth/login-with-token",
             { token },
             { validateStatus: () => true }
           );

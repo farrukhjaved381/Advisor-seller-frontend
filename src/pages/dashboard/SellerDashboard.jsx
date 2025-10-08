@@ -380,7 +380,7 @@ const SellerDashboard = () => {
     try {
       const token = localStorage.getItem("access_token");
       await axios.delete(
-        "http://localhost:3000/api/sellers/profile",
+        "https://advisor-seller-backend.vercel.app/api/sellers/profile",
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -452,7 +452,7 @@ const handleBulkIntroduction = async () => {
     const token = localStorage.getItem("access_token");
 
     const response = await axios.post(
-      "http://localhost:3000/api/connections/introduction",
+      "https://advisor-seller-backend.vercel.app/api/connections/introduction",
       { advisorIds: selectedAdvisors },
       { headers: { Authorization: `Bearer ${token}` } }
     );
@@ -476,7 +476,7 @@ const handleBulkIntroduction = async () => {
       setDirectListLoading(true);
       const token = localStorage.getItem("access_token");
       const response = await axios.post(
-        "http://localhost:3000/api/connections/direct-list",
+        "https://advisor-seller-backend.vercel.app/api/connections/direct-list",
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -515,7 +515,7 @@ const handleBulkIntroduction = async () => {
         if (!token) return;
 
         const res = await axios.get(
-          "http://localhost:3000/api/auth/profile",
+          "https://advisor-seller-backend.vercel.app/api/auth/profile",
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -542,7 +542,7 @@ const handleBulkIntroduction = async () => {
 
         // Get user auth data
         const authRes = await axios.get(
-          "http://localhost:3000/api/auth/profile",
+          "https://advisor-seller-backend.vercel.app/api/auth/profile",
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -559,7 +559,7 @@ const handleBulkIntroduction = async () => {
         // Try to get seller profile from database
         try {
           const sellerRes = await axios.get(
-            "http://localhost:3000/api/sellers/profile",
+            "https://advisor-seller-backend.vercel.app/api/sellers/profile",
             {
               headers: { Authorization: `Bearer ${token}` },
             }
@@ -601,7 +601,7 @@ const handleBulkIntroduction = async () => {
       }
 
       const res = await axios.get(
-        `http://localhost:3000/api/sellers/matches`,
+        `https://advisor-seller-backend.vercel.app/api/sellers/matches`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -631,7 +631,7 @@ const handleBulkIntroduction = async () => {
       }
 
       const res = await axios.get(
-        "http://localhost:3000/api/sellers/profile",
+        "https://advisor-seller-backend.vercel.app/api/sellers/profile",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -893,7 +893,7 @@ const handleBulkIntroduction = async () => {
       };
 
       const res = await axios.patch(
-        "http://localhost:3000/api/sellers/profile",
+        "https://advisor-seller-backend.vercel.app/api/sellers/profile",
         payload,
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -972,7 +972,7 @@ const handleBulkIntroduction = async () => {
       try {
         const token = localStorage.getItem("access_token");
         await axios.patch(
-          "http://localhost:3000/api/sellers/profile",
+          "https://advisor-seller-backend.vercel.app/api/sellers/profile",
           values,
           {
             headers: { Authorization: `Bearer ${token}` },

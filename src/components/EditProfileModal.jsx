@@ -267,7 +267,7 @@ const EditProfileModal = ({ isOpen, onClose, profile, onProfileUpdate }) => {
         try {
             const token = localStorage.getItem("access_token");
             await axios.patch(
-                "http://localhost:3000/api/sellers/profile",
+                "https://advisor-seller-backend.vercel.app/api/sellers/profile",
                 values,
                 {
                     headers: { Authorization: `Bearer ${token}` },

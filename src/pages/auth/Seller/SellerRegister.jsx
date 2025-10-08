@@ -102,7 +102,7 @@ const SellerRegister = () => {
     try {
       setLoading(true);
       const res = await axios.post(
-        "http://localhost:3000/api/auth/register",
+        "https://advisor-seller-backend.vercel.app/api/auth/register",
         finalData
       );
 
