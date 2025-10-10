@@ -179,91 +179,35 @@ const AdvisorDashboard = () => {
   }, [activeTab, hasLoadedLeads]);
 
   const fetchUserData = async () => {
-    try {
-      const token = localStorage.getItem('access_token');
-      if (!token) {
-        navigate('/advisor-login');
-        return;
-      }
+  try {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      navigate('/advisor-login');
+      return;
+    }
 
-      // Get user profile
-      const userRes = await axios.get(`${API_CONFIG.BACKEND_URL}/api/auth/profile`, {
+    // Get user profile
+    const userRes = await axios.get(`${API_CONFIG.BACKEND_URL}/api/auth/profile`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    setUser(userRes.data);
+
+    // Get advisor profile from database
+    try {
+      const profileRes = await axios.get(`${API_CONFIG.BACKEND_URL}/api/advisors/profile`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-
-      if (userRes.data.role !== 'advisor') {
-        navigate('/seller-login');
-        return;
-      }
-
-      setUser(userRes.data);
-
-      // Get advisor profile from database
-      try {
-        const profileRes = await axios.get(`${API_CONFIG.BACKEND_URL}/api/advisors/profile`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const p = profileRes.data || {};
-        // Normalize industries/geographies to arrays, including single-item comma payloads
-        const norm = (val) => {
-          if (Array.isArray(val)) {
-            if (val.length === 1 && typeof val[0] === 'string' && val[0].includes(',')) {
-              return val[0].split(',').map(s => s.trim()).filter(Boolean);
-            }
-            return val;
-          }
-          if (typeof val === 'string') {
-            return val.split(',').map(s => s.trim()).filter(Boolean);
-          }
-          return [];
-        };
-        p.industries = norm(p.industries);
-        p.geographies = norm(p.geographies);
-        // Ensure revenueRange numbers
-        if (p.revenueRange) {
-          if (p.revenueRange.min !== undefined) p.revenueRange.min = Number(p.revenueRange.min);
-          if (p.revenueRange.max !== undefined) p.revenueRange.max = Number(p.revenueRange.max);
-        }
-        setProfile(p);
-      } catch (error) {
-        console.error('Error fetching advisor profile:', error);
-        if (error.response?.status === 404) {
-          // Profile not found - set profile to null but don't redirect from dashboard
-          // Only redirect if user is not payment verified
-          setProfile(null);
-          // Check if user has active subscription or access until period end
-          let hasPayment = false;
-          
-          if (userRes.data.isPaymentVerified) {
-            hasPayment = true;
-          }
-          // Check if subscription is canceled but user has access until period end
-          else if (userRes.data.subscription?.status === 'canceled' && userRes.data.subscription?.currentPeriodEnd) {
-            const periodEnd = new Date(userRes.data.subscription.currentPeriodEnd);
-            const now = new Date();
-            hasPayment = periodEnd > now;
-          }
-          
-          if (!hasPayment) {
-            console.log('User not payment verified, redirecting to payments');
-            navigate('/advisor-payments');
-            return;
-          }
-          // If payment is verified but no profile, user can create profile from dashboard
-          console.log('Payment verified but no profile found - user can create profile from dashboard');
-        } else {
-          // Other errors - log but don't redirect
-          console.error('Unexpected error fetching profile:', error.response?.data || error.message);
-          setProfile(null);
-        }
-      }
+      setProfile(profileRes.data || {});
     } catch (error) {
-      console.error('Error fetching user data:', error);
-      navigate('/advisor-login');
-    } finally {
-      setLoading(false);
+      setProfile(null);
     }
-  };
+  } catch (error) {
+    navigate('/advisor-login');
+  } finally {
+    setLoading(false);
+  }
+};
 
   const fetchLeadOverview = async (force = false) => {
     if (leadsLoading && !force) return;
@@ -1161,35 +1105,28 @@ const AdvisorDashboard = () => {
               <h1 className="text-xl font-bold text-gray-900 lg:text-2xl">Advisor Dashboard</h1>
               {user?.subscription?.status === 'canceled' && user?.subscription?.currentPeriodEnd && (
                <span
-               className="
-                 flex flex-col items-center justify-center
-                 w-full max-w-xs mx-auto
-                 mt-2
-                 px-3 py-2
-                 text-xs text-yellow-800 bg-yellow-100 border border-yellow-200 rounded-xl shadow-sm
-                 sm:inline-flex sm:flex-row sm:items-center sm:justify-start sm:gap-2 sm:max-w-none sm:mt-0 sm:rounded-full sm:shadow-none
-               "
-             >
-               <span className="text-center sm:text-left">
-                 Canceled • access until {new Date(user.subscription.currentPeriodEnd).toLocaleDateString()}
-               </span>
-               <button
-                 onClick={async (e) => {
-                   e.stopPropagation();
-                   try {
-                     const token = localStorage.getItem('access_token');
-                     await axios.post(`${API_CONFIG.BACKEND_URL}/api/payment/resume`, {}, { headers: { Authorization: `Bearer ${token}` }});
-                     toast.success('Subscription resumed');
-                     fetchUserData();
-                   } catch {
-                     toast.error('Could not resume subscription');
-                   }
-                 }}
-                 className="mt-2 underline hover:opacity-80 text-xs sm:mt-0"
-               >
-                 Resume
-               </button>
-             </span>
+  className="flex flex-col items-center justify-center w-full max-w-xs px-3 py-2 mx-auto mt-2 text-xs text-yellow-800 bg-yellow-100 border border-yellow-200 shadow-sm rounded-xl sm:inline-flex sm:flex-row sm:items-center sm:justify-start sm:gap-2 sm:max-w-none sm:mt-0 sm:rounded-full sm:shadow-none"
+>
+  <span className="text-center sm:text-left">
+    Canceled • access until {new Date(user.subscription.currentPeriodEnd).toLocaleDateString()}
+  </span>
+  <button
+    onClick={async (e) => {
+      e.stopPropagation();
+      try {
+        const token = localStorage.getItem('access_token');
+        await axios.post(`${API_CONFIG.BACKEND_URL}/api/payment/resume`, {}, { headers: { Authorization: `Bearer ${token}` }});
+        toast.success('Subscription resumed');
+        await fetchUserData(); // <-- Ensure you await this!
+      } catch {
+        toast.error('Could not resume subscription');
+      }
+    }}
+    className="mt-2 text-xs underline hover:opacity-80 sm:mt-0"
+  >
+    Resume
+  </button>
+</span>
               )}
             </div>
           </div>
@@ -1785,7 +1722,7 @@ const AdvisorDashboard = () => {
                             const leadType = (lead.type || 'introduction').toLowerCase();
                             const isDirectLead = leadType === 'direct-list' || lead.contactHidden;
                             const sellerName = isDirectLead
-                              ? 'Hidden until introduction requested'
+                              ? 'Seller will reach out directly'
                               : seller.companyName || 'Unknown seller';
                             const contactNameDisplay = !isDirectLead
                               ? seller.contactName

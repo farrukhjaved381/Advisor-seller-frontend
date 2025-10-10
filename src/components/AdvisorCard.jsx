@@ -1,7 +1,5 @@
 import React from 'react';
-import axios from 'axios';
-import toast, { Toaster } from 'react-hot-toast';
-import { FaBuilding, FaUser, FaGlobe, FaPhone, FaMapMarkerAlt, FaIndustry, FaDollarSign, FaAward, FaQuoteLeft, FaExternalLinkAlt, FaChartLine } from 'react-icons/fa';
+import { FaBuilding, FaUser, FaGlobe, FaPhone, FaMapMarkerAlt, FaIndustry, FaDollarSign, FaAward, FaQuoteLeft, FaExternalLinkAlt, FaChartLine, FaEnvelope } from 'react-icons/fa';
 
 const AdvisorCard = ({ advisor, onSelect, isSelected }) => {
   const [loading, setLoading] = React.useState(false);
@@ -15,15 +13,11 @@ const AdvisorCard = ({ advisor, onSelect, isSelected }) => {
   const handleRequestIntroduction = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('access_token');
-      await axios.post(
-        'http://localhost:3000/api/connections/introduction',
-        { advisorIds: [advisor.id] },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      toast.success(`📧 Introduction email sent to ${advisor.companyName}!`);
+      // Simulated API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      alert(`📧 Introduction email sent to ${advisor.companyName}!`);
     } catch (error) {
-      toast.error('Failed to send introduction request');
+      alert('Failed to send introduction request');
     } finally {
       setLoading(false);
     }
@@ -39,15 +33,17 @@ const AdvisorCard = ({ advisor, onSelect, isSelected }) => {
   };
 
   return (
-    <div className="w-full max-w-sm overflow-hidden transition-all duration-300 bg-white border border-gray-200 shadow-lg rounded-2xl hover:shadow-2xl hover:scale-[1.02] group sm:max-w-md lg:max-w-lg xl:max-w-xl">
+    <div className="w-full max-w-2xl mx-auto overflow-hidden transition-all duration-300 bg-white border border-gray-200 shadow-lg rounded-2xl hover:shadow-2xl">
       {/* Header Section */}
-      <div className="relative p-5 border-b border-gray-100 bg-gradient-to-r from-primary/10 to-third/10 sm:p-7">
-        <div className="flex flex-col items-center justify-between gap-4 sm:flex-row sm:items-start">
-          <div className="flex items-center flex-1 min-w-0 gap-4 sm:gap-5">
+      <div className="relative p-6 border-b border-gray-100 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+        <div className="flex items-start justify-between gap-4">
+          {/* Left: Logo + Info */}
+          <div className="flex items-start flex-1 min-w-0 gap-4">
+            {/* Logo */}
             <div className="relative flex-shrink-0">
               {advisor.logoUrl ? (
                 <img 
-                  className="object-contain bg-white border-2 border-white shadow-lg w-14 h-14 sm:w-18 sm:h-18 rounded-2xl" 
+                  className="object-cover w-20 h-20 bg-white border-4 border-white shadow-lg rounded-2xl" 
                   src={advisor.logoUrl} 
                   alt={advisor.companyName}
                   onError={(e) => {
@@ -56,87 +52,109 @@ const AdvisorCard = ({ advisor, onSelect, isSelected }) => {
                   }}
                 />
               ) : null}
-              <div className={`w-14 h-14 sm:w-18 sm:h-18 rounded-2xl bg-gradient-to-br from-primary to-third flex items-center justify-center text-white font-bold text-xl sm:text-2xl shadow-lg ${advisor.logoUrl ? 'hidden' : 'flex'}`}>
+              <div className={`w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-3xl shadow-lg ${advisor.logoUrl ? 'hidden' : 'flex'}`}>
                 {advisor.companyName?.charAt(0) || 'A'}
               </div>
             </div>
+
+            {/* Company Info */}
             <div className="flex-1 min-w-0">
-              <h3 className="mb-2 text-xl font-semibold tracking-tight text-gray-900 truncate sm:text-2xl">{advisor.companyName}</h3>
-              <div className="flex items-center mb-2 text-gray-600">
-                <FaUser className="w-4 h-4 mr-2 text-primary" />
-                <span className="text-base font-medium truncate">{advisor.advisorName}</span>
+              {/* Company Name - with proper wrapping */}
+              <h3 className="mb-2 text-2xl font-bold leading-tight text-gray-900 break-words">
+                {advisor.companyName}
+              </h3>
+              
+              {/* Advisor Name */}
+              <div className="flex items-center mb-3 text-gray-700">
+                <FaUser className="flex-shrink-0 w-4 h-4 mr-2 text-blue-600" />
+                <span className="text-base font-medium break-words">{advisor.advisorName}</span>
               </div>
-              <div className="flex flex-wrap items-center text-sm text-gray-500 gap-x-4 gap-y-2">
-                <div className="flex items-center">
-                  <FaAward className="w-4 h-4 mr-1 text-yellow-500" />
-                  <span>{advisor.yearsExperience} yrs</span>
+
+              {/* Stats Row */}
+              <div className="flex flex-wrap items-center gap-4 mb-3">
+                <div className="flex items-center px-3 py-1 text-sm font-semibold text-yellow-700 bg-yellow-100 rounded-full">
+                  <FaAward className="w-4 h-4 mr-1.5" />
+                  <span>{advisor.yearsExperience} years</span>
                 </div>
-                <div className="flex items-center">
-                  <FaChartLine className="w-4 h-4 mr-1 text-green-500" />
+                <div className="flex items-center px-3 py-1 text-sm font-semibold text-green-700 bg-green-100 rounded-full">
+                  <FaChartLine className="w-4 h-4 mr-1.5" />
                   <span>{advisor.numberOfTransactions} deals</span>
                 </div>
+              </div>
+
+              {/* Contact Info Grid */}
+              <div className="space-y-2 text-sm text-gray-600">
                 {advisor.phone && (
                   <div className="flex items-center">
-                    <FaPhone className="w-4 h-4 mr-1 text-primary" />
-                    <span className="truncate max-w-[120px] sm:max-w-[180px]">{advisor.phone}</span>
+                    <FaPhone className="flex-shrink-0 w-4 h-4 mr-2 text-blue-600" />
+                    <span className="break-all">{advisor.phone}</span>
                   </div>
                 )}
                 {advisor.advisorEmail && (
                   <div className="flex items-center">
-                    <FaUser className="w-4 h-4 mr-1 text-primary" />
-                    <span className="truncate max-w-[120px] sm:max-w-[180px]">{advisor.advisorEmail}</span>
+                    <FaEnvelope className="flex-shrink-0 w-4 h-4 mr-2 text-blue-600" />
+                    <span className="break-all">{advisor.advisorEmail}</span>
                   </div>
                 )}
                 {advisor.website && (
                   <div className="flex items-center">
-                    <FaGlobe className="w-4 h-4 mr-1 text-primary" />
-                    <a href={advisor.website} target="_blank" rel="noopener noreferrer" className="text-primary hover:text-third transition-colors inline-flex items-center truncate max-w-[120px] sm:max-w-[180px]">
-                      <span className="truncate">{advisor.website}</span>
-                      <FaExternalLinkAlt className="w-3 h-3 ml-1" />
+                    <FaGlobe className="flex-shrink-0 w-4 h-4 mr-2 text-blue-600" />
+                    <a 
+                      href={advisor.website} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="inline-flex items-center text-blue-600 break-all transition-colors hover:text-purple-600 hover:underline"
+                    >
+                      <span className="break-all">{advisor.website.replace(/^https?:\/\//, '')}</span>
+                      <FaExternalLinkAlt className="flex-shrink-0 w-3 h-3 ml-1" />
                     </a>
                   </div>
                 )}
               </div>
-              {advisor.workedWithCimamplify && (
-                <div className="inline-flex items-center gap-2 px-3 py-2 mt-4 text-indigo-700 border border-indigo-200 rounded-lg bg-indigo-50">
-                  <img
-                    src="/logo.png"
-                    alt="CIM Amplify"
-                    className="w-auto h-5"
-                  />
-                  <span className="text-sm font-semibold">
-                    This Advisor uses CIM Amplify to find more buyers
-                  </span>
-                </div>
-              )}
             </div>
           </div>
-          <div className="flex items-center ml-auto">
+
+          {/* Right: Checkbox */}
+          <div className="flex-shrink-0 pt-1">
             <input
               type="checkbox"
               checked={isSelected}
               onChange={onSelect}
-              className="w-5 h-5 transition-colors border-gray-300 rounded form-checkbox text-primary focus:ring-primary"
+              className="w-6 h-6 text-blue-600 transition-colors border-gray-300 rounded cursor-pointer form-checkbox focus:ring-blue-500 focus:ring-2"
             />
           </div>
         </div>
+
+        {/* CIM Amplify Badge */}
+        {advisor.workedWithCimamplify && (
+          <div className="inline-flex items-center gap-2 px-4 py-2 mt-4 text-sm font-semibold text-indigo-700 border-2 border-indigo-300 rounded-xl bg-indigo-50">
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5zm0 18c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"/>
+            </svg>
+            <span>Uses CIM Amplify to find more buyers</span>
+          </div>
+        )}
       </div>
 
       {/* Content Section */}
-      <div className="p-5 space-y-5 sm:p-7 sm:space-y-6">
+      <div className="p-6 space-y-6">
         {/* Description */}
-        <div>
-          <p className="text-base leading-relaxed text-gray-700">{advisor.description}</p>
-        </div>
+        {advisor.description && (
+          <div>
+            <p className="text-base leading-relaxed text-gray-700">{advisor.description}</p>
+          </div>
+        )}
 
         {/* Intro Video */}
         {advisor.introVideoUrl && (
           <div>
-            <div className="flex items-center mb-3">
-              <h4 className="text-base font-semibold text-gray-900">Introduction Video</h4>
-            </div>
-            <div className="overflow-hidden bg-black border border-gray-200 rounded-lg">
-              <video src={advisor.introVideoUrl} controls className="object-contain w-full h-40 bg-black rounded-lg sm:h-56" />
+            <h4 className="mb-3 text-lg font-semibold text-gray-900">Introduction Video</h4>
+            <div className="overflow-hidden bg-black border border-gray-200 shadow-inner rounded-xl">
+              <video 
+                src={advisor.introVideoUrl} 
+                controls 
+                className="object-contain w-full bg-black h-60"
+              />
             </div>
           </div>
         )}
@@ -145,40 +163,44 @@ const AdvisorCard = ({ advisor, onSelect, isSelected }) => {
         {Array.isArray(advisor.testimonials) && advisor.testimonials.length > 0 && (
           <div>
             <div className="flex items-center mb-4">
-              <FaQuoteLeft className="w-5 h-5 mr-2 text-primary" />
-              <h4 className="text-base font-semibold text-gray-900">Client Testimonials</h4>
+              <FaQuoteLeft className="w-5 h-5 mr-2 text-blue-600" />
+              <h4 className="text-lg font-semibold text-gray-900">Client Testimonials</h4>
             </div>
-            <div className="grid grid-cols-1 gap-4">
+            <div className="space-y-4">
               {advisor.testimonials.map((t, idx) => {
                 const text = t?.testimonial || '';
                 const isLong = text.length > 220;
                 const expanded = !!expandedTestimonials[idx];
                 const visible = expanded || !isLong ? text : `${text.substring(0, 220)}…`;
                 const initial = (t?.clientName || 'C').charAt(0).toUpperCase();
+                
                 return (
-                  <div key={idx} className="overflow-hidden transition-shadow border border-gray-200 shadow-sm bg-gray-50 rounded-xl hover:shadow-md">
-                    <div className="flex items-center gap-4 px-5 pt-5">
-                      <div className="flex items-center justify-center w-10 h-10 text-base font-bold text-white rounded-full bg-gradient-to-br from-primary to-third">
+                  <div 
+                    key={idx} 
+                    className="p-5 transition-all border border-gray-200 shadow-sm bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl hover:shadow-md hover:border-blue-200"
+                  >
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="flex items-center justify-center flex-shrink-0 w-12 h-12 text-lg font-bold text-white rounded-full shadow-md bg-gradient-to-br from-blue-500 to-purple-600">
                         {initial}
                       </div>
                       <div className="min-w-0">
-                        <p className="text-base font-semibold text-gray-900 truncate">{t?.clientName || 'Client'}</p>
+                        <p className="text-base font-semibold text-gray-900 break-words">
+                          {t?.clientName || 'Client'}
+                        </p>
                       </div>
                     </div>
-                    <div className="px-5 pb-5">
-                      <p className="mt-3 text-base text-gray-700">
-                        {visible}
-                      </p>
-                      {isLong && (
-                        <button
-                          type="button"
-                          onClick={() => toggleTestimonial(idx)}
-                          className="mt-3 text-sm font-semibold text-primary hover:text-third"
-                        >
-                          {expanded ? 'Read less' : 'Read more'}
-                        </button>
-                      )}
-                    </div>
+                    <p className="text-base leading-relaxed text-gray-700">
+                      "{visible}"
+                    </p>
+                    {isLong && (
+                      <button
+                        type="button"
+                        onClick={() => toggleTestimonial(idx)}
+                        className="mt-3 text-sm font-semibold text-blue-600 transition-colors hover:text-purple-600"
+                      >
+                        {expanded ? '← Read less' : 'Read more →'}
+                      </button>
+                    )}
                   </div>
                 );
               })}
@@ -187,16 +209,16 @@ const AdvisorCard = ({ advisor, onSelect, isSelected }) => {
         )}
       </div>
 
-      {/* Footer Actions */}
-      <div className="px-5 py-4 border-t border-gray-100 sm:px-7 sm:py-5 bg-gray-50">
-        {/* <button
+      {/* Footer Actions
+      <div className="px-6 py-4 border-t border-gray-100 bg-gray-50">
+        <button
           onClick={handleRequestIntroduction}
           disabled={loading}
-          className="w-full bg-gradient-to-r from-primary to-third text-white py-2.5 sm:py-3 px-4 rounded-lg font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-sm sm:text-base"
+          className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-6 rounded-xl font-semibold hover:shadow-lg hover:from-blue-700 hover:to-purple-700 transform hover:scale-[1.02] transition-all duration-200 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
         >
           {loading ? (
             <>
-              <svg className="w-3 h-3 animate-spin sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
@@ -204,15 +226,13 @@ const AdvisorCard = ({ advisor, onSelect, isSelected }) => {
             </>
           ) : (
             <>
-              <FaUser className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline">Request Introduction</span>
-              <span className="sm:hidden">Request Intro</span>
+              <FaEnvelope className="w-5 h-5" />
+              <span>Request Introduction</span>
             </>
           )}
-        </button> */}
-      </div>
+        </button>
+      </div> */}
     </div>
   );
 };
-
 export default AdvisorCard;
