@@ -185,13 +185,13 @@ export default function AdvisorProfile() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* Mobile overlay */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/30 z-40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+     {/* Mobile overlay */}
+     {sidebarOpen && (
+  <div
+    className="fixed inset-0 z-40 left-72 bg-black/30 lg:hidden"
+    onClick={() => setSidebarOpen(false)}
+  />
+)}
 
       {/* Sidebar */}
       <aside

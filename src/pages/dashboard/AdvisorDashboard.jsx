@@ -1160,25 +1160,36 @@ const AdvisorDashboard = () => {
             <div className="flex items-center gap-3">
               <h1 className="text-xl font-bold text-gray-900 lg:text-2xl">Advisor Dashboard</h1>
               {user?.subscription?.status === 'canceled' && user?.subscription?.currentPeriodEnd && (
-                <span className="inline-flex items-center gap-2 px-2 py-1 text-xs text-yellow-800 bg-yellow-100 border border-yellow-200 rounded-full">
-                  Canceled • access until {new Date(user.subscription.currentPeriodEnd).toLocaleDateString()}
-                  <button
-                    onClick={async (e) => {
-                      e.stopPropagation();
-                      try {
-                        const token = localStorage.getItem('access_token');
-                        await axios.post(`${API_CONFIG.BACKEND_URL}/api/payment/resume`, {}, { headers: { Authorization: `Bearer ${token}` }});
-                        toast.success('Subscription resumed');
-                        fetchUserData();
-                      } catch {
-                        toast.error('Could not resume subscription');
-                      }
-                    }}
-                    className="ml-1 underline hover:opacity-80"
-                  >
-                    Resume
-                  </button>
-                </span>
+               <span
+               className="
+                 flex flex-col items-center justify-center
+                 w-full max-w-xs mx-auto
+                 mt-2
+                 px-3 py-2
+                 text-xs text-yellow-800 bg-yellow-100 border border-yellow-200 rounded-xl shadow-sm
+                 sm:inline-flex sm:flex-row sm:items-center sm:justify-start sm:gap-2 sm:max-w-none sm:mt-0 sm:rounded-full sm:shadow-none
+               "
+             >
+               <span className="text-center sm:text-left">
+                 Canceled • access until {new Date(user.subscription.currentPeriodEnd).toLocaleDateString()}
+               </span>
+               <button
+                 onClick={async (e) => {
+                   e.stopPropagation();
+                   try {
+                     const token = localStorage.getItem('access_token');
+                     await axios.post(`${API_CONFIG.BACKEND_URL}/api/payment/resume`, {}, { headers: { Authorization: `Bearer ${token}` }});
+                     toast.success('Subscription resumed');
+                     fetchUserData();
+                   } catch {
+                     toast.error('Could not resume subscription');
+                   }
+                 }}
+                 className="mt-2 underline hover:opacity-80 text-xs sm:mt-0"
+               >
+                 Resume
+               </button>
+             </span>
               )}
             </div>
           </div>
