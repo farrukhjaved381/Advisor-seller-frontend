@@ -107,6 +107,7 @@ export default function AdvisorProfile() {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.data?.subscription) setSubscription(res.data.subscription);
+      console.log('Cancel response', res.data);
     } catch (e) {
       // optionally notify
     } finally {
@@ -122,6 +123,7 @@ export default function AdvisorProfile() {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.data?.subscription) setSubscription(res.data.subscription);
+      console.log('Resume response', res.data);
     } catch (e) {
       // optionally notify
     } finally {
@@ -148,8 +150,8 @@ export default function AdvisorProfile() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="w-32 h-32 border-b-2 border-blue-600 rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -180,19 +182,19 @@ export default function AdvisorProfile() {
   const isPastDue = subscriptionStatus === 'past_due';
   const isActive = subscriptionStatus === 'active' || (!isPastDue && fallbackActive);
   const isCanceled = subscriptionStatus === 'canceled';
+  const cancelAtPeriodEnd = Boolean(subscription?.cancelAtPeriodEnd);
   const isExpired = subscriptionStatus === 'expired' || (!isActive && !isPastDue && user?.isPaymentVerified);
   const billing = user?.billing;
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-     {/* Mobile overlay */}
-     {sidebarOpen && (
+    <div className="flex min-h-screen bg-gray-50">
+      {/* Mobile overlay */}
+      {sidebarOpen && (
   <div
     className="fixed inset-0 z-40 left-72 bg-black/30 lg:hidden"
     onClick={() => setSidebarOpen(false)}
   />
 )}
-
       {/* Sidebar */}
       <aside
         className={`
@@ -201,15 +203,15 @@ export default function AdvisorProfile() {
       `}
       >
         {/* Brand */}
-        <div className="p-4 border-b border-gray-100 bg-white flex items-center justify-between">
+        <div className="flex items-center justify-between p-4 bg-white border-b border-gray-100">
           <div className="flex items-center">
             <img
               src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=768,fit=crop,q=95/mk3JaNVZEltBD9g4/logo-transparency-mnlJLXr4jxIOR470.png"
               alt="Advisor Chooser"
-              className="h-8 w-auto object-contain"
+              className="object-contain w-auto h-8"
             />
           </div>
-          <button onClick={() => setSidebarOpen(false)} className="lg:hidden p-2 rounded-md hover:bg-gray-100">
+          <button onClick={() => setSidebarOpen(false)} className="p-2 rounded-md lg:hidden hover:bg-gray-100">
             <FaTimes className="w-5 h-5 text-gray-600" />
           </button>
         </div>
@@ -219,7 +221,7 @@ export default function AdvisorProfile() {
           <div className="space-y-6">
             {/* Main Menu */}
             <div className="space-y-1">
-              <p className="px-3 text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">Main Menu</p>
+              <p className="px-3 mb-3 text-xs font-medium tracking-wider text-gray-500 uppercase">Main Menu</p>
 
               <button
                 className={"w-full text-left px-4 py-3 rounded-lg transition-all duration-200 flex items-center justify-between text-gray-700 hover:bg-gray-100"}
@@ -228,7 +230,7 @@ export default function AdvisorProfile() {
                 <div className="flex items-center space-x-3">
                   <FaChartLine className="w-5 h-5" />
                   <div>
-                    <span className="font-medium text-sm">Lead Management</span>
+                    <span className="text-sm font-medium">Lead Management</span>
                     <p className="text-xs opacity-70">Manage your leads</p>
                   </div>
                 </div>
@@ -241,7 +243,7 @@ export default function AdvisorProfile() {
                 <div className="flex items-center space-x-3">
                   <FaUser className="w-5 h-5" />
                   <div>
-                    <span className="font-medium text-sm">Profile Overview</span>
+                    <span className="text-sm font-medium">Profile Overview</span>
                     <p className="text-xs opacity-70">View your profile details</p>
                   </div>
                 </div>
@@ -253,7 +255,7 @@ export default function AdvisorProfile() {
               >
                 <FaCog className="w-5 h-5" />
                 <div>
-                  <span className="font-medium text-sm">Advisor profile</span>
+                  <span className="text-sm font-medium">Advisor profile</span>
                   <p className="text-xs opacity-70">Update your information</p>
                 </div>
               </button>
@@ -261,11 +263,11 @@ export default function AdvisorProfile() {
 
             {/* Profile & Billing (matches dashboard link) */}
             <button
-              className="w-full text-left px-4 py-3 rounded-lg transition-all duration-200 flex items-center space-x-3 bg-gradient-to-r from-third to-primary text-white shadow-sm"
+              className="flex items-center w-full px-4 py-3 space-x-3 text-left text-white transition-all duration-200 rounded-lg shadow-sm bg-gradient-to-r from-third to-primary"
             >
               <FaCreditCard className="w-5 h-5" />
               <div>
-                <span className="font-medium text-sm">Subscription Details</span>
+                <span className="text-sm font-medium">Subscription Details</span>
                 <p className="text-xs opacity-70">Manage subscription and payments</p>
               </div>
             </button>
@@ -274,38 +276,38 @@ export default function AdvisorProfile() {
 
         <div className="p-4 border-t border-gray-100">
           <button
-            className="w-full px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 transition-colors duration-200 flex items-center justify-center space-x-2 border border-red-200 hover:border-red-300"
+            className="flex items-center justify-center w-full px-4 py-3 space-x-2 text-red-600 transition-colors duration-200 border border-red-200 rounded-lg hover:bg-red-50 hover:border-red-300"
             onClick={handleLogout}
           >
             <FaSignOutAlt className="w-4 h-4" />
-            <span className="font-medium text-sm">Sign Out</span>
+            <span className="text-sm font-medium">Sign Out</span>
           </button>
         </div>
       </aside>
 
       {/* Main */}
-      <main className="flex-1 flex flex-col min-w-0">
+      <main className="flex flex-col flex-1 min-w-0">
         {/* Header */}
-        <header className="flex items-center justify-between bg-white shadow-sm border-b border-gray-200 px-4 lg:px-8 py-4">
+        <header className="flex items-center justify-between px-4 py-4 bg-white border-b border-gray-200 shadow-sm lg:px-8">
           <div className="flex items-center space-x-4">
-            <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-2 rounded-md hover:bg-gray-100">
+            <button onClick={() => setSidebarOpen(true)} className="p-2 rounded-md lg:hidden hover:bg-gray-100">
               <FaBars className="w-5 h-5 text-gray-600" />
             </button>
-            <h1 className="text-xl lg:text-2xl font-bold text-gray-900">Subscription Details</h1>
+            <h1 className="text-xl font-bold text-gray-900 lg:text-2xl">Subscription Details</h1>
           </div>
           <div className="relative">
             <button
-              className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 transition-all duration-200"
+              className="flex items-center gap-3 px-3 py-2 transition-all duration-200 rounded-lg hover:bg-gray-100"
               onClick={() => setProfileDropdownOpen(prev => !prev)}
             >
-              <div className="text-right hidden sm:block">
+              <div className="hidden text-right sm:block">
                 <div className="flex items-center justify-end gap-2">
-                  <span className="block font-semibold text-gray-900 text-sm">{user?.name || 'Loading...'}</span>
+                  <span className="block text-sm font-semibold text-gray-900">{user?.name || 'Loading...'}</span>
                   {advisorProfile?.workedWithCimamplify && (
                     <img
                       src="/logo.png"
                       alt="CIM Amplify Advisor"
-                      className="h-5 w-5"
+                      className="w-5 h-5"
                       title="This advisor uses CIM Amplify"
                     />
                   )}
@@ -313,7 +315,7 @@ export default function AdvisorProfile() {
                 <span className="block text-xs text-gray-500">Advisor Account</span>
               </div>
               <div className="relative">
-                <div className="w-10 h-10 flex items-center justify-center bg-gradient-to-br from-primary to-third rounded-full text-white font-bold text-sm shadow-md">
+                <div className="flex items-center justify-center w-10 h-10 text-sm font-bold text-white rounded-full shadow-md bg-gradient-to-br from-primary to-third">
                   {(user?.name || 'A').charAt(0)}
                 </div>
                 <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
@@ -323,7 +325,7 @@ export default function AdvisorProfile() {
         </header>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 p-6 overflow-y-auto">
           <div className="max-w-5xl mx-auto">
             <div className="mb-6">
               <h2 className="text-lg font-semibold text-gray-900">Membership Status</h2>
@@ -331,29 +333,31 @@ export default function AdvisorProfile() {
             </div>
 
             {/* Subscription Status */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
+            <div className="p-6 mb-8 bg-white border border-gray-100 shadow-sm rounded-xl">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
                     {isActive ? (
-                      <FaCheckCircle className="text-green-600 text-xl" />
+                      <FaCheckCircle className="text-xl text-green-600" />
                     ) : isExpired ? (
-                    <FaTimesCircle className="text-red-600 text-xl" />
+                    <FaTimesCircle className="text-xl text-red-600" />
                   ) : (
-                    <FaExclamationTriangle className="text-yellow-600 text-xl" />
+                    <FaExclamationTriangle className="text-xl text-yellow-600" />
                   )}
                   <div>
                     <div className="font-semibold text-gray-900">
                       {isActive ? 'Subscription Active' : isExpired ? 'Subscription Expired' : 'Subscription Pending'}
                     </div>
-                    <div className="text-sm text-gray-600 flex items-center gap-2 mt-1">
+                    <div className="flex items-center gap-2 mt-1 text-sm text-gray-600">
                       <FaCalendarAlt />
                       <span>Current period: {formatDate(displayStart)} – {formatDate(displayEnd)}</span>
                     </div>
-                    {isCanceled && end && end > now && (
-                      <div className="text-sm text-yellow-700 mt-2">Canceled. You retain access until {formatDate(end)}.</div>
-                    )}
+                    {cancelAtPeriodEnd && isActive && end && end > now && (
+  <div className="mt-2 text-sm text-yellow-700">
+    Canceled. You retain access until {formatDate(end)}.
+  </div>
+)}
                     {isPastDue && (
-                      <div className="text-sm text-red-600 mt-2 flex items-center gap-2">
+                      <div className="flex items-center gap-2 mt-2 text-sm text-red-600">
                         <FaExclamationTriangle />
                         Automatic renewal failed. Update your card to restore access.
                       </div>
@@ -361,15 +365,15 @@ export default function AdvisorProfile() {
                   </div>
                 </div>
                 <div className="flex gap-3">
-                  {isActive && !isCanceled && (
+                  {isActive && !cancelAtPeriodEnd && (
                     <button onClick={handleCancel} disabled={busy}
-                      className="px-4 py-2 text-sm rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-50">
+                      className="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50">
                       Cancel at Period End
                     </button>
                   )}
-                  {isActive && isCanceled && (
+                  {isActive && cancelAtPeriodEnd && (
                     <button onClick={handleResume} disabled={busy}
-                      className="px-4 py-2 text-sm rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-50">
+                      className="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50">
                       Resume Subscription
                     </button>
                   )}
@@ -378,7 +382,7 @@ export default function AdvisorProfile() {
 
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
+            <div className="p-6 mb-8 bg-white border border-gray-100 shadow-sm rounded-xl">
               <div className="flex items-center gap-3 mb-4">
                 <FaCreditCard className="text-primary" />
                 <div>
@@ -387,38 +391,38 @@ export default function AdvisorProfile() {
                 </div>
               </div>
               {billing?.cardLast4 ? (
-                <div className="flex flex-wrap items-center justify-between gap-4 bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <div className="flex flex-wrap items-center justify-between gap-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
                   <div>
                     <div className="text-sm text-gray-600">Default card</div>
-                    <div className="text-lg font-semibold text-gray-900 mt-1">
+                    <div className="mt-1 text-lg font-semibold text-gray-900">
                       {(billing.cardBrand || 'Card').toUpperCase()} •••• {billing.cardLast4}
                     </div>
                     {billing.expMonth && billing.expYear && (
-                      <div className="text-xs text-gray-500 mt-1">
+                      <div className="mt-1 text-xs text-gray-500">
                         Expires {String(billing.expMonth).padStart(2, '0')}/{billing.expYear}
                       </div>
                     )}
                     {billing.updatedAt && (
-                      <div className="text-xs text-gray-400 mt-1">
+                      <div className="mt-1 text-xs text-gray-400">
                         Updated {formatDate(billing.updatedAt)}
                       </div>
                     )}
                   </div>
                   <button
                     onClick={() => navigate('/advisor-change-card')}
-                    className="px-4 py-2 text-sm rounded-lg border border-primary text-primary hover:bg-primary/5 transition-colors"
+                    className="px-4 py-2 text-sm transition-colors border rounded-lg border-primary text-primary hover:bg-primary/5"
                   >
                     Update card
                   </button>
                 </div>
               ) : (
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-sm text-yellow-800">
+                <div className="flex flex-col gap-4 p-4 text-sm text-yellow-800 border border-yellow-200 rounded-lg sm:flex-row sm:items-center sm:justify-between bg-yellow-50">
                   <span>
                     No credit card on file yet. Add one now to enable seamless automatic renewals when your subscription ends or your trial period expires.
                   </span>
                   <button
                     onClick={() => navigate('/advisor-add-card')}
-                    className="inline-flex items-center justify-center px-4 py-2 text-sm font-semibold text-white bg-primary rounded-lg shadow-sm hover:bg-primary/90 transition-colors"
+                    className="inline-flex items-center justify-center px-4 py-2 text-sm font-semibold text-white transition-colors rounded-lg shadow-sm bg-primary hover:bg-primary/90"
                   >
                     Add credit card
                   </button>
@@ -427,7 +431,7 @@ export default function AdvisorProfile() {
             </div>
 
             {/* History */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div className="p-6 bg-white border border-gray-100 shadow-sm rounded-xl">
               <div className="flex items-center gap-2 mb-4">
                 <FaHistory className="text-gray-700" />
                 <h2 className="text-lg font-semibold text-gray-900">Payment History</h2>
