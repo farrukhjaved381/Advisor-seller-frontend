@@ -191,9 +191,8 @@ const IndustryChooser = ({ selected, onChange, hasError }) => {
       </div>
 
       {/* Selected chips row */}
-      {selected && selected.length > 0 && (
+      {/* {selected && selected.length > 0 && (
         <div className="mb-3">
-          {/* fixed box so long lists scroll instead of pushing layout */}
           <div className="w-full p-2 overflow-auto bg-white border rounded-md max-h-28 border-primary/10">
             <div className="flex flex-wrap gap-2">
               {selected.map((name) => (
@@ -215,7 +214,7 @@ const IndustryChooser = ({ selected, onChange, hasError }) => {
             </div>
           </div>
         </div>
-      )}
+      )} */}
 
       <div
         className={`bg-brand-light border rounded-lg p-4 h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-gray-100 shadow-inner ${
@@ -492,9 +491,8 @@ const GeographyChooser = ({ selected, onChange, hasError }) => {
       </div>
 
       {/* Selected chips row */}
-      {selected && selected.length > 0 && (
+      {/* {selected && selected.length > 0 && (
         <div className="mb-3">
-          {/* fixed box so long lists scroll instead of pushing layout */}
           <div className="w-full p-2 overflow-auto bg-white border rounded-md max-h-28 border-primary/10">
             <div className="flex flex-wrap gap-2">
               {selected.map((name) => (
@@ -516,7 +514,7 @@ const GeographyChooser = ({ selected, onChange, hasError }) => {
             </div>
           </div>
         </div>
-      )}
+      )} */}
 
       <div
         className={`bg-brand-light border rounded-lg p-4 h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-gray-100 shadow-inner ${
@@ -722,7 +720,7 @@ export const AdvisorForm = () => {
       if (values.logoFile) {
         logoUrl = await handleFileUpload(
           values.logoFile,
-          "https://advisor-seller-backend.vercel.app/api/upload/logo"
+          "http://localhost:3000/api/upload/logo"
         );
       }
 
@@ -730,7 +728,7 @@ export const AdvisorForm = () => {
       if (introVideoFile) {
         introVideoUrl = await handleFileUpload(
           introVideoFile,
-          "https://advisor-seller-backend.vercel.app/api/upload/video"
+          "http://localhost:3000/api/upload/video"
         );
       }
 
@@ -742,7 +740,7 @@ export const AdvisorForm = () => {
             if (t.pdfFile) {
               pdfUrl = await handleFileUpload(
                 t.pdfFile,
-                "https://advisor-seller-backend.vercel.app/api/upload/testimonial"
+                "http://localhost:3000/api/upload/testimonial"
               );
             }
             return {
@@ -792,7 +790,7 @@ export const AdvisorForm = () => {
       console.log("Sending payload:", payload);
 
       await axios.post(
-        "https://advisor-seller-backend.vercel.app/api/advisors/profile",
+        "http://localhost:3000/api/advisors/profile",
         payload,
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -1416,7 +1414,8 @@ export const AdvisorForm = () => {
                       htmlFor="workedWithCimamplify"
                       className="font-bold text-blue-800"
                     >
-                      Have you ever posted a deal at our sister company, CIM Amplify (www.cimamplify.com)?
+                      Select if you have ever posted a deal at our sister company, CIM Amplify (www.cimamplify.com)?
+
                     </label>
                     <p className="text-blue-700">
                       You can change this answer in the future once you have posted.
@@ -1531,7 +1530,7 @@ export const AdvisorForm = () => {
                 >
                   {isSubmitting
                     ? "Creating Profile..."
-                    : "Complete Profile Setup"}
+                    : "Submit Profile"}
                 </button>
               </motion.div>
             </Form>

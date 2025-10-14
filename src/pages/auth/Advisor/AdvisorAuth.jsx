@@ -73,7 +73,7 @@ const Auth = () => {
       try {
         // Login request
         const res = await axios.post(
-          "https://advisor-seller-backend.vercel.app/api/auth/login",
+          "http://localhost:3000/api/auth/login",
           { email, password },
           { withCredentials: true, validateStatus: () => true }
         );
@@ -93,7 +93,7 @@ const Auth = () => {
 
           // Get CSRF token with Authorization header
           const csrfRes = await axios.get(
-            "https://advisor-seller-backend.vercel.app/api/auth/csrf-token",
+            "http://localhost:3000/api/auth/csrf-token",
             {
               headers: { Authorization: `Bearer ${accessToken}` },
               withCredentials: true,
@@ -112,7 +112,7 @@ const Auth = () => {
 
           // Fetch fresh user data to get current profile status
           const userRes = await axios.get(
-            "https://advisor-seller-backend.vercel.app/api/auth/profile",
+            "http://localhost:3000/api/auth/profile",
             { headers: { Authorization: `Bearer ${accessToken}` } }
           );
           
@@ -134,7 +134,7 @@ const Auth = () => {
               // Check if advisor profile exists by trying to fetch it
               try {
                 const profileRes = await axios.get(
-                  "https://advisor-seller-backend.vercel.app/api/advisors/profile",
+                  "http://localhost:3000/api/advisors/profile",
                   { headers: { Authorization: `Bearer ${accessToken}` } }
                 );
                 
@@ -170,7 +170,7 @@ const Auth = () => {
   };
 
   return (
-  <div className="w-screen min-h-screen bg-gradient-to-br from-gray-50 to-white flex flex-col overflow-x-hidden">
+  <div className="flex flex-col w-screen min-h-screen overflow-x-hidden bg-gradient-to-br from-gray-50 to-white">
       <Toaster
         position="top-center"
         reverseOrder={false}
@@ -188,37 +188,37 @@ const Auth = () => {
       />
 <Header />
       {/* Main Content */}
-      <div className="flex-grow w-full flex flex-col md:flex-row items-stretch pt-10 md:pt-20">
+      <div className="flex flex-col items-stretch flex-grow w-full pt-10 md:flex-row md:pt-20">
         {/* Left Side - Image */}
-        <div className="w-full md:w-[45%] relative overflow-hidden min-h-[260px] md:min-h-0 h-64 md:h-auto">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-third/30 z-10"></div>
+        <div className="w-full md:w-[45%] relative overflow-hidden min-h-[260px] md:min-h-0 h-4 md:h-[100vh]">
+          <div className="absolute inset-0 z-10 bg-gradient-to-br from-primary/20 to-third/30"></div>
           <img
-            src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2340&q=80"
+            src="/login.png"
             alt="Professional advisor workspace"
-            className="object-cover h-full w-full transform hover:scale-105 transition-transform duration-700"
+            className="object-cover w-full h-full transition-transform duration-700 transform hover:scale-105"
           />
 
           {/* Floating Welcome Card */}
           <div className="absolute top-4 left-4 md:top-8 md:left-8 z-20 w-[90%] md:w-auto">
-            <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 md:p-6 shadow-xl max-w-sm">
-              <div className="flex items-center space-x-3 mb-3">
-                <div className="w-4 h-4 bg-gradient-to-r from-primary to-third rounded-full animate-pulse"></div>
-                <span className="text-secondary font-bold text-base md:text-lg">
+            <div className="max-w-sm p-4 shadow-xl bg-white/90 backdrop-blur-sm rounded-2xl md:p-6">
+              <div className="flex items-center mb-3 space-x-3">
+                <div className="w-4 h-4 rounded-full bg-gradient-to-r from-primary to-third animate-pulse"></div>
+                <span className="text-base font-bold text-secondary md:text-lg">
                   Welcome Back!
                 </span>
               </div>
-              <p className="text-gray-600 text-xs md:text-sm leading-relaxed">
+              <p className="text-xs leading-relaxed text-gray-600 md:text-sm">
                 Access your advisor dashboard and manage your account seamlessly.
               </p>
             </div>
           </div>
 
           {/* Security Badge */}
-          <div className="absolute bottom-4 right-4 md:bottom-8 md:right-8 z-20">
-            <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-2 md:p-4 shadow-xl">
+          <div className="absolute z-20 bottom-4 right-4 md:bottom-8 md:right-8">
+            <div className="p-2 shadow-xl bg-white/90 backdrop-blur-sm rounded-2xl md:p-4">
               <div className="flex items-center space-x-2">
                 <svg
-                  className="w-4 h-4 md:w-5 md:h-5 text-green-500"
+                  className="w-4 h-4 text-green-500 md:w-5 md:h-5"
                   fill="currentColor"
                   viewBox="0 0 20 20"
                 >
@@ -228,7 +228,7 @@ const Auth = () => {
                     clipRule="evenodd"
                   />
                 </svg>
-                <span className="text-secondary font-semibold text-xs md:text-sm">
+                <span className="text-xs font-semibold text-secondary md:text-sm">
                   Secure Login
                 </span>
               </div>
@@ -236,15 +236,15 @@ const Auth = () => {
           </div>
 
           {/* Decorative Pattern */}
-          <div className="absolute bottom-0 left-0 right-0 h-16 md:h-32 bg-gradient-to-t from-secondary/10 to-transparent z-10"></div>
+          <div className="absolute bottom-0 left-0 right-0 z-10 h-16 md:h-32 bg-gradient-to-t from-secondary/10 to-transparent"></div>
         </div>
 
         {/* Right Side - Form */}
         <div className="w-full md:w-[55%] flex justify-center items-center min-h-[340px] md:min-h-screen bg-gradient-to-bl from-white to-gray-50/50 relative">
           {/* Background Pattern */}
           <div className="absolute inset-0 opacity-5">
-            <div className="absolute top-16 md:top-32 right-8 md:right-32 w-24 md:w-40 h-24 md:h-40 bg-primary rounded-full blur-3xl"></div>
-            <div className="absolute bottom-16 md:bottom-32 left-8 md:left-20 w-32 md:w-56 h-32 md:h-56 bg-third rounded-full blur-3xl"></div>
+            <div className="absolute w-24 h-24 rounded-full top-16 md:top-32 right-8 md:right-32 md:w-40 md:h-40 bg-primary blur-3xl"></div>
+            <div className="absolute w-32 h-32 rounded-full bottom-16 md:bottom-32 left-8 md:left-20 md:w-56 md:h-56 bg-third blur-3xl"></div>
           </div>
 
           <form
@@ -252,8 +252,8 @@ const Auth = () => {
             className="relative z-10 w-full sm:w-[90%] md:w-[70%] max-w-md bg-white/70 backdrop-blur-sm rounded-3xl p-4 sm:p-6 md:p-8 shadow-2xl border border-white/20"
           >
             {/* Header Section */}
-            <div className="text-center mb-8">
-              <div className="inline-flex items-center bg-gradient-to-r from-primary/10 to-third/10 text-primary px-4 py-2 rounded-full text-sm font-semibold mb-4">
+            <div className="mb-8 text-center">
+              <div className="inline-flex items-center px-4 py-2 mb-4 text-sm font-semibold rounded-full bg-gradient-to-r from-primary/10 to-third/10 text-primary">
                 <svg
                   className="w-4 h-4 mr-2"
                   fill="none"
@@ -270,10 +270,10 @@ const Auth = () => {
                 Advisor Portal
               </div>
 
-              <h2 className="text-3xl font-black text-secondary mb-2">
+              <h2 className="mb-2 text-3xl font-black text-secondary">
                 Welcome Back!
               </h2>
-              <p className="text-gray-600 font-medium">
+              <p className="font-medium text-gray-600">
                 Sign in to your advisor account
               </p>
             </div>
@@ -282,7 +282,7 @@ const Auth = () => {
             <div className="mb-6">
               <label
                 htmlFor="email"
-                className="block text-secondary font-semibold text-sm mb-3"
+                className="block mb-3 text-sm font-semibold text-secondary"
               >
                 Email Address
               </label>
@@ -301,7 +301,7 @@ const Auth = () => {
                   }`}
                 />
                 <svg
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
+                  className="absolute w-5 h-5 text-gray-400 transform -translate-y-1/2 left-3 top-1/2"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -315,7 +315,7 @@ const Auth = () => {
                 </svg>
               </div>
               {emailError && (
-                <div className="flex items-center mt-2 text-red-500 text-sm">
+                <div className="flex items-center mt-2 text-sm text-red-500">
                   <svg
                     className="w-4 h-4 mr-1"
                     fill="currentColor"
@@ -336,7 +336,7 @@ const Auth = () => {
             <div className="mb-6">
               <label
                 htmlFor="password"
-                className="block text-secondary font-semibold text-sm mb-3"
+                className="block mb-3 text-sm font-semibold text-secondary"
               >
                 Password
               </label>
@@ -355,7 +355,7 @@ const Auth = () => {
                   }`}
                 />
                 <svg
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
+                  className="absolute w-5 h-5 text-gray-400 transform -translate-y-1/2 left-3 top-1/2"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -371,7 +371,7 @@ const Auth = () => {
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   disabled={loading}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                  className="absolute text-gray-500 transition-colors transform -translate-y-1/2 right-3 top-1/2 hover:text-gray-700"
                 >
                   {showPassword ? (
                     <FaEye className="w-5 h-5" />
@@ -382,7 +382,7 @@ const Auth = () => {
               </div>
 
               {passwordError && (
-                <div className="flex items-center mt-2 text-red-500 text-sm">
+                <div className="flex items-center mt-2 text-sm text-red-500">
                   <svg
                     className="w-4 h-4 mr-1"
                     fill="currentColor"
@@ -400,7 +400,7 @@ const Auth = () => {
 
               {/* {password && !passwordError && (
                 <div className="flex items-center mt-2">
-                  <div className="flex space-x-1 mr-3">
+                  <div className="flex mr-3 space-x-1">
                     {[...Array(3)].map((_, i) => (
                       <div
                         key={i}
@@ -434,11 +434,11 @@ const Auth = () => {
             </div>
 
             {/* Forgot Password */}
-            <div className="text-right mb-6">
+            <div className="mb-6 text-right">
               <button
                 type="button"
                 onClick={() => navigate("/forgot-password")}
-                className="text-primary hover:text-third font-medium text-sm transition-colors duration-200 hover:underline"
+                className="text-sm font-medium transition-colors duration-200 text-primary hover:text-third hover:underline"
               >
                 Forgot Password?
               </button>
@@ -456,7 +456,7 @@ const Auth = () => {
             >
               {loading ? (
                 <div className="flex items-center space-x-2">
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  <div className="w-5 h-5 border-2 rounded-full border-white/30 border-t-white animate-spin"></div>
                   <span>Signing in...</span>
                 </div>
               ) : (
@@ -480,13 +480,13 @@ const Auth = () => {
             </button>
 
             {/* Sign up link */}
-            <div className="text-center mt-6 pt-6 border-t border-gray-200">
+            <div className="pt-6 mt-6 text-center border-t border-gray-200">
               <p className="text-gray-600">
                 Don't have an account?{" "}
                 <button
                   type="button"
                   onClick={() => navigate("/advisor-register")}
-                  className="text-primary hover:text-third font-semibold transition-colors duration-200 hover:underline"
+                  className="font-semibold transition-colors duration-200 text-primary hover:text-third hover:underline"
                 >
                   Create Account
                 </button>

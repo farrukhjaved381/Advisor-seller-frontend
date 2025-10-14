@@ -14,6 +14,8 @@ import { Country, State } from "country-state-city";
 import { FaChevronDown, FaChevronRight, FaSearch } from "react-icons/fa";
 import EditProfileModal from "../../components/EditProfileModal";
 import { useLocation, useNavigate } from "react-router-dom";
+import Header from "../../components/common/Header";
+
 
 // Map selected industry id to top-level industry label
 const mapIndustry = (selectedId) => {
@@ -50,7 +52,7 @@ const AnimatedInput = ({
   return (
     <div className="relative w-full">
       {prefix && (
-        <span className="absolute left-3 top-4 text-primary/60 peer-focus:text-secondary peer-hover:text-secondary transition-all duration-300 pointer-events-none">
+        <span className="absolute transition-all duration-300 pointer-events-none left-3 top-4 text-primary/60 peer-focus:text-secondary peer-hover:text-secondary">
           {prefix}
         </span>
       )}
@@ -80,7 +82,7 @@ const AnimatedInput = ({
       <ErrorMessage
         name={name}
         component="p"
-        className="text-red-500 text-sm mt-1"
+        className="mt-1 text-sm text-red-500"
       />
     </div>
   );
@@ -114,19 +116,19 @@ const IndustryRadioChooser = ({ selected, onChange }) => {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search Industry Sectors"
-          className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary"
+          className="w-full py-3 pl-10 pr-4 transition-all duration-200 bg-white border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 text-secondary"
         />
-        <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-secondary/50" />
+        <FaSearch className="absolute w-4 h-4 transform -translate-y-1/2 left-3 top-1/2 text-secondary/50" />
       </div>
-      <div className="bg-gray-50 border border-primary/20 rounded-lg p-4 h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-gray-100 shadow-inner">
+      <div className="h-64 p-4 overflow-y-auto border rounded-lg shadow-inner bg-gray-50 border-primary/20 scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-gray-100">
         {filteredSectors.length > 0 ? (
           <div className="space-y-2">
             {filteredSectors.map((sector) => (
-              <div key={sector.id} className="border-b border-gray-100 pb-1">
+              <div key={sector.id} className="pb-1 border-b border-gray-100">
                 <div className="flex items-center">
                   
                   <div
-                    className="flex items-center cursor-pointer flex-1"
+                    className="flex items-center flex-1 cursor-pointer"
                     onClick={() =>
                       setExpandedSectors((prev) => ({
                         ...prev,
@@ -135,20 +137,20 @@ const IndustryRadioChooser = ({ selected, onChange }) => {
                     }
                   >
                     {expandedSectors[sector.id] ? (
-                      <FaChevronDown className="h-4 w-4 mr-1 text-secondary/60" />
+                      <FaChevronDown className="w-4 h-4 mr-1 text-secondary/60" />
                     ) : (
-                      <FaChevronRight className="h-4 w-4 mr-1 text-secondary/60" />
+                      <FaChevronRight className="w-4 h-4 mr-1 text-secondary/60" />
                     )}
                     <label
                       htmlFor={`sector-${sector.id}`}
-                      className="text-secondary cursor-pointer font-medium"
+                      className="font-medium cursor-pointer text-secondary"
                     >
                       {sector.name}
                     </label>
                   </div>
                 </div>
                 {expandedSectors[sector.id] && (
-                  <div className="ml-6 mt-1 space-y-1">
+                  <div className="mt-1 ml-6 space-y-1">
                     {sector.industryGroups.map((group) => (
                       <div key={group.id} className="pl-2">
                         <div className="flex items-center">
@@ -159,17 +161,17 @@ const IndustryRadioChooser = ({ selected, onChange }) => {
                             value={group.name}
                             checked={selected === group.name}
                             onChange={() => onChange(group.name)}
-                            className="mr-2 h-4 w-4 text-primary focus:ring-primary form-radio border-gray-300 transition-colors duration-200"
+                            className="w-4 h-4 mr-2 transition-colors duration-200 border-gray-300 text-primary focus:ring-primary form-radio"
                           />
                           <label
                             htmlFor={`group-${group.id}`}
-                            className="text-secondary cursor-pointer text-sm"
+                            className="text-sm cursor-pointer text-secondary"
                           >
                             {group.name}
                           </label>
                         </div>
                         {group.description && (
-                          <div className="text-xs text-secondary/70 italic mt-1 ml-6">
+                          <div className="mt-1 ml-6 text-xs italic text-secondary/70">
                             {group.description}
                           </div>
                         )}
@@ -181,7 +183,7 @@ const IndustryRadioChooser = ({ selected, onChange }) => {
             ))}
           </div>
         ) : (
-          <p className="text-secondary/60 text-sm text-center py-4">
+          <p className="py-4 text-sm text-center text-secondary/60">
             No results found for "{query}".
           </p>
         )}
@@ -221,11 +223,11 @@ const GeographyRadioChooser = ({ selected, onChange }) => {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search Geographies"
-          className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary"
+          className="w-full py-3 pl-10 pr-4 transition-all duration-200 bg-white border border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 text-secondary"
         />
-        <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-secondary/50" />
+        <FaSearch className="absolute w-4 h-4 transform -translate-y-1/2 left-3 top-1/2 text-secondary/50" />
       </div>
-      <div className="bg-gray-50 border border-primary/20 rounded-lg p-4 h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-gray-100 shadow-inner">
+      <div className="h-64 p-4 overflow-y-auto border rounded-lg shadow-inner bg-gray-50 border-primary/20 scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-gray-100">
         <div className="space-y-2">
           {allCountries.map((country) => {
             let states = State.getStatesOfCountry(country.isoCode);
@@ -288,12 +290,12 @@ const GeographyRadioChooser = ({ selected, onChange }) => {
             return (
               <div
                 key={country.isoCode}
-                className="border-b border-gray-100 pb-1"
+                className="pb-1 border-b border-gray-100"
               >
                 <div className="flex items-center">
                   
                   <div
-                    className="flex items-center cursor-pointer flex-1"
+                    className="flex items-center flex-1 cursor-pointer"
                     onClick={() =>
                       setExpandedCountries((prev) => ({
                         ...prev,
@@ -302,20 +304,20 @@ const GeographyRadioChooser = ({ selected, onChange }) => {
                     }
                   >
                     {expandedCountries[country.isoCode] ? (
-                      <FaChevronDown className="h-4 w-4 mr-1 text-secondary/60" />
+                      <FaChevronDown className="w-4 h-4 mr-1 text-secondary/60" />
                     ) : (
-                      <FaChevronRight className="h-4 w-4 mr-1 text-secondary/60" />
+                      <FaChevronRight className="w-4 h-4 mr-1 text-secondary/60" />
                     )}
                     <label
                       htmlFor={`geo-${country.isoCode}`}
-                      className="text-secondary cursor-pointer font-medium"
+                      className="font-medium cursor-pointer text-secondary"
                     >
                       {country.name}
                     </label>
                   </div>
                 </div>
                 {expandedCountries[country.isoCode] && (
-                  <div className="ml-6 mt-1 space-y-1">
+                  <div className="mt-1 ml-6 space-y-1">
                     {states
                       .filter((state) =>
                           query.trim() === "" ||
@@ -338,11 +340,11 @@ const GeographyRadioChooser = ({ selected, onChange }) => {
                               onChange={() =>
                                 onChange(`${country.name} > ${state.name}`)
                               }
-                              className="mr-2 h-4 w-4 text-primary focus:ring-primary form-radio border-gray-300 transition-colors duration-200"
+                              className="w-4 h-4 mr-2 transition-colors duration-200 border-gray-300 text-primary focus:ring-primary form-radio"
                             />
                             <label
                               htmlFor={`geo-${country.isoCode}-${state.isoCode}`}
-                              className="text-secondary cursor-pointer text-sm"
+                              className="text-sm cursor-pointer text-secondary"
                             >
                               {state.name}
                             </label>
@@ -380,7 +382,7 @@ const SellerDashboard = () => {
     try {
       const token = localStorage.getItem("access_token");
       await axios.delete(
-        "https://advisor-seller-backend.vercel.app/api/sellers/profile",
+        "http://localhost:3000/api/sellers/profile",
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -452,7 +454,7 @@ const handleBulkIntroduction = async () => {
     const token = localStorage.getItem("access_token");
 
     const response = await axios.post(
-      "https://advisor-seller-backend.vercel.app/api/connections/introduction",
+      "http://localhost:3000/api/connections/introduction",
       { advisorIds: selectedAdvisors },
       { headers: { Authorization: `Bearer ${token}` } }
     );
@@ -476,7 +478,7 @@ const handleBulkIntroduction = async () => {
       setDirectListLoading(true);
       const token = localStorage.getItem("access_token");
       const response = await axios.post(
-        "https://advisor-seller-backend.vercel.app/api/connections/direct-list",
+        "http://localhost:3000/api/connections/direct-list",
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -515,7 +517,7 @@ const handleBulkIntroduction = async () => {
         if (!token) return;
 
         const res = await axios.get(
-          "https://advisor-seller-backend.vercel.app/api/auth/profile",
+          "http://localhost:3000/api/auth/profile",
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -542,7 +544,7 @@ const handleBulkIntroduction = async () => {
 
         // Get user auth data
         const authRes = await axios.get(
-          "https://advisor-seller-backend.vercel.app/api/auth/profile",
+          "http://localhost:3000/api/auth/profile",
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -559,7 +561,7 @@ const handleBulkIntroduction = async () => {
         // Try to get seller profile from database
         try {
           const sellerRes = await axios.get(
-            "https://advisor-seller-backend.vercel.app/api/sellers/profile",
+            "http://localhost:3000/api/sellers/profile",
             {
               headers: { Authorization: `Bearer ${token}` },
             }
@@ -601,7 +603,7 @@ const handleBulkIntroduction = async () => {
       }
 
       const res = await axios.get(
-        `https://advisor-seller-backend.vercel.app/api/sellers/matches`,
+        `http://localhost:3000/api/sellers/matches`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -631,7 +633,7 @@ const handleBulkIntroduction = async () => {
       }
 
       const res = await axios.get(
-        "https://advisor-seller-backend.vercel.app/api/sellers/profile",
+        "http://localhost:3000/api/sellers/profile",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -893,7 +895,7 @@ const handleBulkIntroduction = async () => {
       };
 
       const res = await axios.patch(
-        "https://advisor-seller-backend.vercel.app/api/sellers/profile",
+        "http://localhost:3000/api/sellers/profile",
         payload,
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -972,7 +974,7 @@ const handleBulkIntroduction = async () => {
       try {
         const token = localStorage.getItem("access_token");
         await axios.patch(
-          "https://advisor-seller-backend.vercel.app/api/sellers/profile",
+          "http://localhost:3000/api/sellers/profile",
           values,
           {
             headers: { Authorization: `Bearer ${token}` },
@@ -1007,6 +1009,10 @@ const handleBulkIntroduction = async () => {
     return null;
   };
 
+  const handleLogoClick = () => {
+  navigate("/");
+};
+
   // Enhanced initial values with comprehensive autofill
   const enhancedInitialValues = {
     fullName: profile.name || "",
@@ -1035,7 +1041,7 @@ const handleBulkIntroduction = async () => {
       {/* Mobile backdrop */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
+          className="fixed inset-0 z-20 bg-black bg-opacity-50 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
@@ -1048,15 +1054,16 @@ const handleBulkIntroduction = async () => {
       >
         {/* Header */}
         <div className="px-6 py-6 border-b border-gray-100">
-          <div className="flex items-center justify-between lg:justify-center mb-4">
+          <div className="flex items-center justify-between mb-4 lg:justify-center">
             <img
               src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w-768,fit=crop,q=95/mk3JaNVZEltBD9g4/logo-transparency-mnlJLXr4jxIOR470.png"
               alt="Advisor Chooser"
-              className="h-8 w-auto object-contain"
+              className="object-contain w-auto h-8"
+               onClick={handleLogoClick}
             />
             <button
               onClick={() => setSidebarOpen(false)}
-              className="lg:hidden p-2 rounded-md hover:bg-gray-100"
+              className="p-2 rounded-md lg:hidden hover:bg-gray-100"
             >
               <svg
                 className="w-5 h-5 text-gray-600"
@@ -1080,7 +1087,7 @@ const handleBulkIntroduction = async () => {
           <div className="space-y-6">
             {/* Main Menu */}
             <div className="space-y-1">
-              <p className="px-3 text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">
+              <p className="px-3 mb-3 text-xs font-medium tracking-wider text-gray-500 uppercase">
                 Main Menu
               </p>
 
@@ -1110,7 +1117,7 @@ const handleBulkIntroduction = async () => {
                     />
                   </svg>
                   <div>
-                    <span className="font-medium text-sm">Dashboard</span>
+                    <span className="text-sm font-medium">Dashboard</span>
                     <p className="text-xs opacity-70">
                       Select Your Matched Advisors
                     </p>
@@ -1132,7 +1139,7 @@ const handleBulkIntroduction = async () => {
 
             {/* Settings */}
             <div className="space-y-1">
-              <p className="px-3 text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">
+              <p className="px-3 mb-3 text-xs font-medium tracking-wider text-gray-500 uppercase">
                 Settings
               </p>
 
@@ -1167,7 +1174,7 @@ const handleBulkIntroduction = async () => {
                   />
                 </svg>
                 <div>
-                  <span className="font-medium text-sm">Profile</span>
+                  <span className="text-sm font-medium">Profile</span>
                   <p className="text-xs opacity-70">Update your information</p>
                 </div>
               </button>
@@ -1176,7 +1183,7 @@ const handleBulkIntroduction = async () => {
         </nav>
 
         {/* Bottom Section */}
-        <div className="p-6 border-t border-gray-100 space-y-4">
+        <div className="p-6 space-y-4 border-t border-gray-100">
           {/* New sticky card */}
           <div className="sticky bottom-0 p-4 bg-blue-100 border border-blue-200 rounded-lg shadow-md">
             <p className="text-xs text-blue-800">
@@ -1185,7 +1192,7 @@ const handleBulkIntroduction = async () => {
           </div>
           {/* Delete Profile */}
           <button
-            className="w-full px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 transition-colors duration-200 flex items-center justify-center space-x-2 border border-red-200 hover:border-red-300"
+            className="flex items-center justify-center w-full px-4 py-3 space-x-2 text-red-600 transition-colors duration-200 border border-red-200 rounded-lg hover:bg-red-50 hover:border-red-300"
             onClick={handleDeleteProfile}
             title="Delete your profile and exit"
           >
@@ -1202,20 +1209,20 @@ const handleBulkIntroduction = async () => {
                 d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m2 0a2 2 0 00-2-2h-4a2 2 0 00-2 2m-2 0h12"
               />
             </svg>
-            <span className="font-medium text-sm">Delete Profile Now</span>
+            <span className="text-sm font-medium">Delete Profile Now</span>
           </button>
         </div>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col">
+      <main className="flex flex-col flex-1">
         {/* Reminder banner removed per request: show only on close/leave attempt */}
 
         {/* Tabs Content */}
-        <div className="px-4 lg:px-6 py-4 overflow-y-auto flex-1">
+        <div className="flex-1 px-4 py-4 overflow-y-auto lg:px-6">
           {activeTab === "pending" && (
-            <div className="bg-gray-50 p-4 rounded-lg border">
-              <div className="flex justify-between items-center mb-4">
+            <div className="p-4 border rounded-lg bg-gray-50">
+              <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-4">
                   <h3 className="text-lg font-semibold">
                     Select Your Matched Advisors
@@ -1228,32 +1235,32 @@ const handleBulkIntroduction = async () => {
                             matches.map((advisor) => advisor.id)
                           )
                         }
-                        className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
+                        className="px-3 py-1 text-xs text-blue-700 transition-colors bg-blue-100 rounded-lg hover:bg-blue-200"
                       >
                         Select All
                       </button>
                       <button
                         onClick={() => setSelectedAdvisors([])}
-                        className="px-3 py-1 text-xs bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                        className="px-3 py-1 text-xs text-gray-700 transition-colors bg-gray-100 rounded-lg hover:bg-gray-200"
                       >
                         Deselect All
                       </button>
                     </div>
                   )}
                 </div>
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
-                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 flex-1">
+                <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:gap-4">
+                  <div className="flex flex-col flex-1 gap-3 sm:flex-row sm:gap-4">
                     <button
                       onClick={handleBulkIntroduction}
                       disabled={
                         selectedAdvisors.length === 0 || introductionLoading
                       }
-                      className="px-6 py-3 rounded-xl text-base font-semibold bg-gradient-to-r from-primary to-third text-white shadow-lg hover:from-primary/80 hover:to-third/80 hover:scale-105 hover:shadow-xl active:scale-100 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 min-w-0"
+                      className="flex items-center justify-center min-w-0 gap-2 px-6 py-3 text-base font-semibold text-white transition-all duration-200 shadow-lg rounded-xl bg-gradient-to-r from-primary to-third hover:from-primary/80 hover:to-third/80 hover:scale-105 hover:shadow-xl active:scale-100 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {introductionLoading ? (
                         <>
                           <svg
-                            className="animate-spin h-4 w-4"
+                            className="w-4 h-4 animate-spin"
                             fill="none"
                             viewBox="0 0 24 24"
                           >
@@ -1290,12 +1297,12 @@ const handleBulkIntroduction = async () => {
                     <button
                       onClick={handleGetDirectList}
                       disabled={directListLoading}
-                      className="px-6 py-3 rounded-xl text-base font-semibold bg-gradient-to-r from-primary to-third text-white shadow-lg hover:from-primary/80 hover:to-third/80 hover:scale-105 hover:shadow-xl active:scale-100 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 min-w-0"
+                      className="flex items-center justify-center min-w-0 gap-2 px-6 py-3 text-base font-semibold text-white transition-all duration-200 shadow-lg rounded-xl bg-gradient-to-r from-primary to-third hover:from-primary/80 hover:to-third/80 hover:scale-105 hover:shadow-xl active:scale-100 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {directListLoading ? (
                         <>
                           <svg
-                            className="animate-spin h-4 w-4"
+                            className="w-4 h-4 animate-spin"
                             fill="none"
                             viewBox="0 0 24 24"
                           >
@@ -1324,11 +1331,11 @@ const handleBulkIntroduction = async () => {
               </div>
 
               {matchesLoading ? (
-                <div className="text-center py-10 text-gray-500">
+                <div className="py-10 text-center text-gray-500">
                   Loading matches...
                 </div>
               ) : matches.length === 0 ? (
-                <div className="bg-yellow-50 border-l-4 border-yellow-400 p-6 rounded-lg text-center space-y-4">
+                <div className="p-6 space-y-4 text-center border-l-4 border-yellow-400 rounded-lg bg-yellow-50">
                   <h3 className="text-xl font-semibold text-gray-800">
                     No Advisor Matches Yet
                   </h3>
@@ -1337,30 +1344,30 @@ const handleBulkIntroduction = async () => {
                   </p>
                   <button
                     onClick={() => fetchMatches()}
-                    className="mt-2 px-5 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition"
+                    className="px-5 py-2 mt-2 text-white transition rounded-lg bg-primary hover:bg-primary/90"
                   >
                     Refresh Matches
                   </button>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 lg:gap-6">
-                {matches.map((advisor) => (
-                  <AdvisorCard
-                    key={advisor.id}
-                    advisor={advisor}
-                    onSelect={() => handleSelectAdvisor(advisor.id)}
-                    isSelected={selectedAdvisors.includes(advisor.id)}
-                  />
-                ))}
-              </div>
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 lg:gap-6 xl:gap-3">
+    {matches.map((advisor) => (
+      <AdvisorCard
+        key={advisor.id}
+        advisor={advisor}
+        onSelect={() => handleSelectAdvisor(advisor.id)}
+        isSelected={selectedAdvisors.includes(advisor.id)}
+      />
+    ))}
+  </div>
               )}
             </div>
           )}
 
           {/* Introduction Requests */}
           {introductionRequests.length > 0 && (
-            <div className="bg-gray-50 p-4 rounded-lg border mt-8">
-              <h3 className="text-lg font-semibold mb-4">
+            <div className="p-4 mt-8 border rounded-lg bg-gray-50">
+              <h3 className="mb-4 text-lg font-semibold">
                 Introduction Requests Sent
               </h3>
               <ul>
@@ -1384,15 +1391,15 @@ const handleBulkIntroduction = async () => {
 
           {/* Direct Contact List */}
           {directContactList.length > 0 && (
-            <div className="bg-gray-50 p-4 rounded-lg border mt-8">
-              <h3 className="text-lg font-semibold mb-4">
+            <div className="p-4 mt-8 border rounded-lg bg-gray-50">
+              <h3 className="mb-4 text-lg font-semibold">
                 Direct Contact List
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 gap-8 md:grid-cols-2 xl:grid-cols-3">
                 {directContactList.map((advisor) => (
                   <div
                     key={advisor.id}
-                    className="bg-white shadow-lg rounded-lg overflow-hidden p-6"
+                    className="p-6 overflow-hidden bg-white rounded-lg shadow-lg"
                   >
                     <h4 className="text-lg font-semibold text-gray-800">
                       {advisor.companyName}
@@ -1413,10 +1420,10 @@ const handleBulkIntroduction = async () => {
           {activeTab === "company" && (
             <div className="w-full max-w-4xl mx-auto">
               {/* Header */}
-              <div className="bg-white shadow-sm rounded-t-lg border-b border-gray-200 px-8 py-6">
+              <div className="px-8 py-6 bg-white border-b border-gray-200 rounded-t-lg shadow-sm">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-primary to-third rounded-lg flex items-center justify-center">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-third">
                       <svg
                         className="w-6 h-6 text-white"
                         fill="none"
@@ -1444,7 +1451,7 @@ const handleBulkIntroduction = async () => {
               </div>
 
               {/* Form Container */}
-              <div className="bg-white shadow-sm rounded-b-lg">
+              <div className="bg-white rounded-b-lg shadow-sm">
                 <Formik
                   enableReinitialize
                   initialValues={enhancedInitialValues}
@@ -1463,7 +1470,7 @@ const handleBulkIntroduction = async () => {
                     <Form className="p-8 space-y-8">
                       {submitCount > 0 &&
                         Object.keys(errors || {}).length > 0 && (
-                          <div className="mb-4 p-3 rounded border border-red-200 bg-red-50 text-red-700">
+                          <div className="p-3 mb-4 text-red-700 border border-red-200 rounded bg-red-50">
                             Please fix {Object.keys(errors).length} highlighted
                             field{Object.keys(errors).length > 1 ? "s" : ""}.
                           </div>
@@ -1475,8 +1482,8 @@ const handleBulkIntroduction = async () => {
                       />
                       {unsavedChanges !== dirty && setUnsavedChanges(dirty)}
                       {/* Company Details Section */}
-                      <div className="border-b border-gray-200 pb-8">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center space-x-2">
+                      <div className="pb-8 border-b border-gray-200">
+                        <h3 className="flex items-center mb-6 space-x-2 text-lg font-semibold text-gray-900">
                           <svg
                             className="w-5 h-5 text-primary"
                             fill="none"
@@ -1493,20 +1500,20 @@ const handleBulkIntroduction = async () => {
                           <span>Company Details</span>
                         </h3>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                           <div className="space-y-2">
                             <label className="block text-sm font-medium text-gray-700">
                               Company Name *
                             </label>
                             <Field
                               name="companyName"
-                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
+                              className="w-full px-4 py-3 transition-colors border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                               placeholder="Enter your company name"
                             />
                             <ErrorMessage
                               name="companyName"
                               component="p"
-                              className="text-red-500 text-sm"
+                              className="text-sm text-red-500"
                             />
                           </div>
 
@@ -1516,13 +1523,13 @@ const handleBulkIntroduction = async () => {
                             </label>
                             <Field
                               name="phone"
-                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
+                              className="w-full px-4 py-3 transition-colors border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                               placeholder="+1 (555) 123-4567"
                             />
                             <ErrorMessage
                               name="phone"
                               component="p"
-                              className="text-red-500 text-sm"
+                              className="text-sm text-red-500"
                             />
                           </div>
 
@@ -1532,21 +1539,21 @@ const handleBulkIntroduction = async () => {
                             </label>
                             <Field
                               name="website"
-                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
+                              className="w-full px-4 py-3 transition-colors border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                               placeholder="https://www.yourcompany.com"
                             />
                             <ErrorMessage
                               name="website"
                               component="p"
-                              className="text-red-500 text-sm"
+                              className="text-sm text-red-500"
                             />
                           </div>
                         </div>
                       </div>
 
                       {/* Financial Information Section */}
-                      <div className="border-b border-gray-200 pb-8">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center space-x-2">
+                      <div className="pb-8 border-b border-gray-200">
+                        <h3 className="flex items-center mb-6 space-x-2 text-lg font-semibold text-gray-900">
                           <svg
                             className="w-5 h-5 text-primary"
                             fill="none"
@@ -1563,7 +1570,7 @@ const handleBulkIntroduction = async () => {
                           <span>Financial Information</span>
                         </h3>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                           <div className="space-y-2">
                             <label className="block text-sm font-medium text-gray-700">
                               Currency *
@@ -1571,7 +1578,7 @@ const handleBulkIntroduction = async () => {
                             <Field
                               as="select"
                               name="currency"
-                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
+                              className="w-full px-4 py-3 transition-colors border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                             >
                               <option value="USD">US Dollar (USD)</option>
                               <option value="EUR">Euro (EUR)</option>
@@ -1613,7 +1620,7 @@ const handleBulkIntroduction = async () => {
                             <ErrorMessage
                               name="currency"
                               component="p"
-                              className="text-red-500 text-sm"
+                              className="text-sm text-red-500"
                             />
                           </div>
 
@@ -1622,7 +1629,7 @@ const handleBulkIntroduction = async () => {
                               Annual Revenue *
                             </label>
                             <div className="relative">
-                              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                              <span className="absolute text-gray-500 transform -translate-y-1/2 left-3 top-1/2">
                                 {{ 
                                   USD: "$",
                                   EUR: "€",
@@ -1745,7 +1752,7 @@ const handleBulkIntroduction = async () => {
                                   <input
                                     {...field}
                                     type="text"
-                                    className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
+                                    className="w-full py-3 pl-8 pr-4 transition-colors border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                                     placeholder="1,000,000"
                                     onChange={(e) => {
                                       const digits = e.target.value.replace(
@@ -1766,15 +1773,15 @@ const handleBulkIntroduction = async () => {
                             <ErrorMessage
                               name="annualRevenue"
                               component="p"
-                              className="text-red-500 text-sm"
+                              className="text-sm text-red-500"
                             />
                           </div>
                         </div>
                       </div>
 
                       {/* Business Classification Section */}
-                      <div className="border-b border-gray-200 pb-8">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center space-x-2">
+                      <div className="pb-8 border-b border-gray-200">
+                        <h3 className="flex items-center mb-6 space-x-2 text-lg font-semibold text-gray-900">
                           <svg
                             className="w-5 h-5 text-primary"
                             fill="none"
@@ -1791,13 +1798,13 @@ const handleBulkIntroduction = async () => {
                           <span>Business Classification</span>
                         </h3>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
                           <div className="space-y-3">
                             <label className="block text-sm font-medium text-gray-700">
                               Industry Sector *
                             </label>
                             {values.industry && (
-                              <div className="mb-2 p-2 bg-primary/10 rounded-lg border border-primary/20">
+                              <div className="p-2 mb-2 border rounded-lg bg-primary/10 border-primary/20">
                                 <span className="text-sm font-medium text-primary">
                                   Selected: {values.industry}
                                 </span>
@@ -1810,7 +1817,7 @@ const handleBulkIntroduction = async () => {
                             <ErrorMessage
                               name="industry"
                               component="div"
-                              className="text-red-500 text-sm mt-2"
+                              className="mt-2 text-sm text-red-500"
                             />
                           </div>
 
@@ -1819,7 +1826,7 @@ const handleBulkIntroduction = async () => {
                               Geographic Region *
                             </label>
                             {values.geography && (
-                              <div className="mb-2 p-2 bg-primary/10 rounded-lg border border-primary/20">
+                              <div className="p-2 mb-2 border rounded-lg bg-primary/10 border-primary/20">
                                 <span className="text-sm font-medium text-primary">
                                   Selected: {values.geography}
                                 </span>
@@ -1834,7 +1841,7 @@ const handleBulkIntroduction = async () => {
                             <ErrorMessage
                               name="geography"
                               component="div"
-                              className="text-red-500 text-sm mt-2"
+                              className="mt-2 text-sm text-red-500"
                             />
                           </div>
                         </div>
@@ -1842,7 +1849,7 @@ const handleBulkIntroduction = async () => {
 
                       {/* Company Description Section */}
                       <div className="pb-8">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center space-x-2">
+                        <h3 className="flex items-center mb-6 space-x-2 text-lg font-semibold text-gray-900">
                           <svg
                             className="w-5 h-5 text-primary"
                             fill="none"
@@ -1867,14 +1874,14 @@ const handleBulkIntroduction = async () => {
                             as="textarea"
                             name="description"
                             rows="6"
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors resize-none"
+                            className="w-full px-4 py-3 transition-colors border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-primary focus:border-primary"
                             placeholder="Provide a detailed description of your business, products/services, target market, and what makes your company unique. This information helps us match you with the most suitable advisors."
                           />
-                          <div className="flex justify-between items-center">
+                          <div className="flex items-center justify-between">
                             <ErrorMessage
                               name="description"
                               component="p"
-                              className="text-red-500 text-sm"
+                              className="text-sm text-red-500"
                             />
                             <span className="text-xs text-gray-500">
                               {values.description
@@ -1891,12 +1898,12 @@ const handleBulkIntroduction = async () => {
                         <button
                           type="submit"
                           disabled={isSubmitting}
-                          className="px-8 py-3 bg-gradient-to-r from-primary to-third text-white font-semibold rounded-lg hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flex items-center space-x-2"
+                          className="flex items-center px-8 py-3 space-x-2 font-semibold text-white transition-all duration-300 rounded-lg bg-gradient-to-r from-primary to-third hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {isSubmitting ? (
                             <>
                               <svg
-                                className="animate-spin h-5 w-5 text-white"
+                                className="w-5 h-5 text-white animate-spin"
                                 xmlns="http://www.w3.org/2000/svg"
                                 fill="none"
                                 viewBox="0 0 24 24"

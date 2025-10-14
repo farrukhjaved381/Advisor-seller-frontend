@@ -176,6 +176,10 @@ export default function AdvisorProfile() {
       }
     }
   }
+  const handleLogoClick = () => {
+  navigate("/");
+};
+
   const displayEnd = displayStart ? new Date(new Date(displayStart).setFullYear(displayStart.getFullYear() + 1)) : end;
   const subscriptionStatus = subscription?.status || 'none';
   const fallbackActive = (user?.isSubscriptionActive ?? false) || (!!displayEnd && displayEnd > now);
@@ -209,6 +213,7 @@ export default function AdvisorProfile() {
               src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=768,fit=crop,q=95/mk3JaNVZEltBD9g4/logo-transparency-mnlJLXr4jxIOR470.png"
               alt="Advisor Chooser"
               className="object-contain w-auto h-8"
+               onClick={handleLogoClick}
             />
           </div>
           <button onClick={() => setSidebarOpen(false)} className="p-2 rounded-md lg:hidden hover:bg-gray-100">

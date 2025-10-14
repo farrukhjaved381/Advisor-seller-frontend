@@ -416,11 +416,11 @@ const AdvisorDashboard = () => {
           <FaSearch className="absolute w-4 h-4 text-gray-400 transform -translate-y-1/2 left-3 top-1/2" />
         </div>
 
-        {/* Selected chips row */}
+        {/* Selected chips row
         {selected && selected.length > 0 && (
           <div className="mb-3">
             {/* fixed box so long lists scroll instead of pushing layout */}
-            <div className="w-full p-2 overflow-auto bg-white border rounded-md max-h-28 border-primary/10">
+            {/* <div className="w-full p-2 overflow-auto bg-white border rounded-md max-h-28 border-primary/10">
               <div className="flex flex-wrap gap-2">
                 {selected.map((name) => (
                   <div
@@ -441,7 +441,7 @@ const AdvisorDashboard = () => {
               </div>
             </div>
           </div>
-        )}
+        )}  */}
 
         <div
           className={`bg-gray-50 border rounded-lg p-4 h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-gray-100 shadow-inner ${
@@ -718,9 +718,9 @@ const AdvisorDashboard = () => {
         </div>
 
         {/* Selected chips row */}
-        {selected && selected.length > 0 && (
+        {/* {selected && selected.length > 0 && (
           <div className="mb-3">
-            {/* fixed box so long lists scroll instead of pushing layout */}
+            fixed box so long lists scroll instead of pushing layout
             <div className="w-full p-2 overflow-auto bg-white border rounded-md max-h-28 border-primary/10">
               <div className="flex flex-wrap gap-2">
                 {selected.map((name) => (
@@ -742,7 +742,7 @@ const AdvisorDashboard = () => {
               </div>
             </div>
           </div>
-        )}
+        )} */}
 
         <div
           className={`bg-gray-50 border rounded-lg p-4 h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-gray-100 shadow-inner ${
@@ -963,6 +963,10 @@ const AdvisorDashboard = () => {
     );
   }
 
+   const handleLogoClick = () => {
+  navigate("/");
+};
+
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Mobile backdrop */}
@@ -985,6 +989,8 @@ const AdvisorDashboard = () => {
               src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=768,fit=crop,q=95/mk3JaNVZEltBD9g4/logo-transparency-mnlJLXr4jxIOR470.png"
               alt="Advisor Chooser"
               className="object-contain w-auto h-8"
+              onClick={handleLogoClick}
+              
             />
             <button
               onClick={() => setSidebarOpen(false)}
@@ -1934,7 +1940,8 @@ const AdvisorDashboard = () => {
                           />
                           <div className="ml-3 text-sm">
                             <label htmlFor="workedWithCimamplify-edit" className="font-bold text-blue-800">
-                              Have you ever posted a deal at our sister company, CIM Amplify (www.cimamplify.com)?
+                              Select if you have ever posted a deal at our sister company, CIM Amplify (www.cimamplify.com)?
+
                             </label>
                             <p className="text-blue-700">You can change this answer in the future once you have posted.</p>
                           </div>
