@@ -567,18 +567,34 @@ const AdvisorPaymentForm = () => {
                   >
                     <div className="flex items-center w-full px-4 py-3">
                       <FaGlobe className="mr-3 text-gray-400" />
-                      <Field
-                        as="select"
-                        name="country"
-                        className="w-full text-gray-800 bg-transparent outline-none"
-                      >
-                        <option value="">Select your country</option>
-                        <option value="PK">🇵🇰 Pakistan</option>
-                        <option value="US">🇺🇸 United States</option>
-                        <option value="GB">🇬🇧 United Kingdom</option>
-                        <option value="CA">🇨🇦 Canada</option>
-                        <option value="AU">🇦🇺 Australia</option>
-                      </Field>
+                      {/* Country Select */}
+<Field
+  as="select"
+  name="country"
+  className="w-full text-gray-800 bg-transparent outline-none"
+>
+  <option value="">Select your country</option>
+  <option value="US">🇺🇸 United States</option>
+  <option value="CA">🇨🇦 Canada</option>
+  <option value="MX">🇲🇽 Mexico</option>
+  <option value="AUD">🇦🇺 Australia</option>
+  <option value="BRL">🇧🇷 Brazil</option>
+  <option value="CHF">🇨🇭 Switzerland</option>
+  <option value="CNY">🇨🇳 China</option>
+  <option value="EUR">🇪🇺 Eurozone</option>
+  <option value="GBP">🇬🇧 United Kingdom</option>
+  <option value="HKD">🇭🇰 Hong Kong</option>
+  <option value="INR">🇮🇳 India</option>
+  <option value="JPY">🇯🇵 Japan</option>
+  <option value="KRW">🇰🇷 South Korea</option>
+  <option value="NOK">🇳🇴 Norway</option>
+  <option value="NZD">🇳🇿 New Zealand</option>
+  <option value="RUB">🇷🇺 Russia</option>
+  <option value="SEK">🇸🇪 Sweden</option>
+  <option value="SGD">🇸🇬 Singapore</option>
+  <option value="TRY">🇹🇷 Turkey</option>
+  <option value="ZAR">🇿🇦 South Africa</option>
+</Field>
                     </div>
                   </div>
                   <ErrorMessage
@@ -962,19 +978,19 @@ const AdvisorPayments = () => {
             {
               color: 'blue',
               title: 'Experience Required',
-              desc: 'Minimum of 5 years practicing as an M&A Advisor, Broker, or Investment Banker',
+              desc: 'Minimum of 5 years practicing as a M&A Advisor, Broker, or Investment Banker ',
               highlight: '5 years'
             },
             {
               color: 'green',
               title: 'Transaction History',
-              desc: 'Successfully completed at least 10 company sale transactions',
+              desc: 'Successfully completed at least 10 company sale transactions ',
               highlight: '10 company sale transactions'
             },
             {
               color: 'purple',
               title: 'Client Testimonials',
-              desc: 'Provide 5 customer testimonials from previous clients',
+              desc: 'You will be required to provide 5 customer testimonials from previous customers ',
               highlight: '5 customer testimonials'
             }
           ].map((req, i) => (
