@@ -1005,7 +1005,7 @@ const AdvisorPayments = () => {
                 <h3 className="text-sm font-semibold text-gray-900 sm:text-base md:text-lg">{req.title}</h3>
                 <p className="mt-1 text-xs leading-relaxed text-gray-700 sm:text-sm md:text-base">
                   {req.desc.replace(req.highlight, '')}
-                  <span className={`font-bold text-black-600`}>{req.highlight}</span>
+                  <span className={`font-bold text-${req.color}-600`}>{req.highlight}</span>
                 </p>
               </div>
             </div>
