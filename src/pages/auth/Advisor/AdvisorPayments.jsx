@@ -577,23 +577,22 @@ const AdvisorPaymentForm = () => {
   <option value="US">🇺🇸 United States</option>
   <option value="CA">🇨🇦 Canada</option>
   <option value="MX">🇲🇽 Mexico</option>
-  <option value="AUD">🇦🇺 Australia</option>
-  <option value="BRL">🇧🇷 Brazil</option>
-  <option value="CHF">🇨🇭 Switzerland</option>
-  <option value="CNY">🇨🇳 China</option>
-  <option value="EUR">🇪🇺 Eurozone</option>
-  <option value="GBP">🇬🇧 United Kingdom</option>
-  <option value="HKD">🇭🇰 Hong Kong</option>
-  <option value="INR">🇮🇳 India</option>
-  <option value="JPY">🇯🇵 Japan</option>
-  <option value="KRW">🇰🇷 South Korea</option>
-  <option value="NOK">🇳🇴 Norway</option>
-  <option value="NZD">🇳🇿 New Zealand</option>
-  <option value="RUB">🇷🇺 Russia</option>
-  <option value="SEK">🇸🇪 Sweden</option>
-  <option value="SGD">🇸🇬 Singapore</option>
-  <option value="TRY">🇹🇷 Turkey</option>
-  <option value="ZAR">🇿🇦 South Africa</option>
+  <option value="GB">🇬🇧 United Kingdom</option>
+  <option value="AU">🇦🇺 Australia</option>
+  <option value="BR">🇧🇷 Brazil</option>
+  <option value="CH">🇨🇭 Switzerland</option>
+  <option value="CN">🇨🇳 China</option>
+  <option value="HK">🇭🇰 Hong Kong</option>
+  <option value="IN">🇮🇳 India</option>
+  <option value="JP">🇯🇵 Japan</option>
+  <option value="KR">🇰🇷 South Korea</option>
+  <option value="NO">🇳🇴 Norway</option>
+  <option value="NZ">🇳🇿 New Zealand</option>
+  <option value="RU">🇷🇺 Russia</option>
+  <option value="SE">🇸🇪 Sweden</option>
+  <option value="SG">🇸🇬 Singapore</option>
+  <option value="TR">🇹🇷 Turkey</option>
+  <option value="ZA">🇿🇦 South Africa</option>
 </Field>
                     </div>
                   </div>
