@@ -567,18 +567,33 @@ const AdvisorPaymentForm = () => {
                   >
                     <div className="flex items-center w-full px-4 py-3">
                       <FaGlobe className="mr-3 text-gray-400" />
-                      <Field
-                        as="select"
-                        name="country"
-                        className="w-full text-gray-800 bg-transparent outline-none"
-                      >
-                        <option value="">Select your country</option>
-                        <option value="PK">🇵🇰 Pakistan</option>
-                        <option value="US">🇺🇸 United States</option>
-                        <option value="GB">🇬🇧 United Kingdom</option>
-                        <option value="CA">🇨🇦 Canada</option>
-                        <option value="AU">🇦🇺 Australia</option>
-                      </Field>
+                      {/* Country Select */}
+<Field
+  as="select"
+  name="country"
+  className="w-full text-gray-800 bg-transparent outline-none"
+>
+  <option value="">Select your country</option>
+  <option value="US">🇺🇸 United States</option>
+  <option value="CA">🇨🇦 Canada</option>
+  <option value="MX">🇲🇽 Mexico</option>
+  <option value="GB">🇬🇧 United Kingdom</option>
+  <option value="AU">🇦🇺 Australia</option>
+  <option value="BR">🇧🇷 Brazil</option>
+  <option value="CH">🇨🇭 Switzerland</option>
+  <option value="CN">🇨🇳 China</option>
+  <option value="HK">🇭🇰 Hong Kong</option>
+  <option value="IN">🇮🇳 India</option>
+  <option value="JP">🇯🇵 Japan</option>
+  <option value="KR">🇰🇷 South Korea</option>
+  <option value="NO">🇳🇴 Norway</option>
+  <option value="NZ">🇳🇿 New Zealand</option>
+  <option value="RU">🇷🇺 Russia</option>
+  <option value="SE">🇸🇪 Sweden</option>
+  <option value="SG">🇸🇬 Singapore</option>
+  <option value="TR">🇹🇷 Turkey</option>
+  <option value="ZA">🇿🇦 South Africa</option>
+</Field>
                     </div>
                   </div>
                   <ErrorMessage
@@ -960,21 +975,21 @@ const AdvisorPayments = () => {
         <div className="mb-6 space-y-4">
           {[
             {
-              color: 'blue',
+              color: 'green',
               title: 'Experience Required',
-              desc: 'Minimum of 5 years practicing as an M&A Advisor, Broker, or Investment Banker',
+              desc: 'Minimum of 5 years practicing as a M&A Advisor, Broker, or Investment Banker ',
               highlight: '5 years'
             },
             {
               color: 'green',
               title: 'Transaction History',
-              desc: 'Successfully completed at least 10 company sale transactions',
+              desc: 'Successfully completed at least 10 company sale transactions ',
               highlight: '10 company sale transactions'
             },
             {
-              color: 'purple',
+              color: 'green',
               title: 'Client Testimonials',
-              desc: 'Provide 5 customer testimonials from previous clients',
+              desc: 'You will be required to provide 5 customer testimonials from previous customers ',
               highlight: '5 customer testimonials'
             }
           ].map((req, i) => (
@@ -982,7 +997,7 @@ const AdvisorPayments = () => {
               key={i}
               className={`flex flex-col sm:flex-row sm:items-start p-4 border-2 border-${req.color}-100 requirement-item rounded-xl bg-${req.color}-50 hover:bg-${req.color}-100 hover:border-${req.color}-200 transition-all duration-300`}
             >
-              <div className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 mb-3 sm:mb-0 sm:mr-3 bg-${req.color}-500 rounded-full flex-shrink-0`}>
+              <div className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 mb-3 sm:mb-0 sm:mr-3 bg-green-500 rounded-full flex-shrink-0`}>
                 <FaCheckCircle className="text-sm text-white sm:text-base" />
               </div>
               <div>
