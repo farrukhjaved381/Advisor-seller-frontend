@@ -138,10 +138,12 @@ const AdvisorCard = ({ advisor, onSelect, isSelected }) => {
       <div className="p-6 space-y-6">
         {/* Description */}
         {advisor.description && (
-          <div>
-            <p className="text-base leading-relaxed text-gray-700">{advisor.description}</p>
-          </div>
-        )}
+  <div className="max-w-xl mx-auto mt-2 mb-2">
+    <p className="text-base leading-relaxed text-gray-700 break-words whitespace-pre-line">
+      {advisor.description}
+    </p>
+  </div>
+)}
 
         {/* Intro Video */}
         {advisor.introVideoUrl && (
