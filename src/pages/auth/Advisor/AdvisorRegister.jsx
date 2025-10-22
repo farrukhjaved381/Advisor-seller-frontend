@@ -83,7 +83,7 @@ const AdvisorRegister = () => {
       setLoading(true);
       console.log("Final payload being sent:", finalData);
       const res = await axios.post(
-        "http://localhost:3003/api/auth/register",
+        "https://api.advisorchooser.com/docs/api/auth/register",
         finalData
       );
 

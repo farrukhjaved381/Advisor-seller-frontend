@@ -46,7 +46,7 @@ const ForgotPassword = () => {
 
     try {
       const res = await axios.post(
-        "http://localhost:3003/api/auth/forgot-password",
+        "https://api.advisorchooser.com/docs/api/auth/forgot-password",
         { email },
         { validateStatus: () => true }
       )

@@ -102,7 +102,7 @@ const SellerRegister = () => {
     try {
       setLoading(true);
       const res = await axios.post(
-        "http://localhost:3003/api/auth/register",
+        "https://api.advisorchooser.com/docs/api/auth/register",
         finalData
       );
 
