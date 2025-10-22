@@ -8,7 +8,7 @@ const envFrontend = typeof import.meta !== 'undefined' && import.meta.env && imp
   : undefined;
 
 export const API_CONFIG = {
-  BACKEND_URL: envBackend || "https://api.advisorchooser.com/docs",
+  BACKEND_URL: envBackend || "https://api.advisorchooser.com",
   FRONTEND_URL: envFrontend || "https://app.advisorchooser.com"
 };
 

@@ -16,7 +16,7 @@ const AdvisorUpload = () => {
             try {
                 const token = localStorage.getItem("access_token");
                 const userRes = await axios.get(
-                    "https://api.advisorchooser.com/docs/api/auth/profile",
+                    "https://api.advisorchooser.com/api/auth/profile",
                     { headers: { Authorization: `Bearer ${token}` } }
                 );
                 
@@ -83,7 +83,7 @@ const AdvisorUpload = () => {
             // Check if profile already exists
             try {
                 const userRes = await axios.get(
-                    "https://api.advisorchooser.com/docs/api/auth/profile",
+                    "https://api.advisorchooser.com/api/auth/profile",
                     { headers: { Authorization: `Bearer ${token}` } }
                 );
                 
@@ -104,7 +104,7 @@ const AdvisorUpload = () => {
             if (logoFile) {
                 logoUrl = await handleFileUpload(
                     logoFile,
-                    "https://api.advisorchooser.com/docs/api/upload/logo"
+                    "https://api.advisorchooser.com/api/upload/logo"
                 );
             } else {
                 toast.error("Logo is required");
@@ -117,7 +117,7 @@ const AdvisorUpload = () => {
                     if (t.clientName && t.testimonial && t.pdfFile) {
                         const pdfUrl = await handleFileUpload(
                             t.pdfFile,
-                            "https://api.advisorchooser.com/docs/api/upload/testimonial"
+                            "https://api.advisorchooser.com/api/upload/testimonial"
                         );
                         return {
                             clientName: t.clientName,
@@ -144,7 +144,7 @@ const AdvisorUpload = () => {
             };
 
             await axios.post(
-                "https://api.advisorchooser.com/docs/api/advisors/profile",
+                "https://api.advisorchooser.com/api/advisors/profile",
                 payload,
                 {
                     headers: {

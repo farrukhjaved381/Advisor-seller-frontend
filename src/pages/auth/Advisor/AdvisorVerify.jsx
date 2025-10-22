@@ -19,7 +19,7 @@ const AdvisorVerify = () => {
 
       try {
         const loginRes = await axios.post(
-          'https://api.advisorchooser.com/docs/api/auth/login-with-token',
+          'https://api.advisorchooser.com/api/auth/login-with-token',
           { token },
           { validateStatus: () => true },
         );
@@ -66,7 +66,7 @@ const AdvisorVerify = () => {
 
       try {
         const response = await axios.get(
-          `https://api.advisorchooser.com/docs/api/auth/verify-email?token=${token}`,
+          `https://api.advisorchooser.com/api/auth/verify-email?token=${token}`,
           { validateStatus: () => true },
         );
 

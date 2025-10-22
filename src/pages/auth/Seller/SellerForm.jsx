@@ -364,7 +364,7 @@ export const SellerForm = () => {
         description: values.description,
       };
       
-      await axios.post("https://api.advisorchooser.com/docs/api/sellers/profile", payload, {
+      await axios.post("https://api.advisorchooser.com/api/sellers/profile", payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

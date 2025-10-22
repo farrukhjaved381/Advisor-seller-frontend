@@ -83,7 +83,7 @@ const VerifyEmail = () => {
     try {
       // Replace this with your actual API call using axios
       const response = await fetch(
-        "https://api.advisorchooser.com/docs/api/auth/resend-verification",
+        "https://api.advisorchooser.com/api/auth/resend-verification",
         {
           method: "POST",
           headers: {

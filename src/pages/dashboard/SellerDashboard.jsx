@@ -382,7 +382,7 @@ const SellerDashboard = () => {
     try {
       const token = localStorage.getItem("access_token");
       await axios.delete(
-        "https://api.advisorchooser.com/docs/api/sellers/profile",
+        "https://api.advisorchooser.com/api/sellers/profile",
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -454,7 +454,7 @@ const handleBulkIntroduction = async () => {
     const token = localStorage.getItem("access_token");
 
     const response = await axios.post(
-      "https://api.advisorchooser.com/docs/api/connections/introduction",
+      "https://api.advisorchooser.com/api/connections/introduction",
       { advisorIds: selectedAdvisors },
       { headers: { Authorization: `Bearer ${token}` } }
     );
@@ -478,7 +478,7 @@ const handleBulkIntroduction = async () => {
       setDirectListLoading(true);
       const token = localStorage.getItem("access_token");
       const response = await axios.post(
-        "https://api.advisorchooser.com/docs/api/connections/direct-list",
+        "https://api.advisorchooser.com/api/connections/direct-list",
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -517,7 +517,7 @@ const handleBulkIntroduction = async () => {
         if (!token) return;
 
         const res = await axios.get(
-          "https://api.advisorchooser.com/docs/api/auth/profile",
+          "https://api.advisorchooser.com/api/auth/profile",
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -544,7 +544,7 @@ const handleBulkIntroduction = async () => {
 
         // Get user auth data
         const authRes = await axios.get(
-          "https://api.advisorchooser.com/docs/api/auth/profile",
+          "https://api.advisorchooser.com/api/auth/profile",
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -561,7 +561,7 @@ const handleBulkIntroduction = async () => {
         // Try to get seller profile from database
         try {
           const sellerRes = await axios.get(
-            "https://api.advisorchooser.com/docs/api/sellers/profile",
+            "https://api.advisorchooser.com/api/sellers/profile",
             {
               headers: { Authorization: `Bearer ${token}` },
             }
@@ -603,7 +603,7 @@ const handleBulkIntroduction = async () => {
       }
 
       const res = await axios.get(
-        `https://api.advisorchooser.com/docs/api/sellers/matches`,
+        `https://api.advisorchooser.com/api/sellers/matches`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -633,7 +633,7 @@ const handleBulkIntroduction = async () => {
       }
 
       const res = await axios.get(
-        "https://api.advisorchooser.com/docs/api/sellers/profile",
+        "https://api.advisorchooser.com/api/sellers/profile",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -895,7 +895,7 @@ const handleBulkIntroduction = async () => {
       };
 
       const res = await axios.patch(
-        "https://api.advisorchooser.com/docs/api/sellers/profile",
+        "https://api.advisorchooser.com/api/sellers/profile",
         payload,
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -974,7 +974,7 @@ const handleBulkIntroduction = async () => {
       try {
         const token = localStorage.getItem("access_token");
         await axios.patch(
-          "https://api.advisorchooser.com/docs/api/sellers/profile",
+          "https://api.advisorchooser.com/api/sellers/profile",
           values,
           {
             headers: { Authorization: `Bearer ${token}` },

@@ -267,7 +267,7 @@ const EditProfileModal = ({ isOpen, onClose, profile, onProfileUpdate }) => {
         try {
             const token = localStorage.getItem("access_token");
             await axios.patch(
-                "https://api.advisorchooser.com/docs/api/sellers/profile",
+                "https://api.advisorchooser.com/api/sellers/profile",
                 values,
                 {
                     headers: { Authorization: `Bearer ${token}` },

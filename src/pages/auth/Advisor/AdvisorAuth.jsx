@@ -73,7 +73,7 @@ const Auth = () => {
       try {
         // Login request
         const res = await axios.post(
-          "https://api.advisorchooser.com/docs/api/auth/login",
+          "https://api.advisorchooser.com/api/auth/login",
           { email, password },
           { withCredentials: true, validateStatus: () => true }
         );
@@ -93,7 +93,7 @@ const Auth = () => {
 
           // Get CSRF token with Authorization header
           const csrfRes = await axios.get(
-            "https://api.advisorchooser.com/docs/api/auth/csrf-token",
+            "https://api.advisorchooser.com/api/auth/csrf-token",
             {
               headers: { Authorization: `Bearer ${accessToken}` },
               withCredentials: true,
@@ -112,7 +112,7 @@ const Auth = () => {
 
           // Fetch fresh user data to get current profile status
           const userRes = await axios.get(
-            "https://api.advisorchooser.com/docs/api/auth/profile",
+            "https://api.advisorchooser.com/api/auth/profile",
             { headers: { Authorization: `Bearer ${accessToken}` } }
           );
           
@@ -134,7 +134,7 @@ const Auth = () => {
               // Check if advisor profile exists by trying to fetch it
               try {
                 const profileRes = await axios.get(
-                  "https://api.advisorchooser.com/docs/api/advisors/profile",
+                  "https://api.advisorchooser.com/api/advisors/profile",
                   { headers: { Authorization: `Bearer ${accessToken}` } }
                 );
                 

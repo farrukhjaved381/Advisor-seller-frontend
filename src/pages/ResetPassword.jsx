@@ -38,7 +38,7 @@ const ResetPassword = () => {
     const fetchProfile = async (authToken) => {
       try {
         const res = await axios.get(
-          "https://api.advisorchooser.com/docs/api/auth/profile",
+          "https://api.advisorchooser.com/api/auth/profile",
           {
             headers: { Authorization: `Bearer ${authToken}` },
             validateStatus: () => true,
@@ -88,7 +88,7 @@ const ResetPassword = () => {
     try {
       const payload = { token, newPassword: values.newPassword }
       const res = await axios.post(
-        "https://api.advisorchooser.com/docs/api/auth/reset-password",
+        "https://api.advisorchooser.com/api/auth/reset-password",
         payload,
         { validateStatus: () => true }
       )

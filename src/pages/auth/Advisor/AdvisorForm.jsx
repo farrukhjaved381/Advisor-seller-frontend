@@ -720,7 +720,7 @@ export const AdvisorForm = () => {
       if (values.logoFile) {
         logoUrl = await handleFileUpload(
           values.logoFile,
-          "https://api.advisorchooser.com/docs/api/upload/logo"
+          "https://api.advisorchooser.com/api/upload/logo"
         );
       }
 
@@ -728,7 +728,7 @@ export const AdvisorForm = () => {
       if (introVideoFile) {
         introVideoUrl = await handleFileUpload(
           introVideoFile,
-          "https://api.advisorchooser.com/docs/api/upload/video"
+          "https://api.advisorchooser.com/api/upload/video"
         );
       }
 
@@ -740,7 +740,7 @@ export const AdvisorForm = () => {
             if (t.pdfFile) {
               pdfUrl = await handleFileUpload(
                 t.pdfFile,
-                "https://api.advisorchooser.com/docs/api/upload/testimonial"
+                "https://api.advisorchooser.com/api/upload/testimonial"
               );
             }
             return {
@@ -790,7 +790,7 @@ export const AdvisorForm = () => {
       console.log("Sending payload:", payload);
 
       await axios.post(
-        "https://api.advisorchooser.com/docs/api/advisors/profile",
+        "https://api.advisorchooser.com/api/advisors/profile",
         payload,
         {
           headers: { Authorization: `Bearer ${token}` },
