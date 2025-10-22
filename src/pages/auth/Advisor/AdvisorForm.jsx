@@ -720,7 +720,7 @@ export const AdvisorForm = () => {
       if (values.logoFile) {
         logoUrl = await handleFileUpload(
           values.logoFile,
-          "https://advisor-seller-backend.vercel.app/api/upload/logo"
+          "http://localhost:3003/api/upload/logo"
         );
       }
 
@@ -728,7 +728,7 @@ export const AdvisorForm = () => {
       if (introVideoFile) {
         introVideoUrl = await handleFileUpload(
           introVideoFile,
-          "https://advisor-seller-backend.vercel.app/api/upload/video"
+          "http://localhost:3003/api/upload/video"
         );
       }
 
@@ -740,7 +740,7 @@ export const AdvisorForm = () => {
             if (t.pdfFile) {
               pdfUrl = await handleFileUpload(
                 t.pdfFile,
-                "https://advisor-seller-backend.vercel.app/api/upload/testimonial"
+                "http://localhost:3003/api/upload/testimonial"
               );
             }
             return {
@@ -790,7 +790,7 @@ export const AdvisorForm = () => {
       console.log("Sending payload:", payload);
 
       await axios.post(
-        "https://advisor-seller-backend.vercel.app/api/advisors/profile",
+        "http://localhost:3003/api/advisors/profile",
         payload,
         {
           headers: { Authorization: `Bearer ${token}` },

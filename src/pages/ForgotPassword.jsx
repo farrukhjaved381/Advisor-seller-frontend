@@ -46,7 +46,7 @@ const ForgotPassword = () => {
 
     try {
       const res = await axios.post(
-        "https://advisor-seller-backend.vercel.app/api/auth/forgot-password",
+        "http://localhost:3003/api/auth/forgot-password",
         { email },
         { validateStatus: () => true }
       )

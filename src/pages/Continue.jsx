@@ -83,7 +83,7 @@ const VerifyEmail = () => {
     try {
       // Replace this with your actual API call using axios
       const response = await fetch(
-        "https://advisor-seller-backend.vercel.app/api/auth/resend-verification",
+        "http://localhost:3003/api/auth/resend-verification",
         {
           method: "POST",
           headers: {

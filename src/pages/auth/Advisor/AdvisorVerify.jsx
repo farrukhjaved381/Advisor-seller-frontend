@@ -19,7 +19,7 @@ const AdvisorVerify = () => {
 
       try {
         const loginRes = await axios.post(
-          'https://advisor-seller-backend.vercel.app/api/auth/login-with-token',
+          'http://localhost:3003/api/auth/login-with-token',
           { token },
           { validateStatus: () => true },
         );
@@ -66,7 +66,7 @@ const AdvisorVerify = () => {
 
       try {
         const response = await axios.get(
-          `https://advisor-seller-backend.vercel.app/api/auth/verify-email?token=${token}`,
+          `http://localhost:3003/api/auth/verify-email?token=${token}`,
           { validateStatus: () => true },
         );
 

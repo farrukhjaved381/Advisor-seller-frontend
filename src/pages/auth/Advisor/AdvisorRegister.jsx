@@ -83,7 +83,7 @@ const AdvisorRegister = () => {
       setLoading(true);
       console.log("Final payload being sent:", finalData);
       const res = await axios.post(
-        "https://advisor-seller-backend.vercel.app/api/auth/register",
+        "http://localhost:3003/api/auth/register",
         finalData
       );
 

@@ -47,7 +47,7 @@ const SellerAuth = () => {
     try {
       console.log('[SellerAuth] Sending seller email auth request', email.trim());
       const response = await axios.post(
-        'https://advisor-seller-backend.vercel.app/api/auth/seller-login',
+        'http://localhost:3003/api/auth/seller-login',
         { email: email.trim() },
         { withCredentials: true, validateStatus: () => true },
       );
@@ -69,7 +69,7 @@ const SellerAuth = () => {
       try {
         console.log('[SellerAuth] Fetching profile after seller email auth');
         const profileResponse = await axios.get(
-          'https://advisor-seller-backend.vercel.app/api/auth/profile',
+          'http://localhost:3003/api/auth/profile',
           { headers: { Authorization: `Bearer ${accessToken}` } },
         );
 

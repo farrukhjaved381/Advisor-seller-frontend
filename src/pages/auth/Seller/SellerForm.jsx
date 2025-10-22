@@ -364,7 +364,7 @@ export const SellerForm = () => {
         description: values.description,
       };
       
-      await axios.post("https://advisor-seller-backend.vercel.app/api/sellers/profile", payload, {
+      await axios.post("http://localhost:3003/api/sellers/profile", payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

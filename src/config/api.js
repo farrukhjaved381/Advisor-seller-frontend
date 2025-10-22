@@ -8,8 +8,8 @@ const envFrontend = typeof import.meta !== 'undefined' && import.meta.env && imp
   : undefined;
 
 export const API_CONFIG = {
-  BACKEND_URL: envBackend || "https://advisor-seller-backend.vercel.app",
-  FRONTEND_URL: envFrontend || "https://frontend-five-pied-17.vercel.app"
+  BACKEND_URL: envBackend || "http://localhost:3003",
+  FRONTEND_URL: envFrontend || "http://localhost:5174"
 };
 
 export default API_CONFIG;
