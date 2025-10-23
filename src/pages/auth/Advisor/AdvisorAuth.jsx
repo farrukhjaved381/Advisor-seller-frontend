@@ -59,115 +59,72 @@ const Auth = () => {
     setPasswordStrength(checkPasswordStrength(value));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+ const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    const emailValidation = validateEmail(email);
-    const passwordValidation = validatePassword(password);
+  const emailValidation = validateEmail(email);
+  const passwordValidation = validatePassword(password);
 
-    setEmailError(emailValidation);
-    setPasswordError(passwordValidation);
+  setEmailError(emailValidation);
+  setPasswordError(passwordValidation);
 
-    if (!emailValidation && !passwordValidation) {
-      setLoading(true);
-      try {
-        // Login request
-        const res = await axios.post(
-          "https://api.advisorchooser.com/api/auth/login",
-          { email, password },
-          { withCredentials: true, validateStatus: () => true }
-        );
+  if (!emailValidation && !passwordValidation) {
+    setLoading(true);
+    try {
+      // Login request
+      const res = await axios.post(
+        "https://api.advisorchooser.com/api/auth/login",
+        { email, password },
+        { withCredentials: true, validateStatus: () => true }
+      );
 
-        if (res.status === 200 || res.status === 201) {
-          toast.success("Login successful ✅");
-
-          const accessToken = res.data.access_token;
-          localStorage.setItem("access_token", accessToken);
-
-          if (res.data.refresh_token) {
-            localStorage.setItem("refresh_token", res.data.refresh_token);
-          }
-          if (res.data.user) {
-            localStorage.setItem("user", JSON.stringify(res.data.user));
-          }
-
-          // Get CSRF token with Authorization header
-          const csrfRes = await axios.get(
-            "https://api.advisorchooser.com/api/auth/csrf-token",
-            {
-              headers: { Authorization: `Bearer ${accessToken}` },
-              withCredentials: true,
-              validateStatus: () => true,
-            }
+      if (res.status === 200 || res.status === 201) {
+        const { access_token, refresh_token, user } = res.data;
+        localStorage.setItem("access_token", access_token);
+        localStorage.setItem("refresh_token", refresh_token);
+        localStorage.setItem("user", JSON.stringify(user));
+        toast.success("Login Successful! 🎉");
+        navigate("/advisor-dashboard");
+      } else if (res.status === 401) {
+        const msg = res.data?.message || 'Incorrect email or password';
+        
+        // Check if error is about unverified email
+        if (msg.includes('verification email')) {
+          toast.error(
+            <div className="text-sm">
+              We previously sent you a verification email, check your spam.{" "}
+              <button
+                onClick={async () => {
+                  try {
+                    await axios.post('https://api.advisorchooser.com/api/auth/resend-verification', {
+                      email,
+                    });
+                    toast.success('Verification email sent! Check your inbox and spam folder.');
+                  } catch (err) {
+                    toast.error('Failed to resend verification email. Please try again.');
+                  }
+                }}
+                className="font-semibold text-blue-600 underline hover:text-blue-800"
+              >
+                Request a new verification email (link)
+              </button>
+            </div>,
+            { duration: 10000 }
           );
-
-          if (csrfRes.status === 200 || csrfRes.status === 201) {
-            localStorage.setItem("x-csrf-token", csrfRes.data.csrfToken);
-          } else {
-            toast.error(csrfRes.data?.message || "Failed to fetch CSRF token");
-          }
-
-          console.log("Login Bearer token:", localStorage.getItem("access_token"));
-          console.log("Login CSRF token:", localStorage.getItem("x-csrf-token"));
-
-          // Fetch fresh user data to get current profile status
-          const userRes = await axios.get(
-            "https://api.advisorchooser.com/api/auth/profile",
-            { headers: { Authorization: `Bearer ${accessToken}` } }
-          );
-          
-          const user = userRes.data;
-          console.log('User data from API:', user);
-          localStorage.setItem("user", JSON.stringify(user));
-
-          // If email is not verified, show specific message and stop
-          if (user.role === 'advisor' && user.isEmailVerified === false) {
-            toast.error('Please verify your email first.');
-            setLoading(false);
-            return;
-          }
-
-          if (user.role === "advisor") {
-            if (!user.isPaymentVerified) {
-              navigate("/advisor-payments");
-            } else {
-              // Check if advisor profile exists by trying to fetch it
-              try {
-                const profileRes = await axios.get(
-                  "https://api.advisorchooser.com/api/advisors/profile",
-                  { headers: { Authorization: `Bearer ${accessToken}` } }
-                );
-                
-                if (profileRes.status === 200 && profileRes.data) {
-                  console.log('Profile exists, redirecting to dashboard');
-                  window.location.href = '/advisor-dashboard';
-                  return;
-                }
-              } catch (profileErr) {
-                console.log('No profile found, redirecting to form');
-              }
-              
-              navigate("/advisor-form");
-            }
-          } else if (user.role === "seller") {
-            navigate("/seller-dashboard");
-          } else {
-            navigate("/"); // fallback
-          }
-        } else if (res.status === 401) {
-          const msg = res.data?.message || 'Incorrect email or password';
-          toast.error(msg + " ❌");
         } else {
-          toast.error(res.data?.message || "Something went wrong");
+          toast.error(msg + " ❌");
         }
-      } catch (err) {
-        console.error("Login error:", err);
-        toast.error("Network error. Please try again later.");
-      } finally {
-        setLoading(false);
+      } else {
+        toast.error(res.data?.message || "Something went wrong");
       }
+    } catch (err) {
+      console.error("Login error:", err);
+      toast.error("Network error. Please try again later.");
+    } finally {
+      setLoading(false);
     }
-  };
+  }
+};
 
   return (
   <div className="flex flex-col w-screen min-h-screen overflow-x-hidden bg-gradient-to-br from-gray-50 to-white">
