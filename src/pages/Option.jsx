@@ -30,12 +30,12 @@ const Option = () => {
                         </div>
                     </div>
                     
-                    <div className="absolute bottom-4 left-4 sm:bottom-8 sm:left-8 z-20">
+                    {/* <div className="absolute bottom-4 left-4 sm:bottom-8 sm:left-8 z-20">
                         <div className="bg-white/90 backdrop-blur-sm rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-xl">
                             <div className="text-secondary font-bold text-xl sm:text-2xl">500+</div>
                             <div className="text-gray-600 text-xs sm:text-sm">Active Advisors</div>
                         </div>
-                    </div>
+                    </div> */}
                 </div>
                 
                 {/* Right Side - Content */}
@@ -136,5 +136,6 @@ const Option = () => {
         </div>
     )
 }
+
 
 export default Option
