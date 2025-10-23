@@ -971,8 +971,8 @@ const AdvisorPayments = () => {
           </p>
         </div>
 
-        {/* Requirements */}
-        <div className="mb-6 space-y-4">
+        {/* /* {/* Requirements */}
+        {/* <div className="mb-6 space-y-4">
           {[
             {
               color: 'green',
@@ -1009,7 +1009,7 @@ const AdvisorPayments = () => {
               </div>
             </div>
           ))}
-        </div>
+        </div> */ */} */}
 
         {/* Note */}
         <div className="p-3 mb-6 border-l-4 border-blue-500 rounded-r-lg sm:p-4 bg-blue-50">
