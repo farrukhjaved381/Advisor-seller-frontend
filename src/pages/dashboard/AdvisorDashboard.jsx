@@ -1406,6 +1406,7 @@ const AdvisorDashboard = () => {
                       </div>
                     </div>
                   </motion.div>
+                  
                 </div>
               )}
 
@@ -1462,6 +1463,53 @@ const AdvisorDashboard = () => {
                   </motion.div>
                 </div>
               )}
+
+              {/* Introduction Video */}
+{profile?.introVideoUrl && (
+  <motion.div 
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: 0.65 }}
+    className="p-6 bg-white border border-gray-100 shadow-sm rounded-xl"
+  >
+    <h3 className="flex items-center mb-6 text-xl font-semibold text-gray-900">
+      <FaFileAlt className="mr-3 text-primary" />
+      Introduction Video
+    </h3>
+    <div className="overflow-hidden bg-black border border-gray-200 shadow-inner rounded-xl">
+      <video 
+        src={profile.introVideoUrl} 
+        controls 
+        className="object-contain w-full bg-black h-80"
+        onLoadStart={() => {
+          console.log('🎬 Video load started:', profile.introVideoUrl);
+        }}
+        onLoadedMetadata={() => {
+          console.log('✅ Video metadata loaded:', profile.introVideoUrl);
+        }}
+        onCanPlay={() => {
+          console.log('▶️ Video can play:', profile.introVideoUrl);
+        }}
+        onError={(e) => {
+          console.error('❌ Video error:', {
+            url: profile.introVideoUrl,
+            error: e.target.error,
+            errorCode: e.target.error?.code,
+            errorMessage: e.target.error?.message,
+            networkState: e.target.networkState,
+            readyState: e.target.readyState
+          });
+        }}
+        onStalled={() => {
+          console.warn('⏸️ Video stalled:', profile.introVideoUrl);
+        }}
+        onWaiting={() => {
+          console.warn('⏳ Video waiting/buffering:', profile.introVideoUrl);
+        }}
+      />
+    </div>
+  </motion.div>
+)}
 
               {/* Testimonials */}
               {profile?.testimonials && profile.testimonials.length > 0 && (
