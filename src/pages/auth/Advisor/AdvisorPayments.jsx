@@ -972,44 +972,48 @@ const AdvisorPayments = () => {
         </div>
 
         {/* Requirements */}
-        <div className="mb-6 space-y-4">
-          {[
-            {
-              color: 'green',
-              title: 'Experience Required',
-              desc: 'Minimum of 5 years practicing as a M&A Advisor, Broker, or Investment Banker ',
-              highlight: '5 years'
-            },
-            {
-              color: 'green',
-              title: 'Transaction History',
-              desc: 'Successfully completed at least 10 company sale transactions ',
-              highlight: '10 company sale transactions'
-            },
-            {
-              color: 'green',
-              title: 'Client Testimonials',
-              desc: 'You will be required to provide 5 customer testimonials from previous customers ',
-              highlight: '5 customer testimonials'
-            }
-          ].map((req, i) => (
-            <div
-              key={i}
-              className={`flex flex-col sm:flex-row sm:items-start p-4 border-2 border-${req.color}-100 requirement-item rounded-xl bg-${req.color}-50 hover:bg-${req.color}-100 hover:border-${req.color}-200 transition-all duration-300`}
-            >
-              <div className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 mb-3 sm:mb-0 sm:mr-3 bg-green-500 rounded-full flex-shrink-0`}>
-                <FaCheckCircle className="text-sm text-white sm:text-base" />
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold text-gray-900 sm:text-base md:text-lg">{req.title}</h3>
-                <p className="mt-1 text-xs leading-relaxed text-gray-700 sm:text-sm md:text-base">
-                  {req.desc.replace(req.highlight, '')}
-                  <span className={`font-bold text-${req.color}-600`}>{req.highlight}</span>
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
+<div className="mb-6 space-y-4">
+  {[
+    {
+      color: 'green',
+      title: 'Experience Required',
+      desc: 'Minimum ',
+      highlight: '5 years',
+      descEnd: ' of practicing as a M&A Advisor, Broker, or Investment Banker'
+    },
+    {
+      color: 'green',
+      title: 'Transaction History',
+      desc: 'Successfully completed at least ',
+      highlight: '10 company sale transactions',
+      descEnd: ''
+    },
+    {
+      color: 'green',
+      title: 'Client Testimonials',
+      desc: 'You will be required to provide ',
+      highlight: '5 customer testimonials',
+      descEnd: ' from previous customers'
+    }
+  ].map((req, i) => (
+    <div
+      key={i}
+      className={`flex flex-col sm:flex-row sm:items-start p-4 border-2 border-${req.color}-100 requirement-item rounded-xl bg-${req.color}-50 hover:bg-${req.color}-100 hover:border-${req.color}-200 transition-all duration-300`}
+    >
+      <div className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 mb-3 sm:mb-0 sm:mr-3 bg-green-500 rounded-full flex-shrink-0`}>
+        <FaCheckCircle className="text-sm text-white sm:text-base" />
+      </div>
+      <div>
+        <h3 className="text-sm font-semibold text-gray-900 sm:text-base md:text-lg">{req.title}</h3>
+        <p className="mt-1 text-xs leading-relaxed text-gray-700 sm:text-sm md:text-base">
+          {req.desc}
+          <span className={`font-bold text-${req.color}-600`}>{req.highlight}</span>
+          {req.descEnd}
+        </p>
+      </div>
+    </div>
+  ))}
+</div>
 
         {/* Note */}
         <div className="p-3 mb-6 border-l-4 border-blue-500 rounded-r-lg sm:p-4 bg-blue-50">

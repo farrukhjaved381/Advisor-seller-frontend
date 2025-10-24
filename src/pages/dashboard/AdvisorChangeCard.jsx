@@ -31,6 +31,7 @@ const cardElementOptions = {
   },
   hidePostalCode: true,
   autocomplete: "off",
+  disableLink: true
 };
 
 // Change Card Form Component
