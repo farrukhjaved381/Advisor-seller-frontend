@@ -792,8 +792,10 @@ const AdvisorDashboard = () => {
   });
 
   const [logoFile, setLogoFile] = useState(null);
+  const [logoSizeError, setLogoSizeError] = useState(false);
   const [introVideoFile, setIntroVideoFile] = useState(null);
   const [introVideoPreview, setIntroVideoPreview] = useState('');
+  const [videoSizeError, setVideoSizeError] = useState(false);
 
   // Show all validation errors after submit and scroll to first
   const ValidationEffects = () => {
@@ -2284,6 +2286,26 @@ const AdvisorDashboard = () => {
                       
                       <div className="flex flex-col items-center justify-center">
                         <div className="w-full max-w-md">
+                          {/* File size/format warning banner */}
+                          {logoSizeError && (
+                            <motion.div
+                              initial={{ opacity: 0, y: -10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -10 }}
+                              className="p-3 mb-4 border border-red-200 rounded-lg bg-red-50"
+                            >
+                              <div className="flex items-start">
+                                <FaFileAlt className="flex-shrink-0 w-5 h-5 mr-2 text-red-600" />
+                                <div className="text-sm text-red-800">
+                                  <p className="font-semibold">Invalid File!</p>
+                                  <p className="text-xs">
+                                    Please ensure your file is PNG, JPG, or JPEG format and under 5MB.
+                                  </p>
+                                </div>
+                              </div>
+                            </motion.div>
+                          )}
+
                           {/* Show existing logo if available */}
                           {profile?.logoUrl && !logoFile && (
                             <div className="mb-4">
@@ -2300,12 +2322,108 @@ const AdvisorDashboard = () => {
                           
                           <input
                             type="file"
-                            accept="image/*"
+                            accept="image/png,image/jpeg,image/jpg"
                             onChange={(e) => {
-                              const file = e.target.files[0];
-                              if (file) {
-                                setLogoFile(file);
+                              const file = e.target.files?.[0];
+                              
+                              if (!file) {
+                                return;
                               }
+
+                              // Validate file type FIRST
+                              const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+                              const fileExtension = file.name.split('.').pop().toLowerCase();
+                              const allowedExtensions = ['png', 'jpg', 'jpeg'];
+                              
+                              const isValidType = allowedTypes.includes(file.type) || allowedExtensions.includes(fileExtension);
+                              
+                              if (!isValidType) {
+                                e.target.value = "";
+                                setLogoSizeError(true);
+                                
+                                toast.error(
+                                  <div className="space-y-1">
+                                    <div className="text-base font-bold">⚠️ Invalid File Format!</div>
+                                    <div className="text-sm">
+                                      File type: <span className="font-semibold">{file.type || 'Unknown'}</span>
+                                    </div>
+                                    <div className="text-sm">
+                                      Allowed formats: <span className="font-semibold">PNG, JPG, JPEG</span>
+                                    </div>
+                                    <div className="pt-2 mt-2 text-xs border-t border-red-300">
+                                      Please select a valid image file.
+                                    </div>
+                                  </div>,
+                                  {
+                                    duration: 8000,
+                                    position: 'top-center',
+                                    style: {
+                                      background: '#FEE2E2',
+                                      color: '#991B1B',
+                                      maxWidth: '500px',
+                                      padding: '16px',
+                                    },
+                                    icon: '🚫',
+                                  }
+                                );
+                                return;
+                              }
+
+                              // Validate file size (5MB)
+                              const maxSize = 5 * 1024 * 1024;
+                              
+                              if (file.size > maxSize) {
+                                const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+                                e.target.value = "";
+                                setLogoSizeError(true);
+                                
+                                toast.error(
+                                  <div className="space-y-1">
+                                    <div className="text-base font-bold">⚠️ File Too Large!</div>
+                                    <div className="text-sm">
+                                      Your file size: <span className="font-semibold">{fileSizeMB}MB</span>
+                                    </div>
+                                    <div className="text-sm">
+                                      Maximum allowed: <span className="font-semibold">5MB</span>
+                                    </div>
+                                    <div className="pt-2 mt-2 text-xs border-t border-red-300">
+                                      Please compress or resize your image and try again.
+                                    </div>
+                                  </div>,
+                                  {
+                                    duration: 8000,
+                                    position: 'top-center',
+                                    style: {
+                                      background: '#FEE2E2',
+                                      color: '#991B1B',
+                                      maxWidth: '500px',
+                                      padding: '16px',
+                                    },
+                                    icon: '🚫',
+                                  }
+                                );
+                                
+                                setLogoFile(null);
+                                return;
+                              }
+
+                              // File is valid
+                              setLogoSizeError(false);
+                              setLogoFile(file);
+                              
+                              toast.success(
+                                <div className="space-y-1">
+                                  <div className="font-bold">Logo Uploaded!</div>
+                                  <div className="text-sm">{file.name} ({(file.size / (1024 * 1024)).toFixed(2)}MB)</div>
+                                </div>,
+                                {
+                                  duration: 3000,
+                                  position: 'top-center',
+                                }
+                              );
+                            }}
+                            onClick={(e) => {
+                              e.target.value = '';
                             }}
                             className="hidden"
                             id="logo-upload"
@@ -2319,7 +2437,7 @@ const AdvisorDashboard = () => {
                               <p className="mb-2 text-sm text-gray-700">
                                 <span className="font-semibold">Click to {profile?.logoUrl ? 'change' : 'upload'}</span> company logo
                               </p>
-                              <p className="text-xs text-gray-500">PNG, JPG or JPEG (MAX. 5MB)</p>
+                              <p className="text-xs font-semibold text-primary">PNG, JPG or JPEG (MAX. 5MB)</p>
                             </div>
                           </label>
                           
@@ -2333,11 +2451,31 @@ const AdvisorDashboard = () => {
                                 />
                               </div>
                               <div className="p-3 border border-green-200 rounded-lg bg-green-50">
-                                <div className="flex items-center">
-                                  <FaCheckCircle className="mr-2 text-green-500" />
-                                  <span className="text-sm font-medium text-green-700">
-                                    {logoFile.name}
-                                  </span>
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center">
+                                    <FaCheckCircle className="mr-2 text-green-500" />
+                                    <div className="flex flex-col">
+                                      <span className="text-sm font-medium text-green-700">
+                                        {logoFile.name}
+                                      </span>
+                                      <span className="text-xs text-green-600">
+                                        {(logoFile.size / (1024 * 1024)).toFixed(2)} MB
+                                      </span>
+                                    </div>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setLogoFile(null);
+                                      setLogoSizeError(false);
+                                      const input = document.getElementById("logo-upload");
+                                      if (input) input.value = "";
+                                      toast.success("Logo removed");
+                                    }}
+                                    className="text-xs font-semibold text-green-700 hover:text-green-900"
+                                  >
+                                    Remove
+                                  </button>
                                 </div>
                               </div>
                             </div>
@@ -2374,6 +2512,26 @@ const AdvisorDashboard = () => {
 
                       <div className="flex flex-col items-center justify-center">
                         <div className="w-full max-w-xl">
+                          {/* Video size/format warning banner */}
+                          {videoSizeError && (
+                            <motion.div
+                              initial={{ opacity: 0, y: -10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -10 }}
+                              className="p-3 mb-4 border border-red-200 rounded-lg bg-red-50"
+                            >
+                              <div className="flex items-start">
+                                <FaFileAlt className="flex-shrink-0 w-5 h-5 mr-2 text-red-600" />
+                                <div className="text-sm text-red-800">
+                                  <p className="font-semibold">Invalid Video File!</p>
+                                  <p className="text-xs">
+                                    Please ensure your file is MP4, MOV, or WEBM format and under 200MB.
+                                  </p>
+                                </div>
+                              </div>
+                            </motion.div>
+                          )}
+
                           {/* Existing video preview if available and no new file */}
                           {profile?.introVideoUrl && !introVideoFile && (
                             <div className="mb-4">
@@ -2391,20 +2549,113 @@ const AdvisorDashboard = () => {
                             className="hidden"
                             onChange={(e) => {
                               const file = e.target.files?.[0];
-                              if (!file) return;
-                              if (!file.type.startsWith('video/')) {
-                                toast.error('Please select a valid video file (MP4, MOV, WEBM).');
+                              
+                              if (!file) {
                                 return;
                               }
-                              if (file.size > 200 * 1024 * 1024) {
-                                toast.error('Video must be 200MB or smaller.');
+
+                              // Validate file type FIRST
+                              const allowedTypes = ['video/mp4', 'video/quicktime', 'video/webm'];
+                              const fileExtension = file.name.split('.').pop().toLowerCase();
+                              const allowedExtensions = ['mp4', 'mov', 'webm'];
+                              
+                              const isValidType = allowedTypes.includes(file.type) || allowedExtensions.includes(fileExtension);
+                              
+                              if (!isValidType) {
+                                e.target.value = "";
+                                setVideoSizeError(true);
+                                
+                                toast.error(
+                                  <div className="space-y-1">
+                                    <div className="text-base font-bold">⚠️ Invalid Video Format!</div>
+                                    <div className="text-sm">
+                                      File type: <span className="font-semibold">{file.type || 'Unknown'}</span>
+                                    </div>
+                                    <div className="text-sm">
+                                      Allowed formats: <span className="font-semibold">MP4, MOV, WEBM</span>
+                                    </div>
+                                    <div className="pt-2 mt-2 text-xs border-t border-red-300">
+                                      Please select a valid video file.
+                                    </div>
+                                  </div>,
+                                  {
+                                    duration: 8000,
+                                    position: 'top-center',
+                                    style: {
+                                      background: '#FEE2E2',
+                                      color: '#991B1B',
+                                      maxWidth: '500px',
+                                      padding: '16px',
+                                    },
+                                    icon: '🚫',
+                                  }
+                                );
                                 return;
                               }
+
+                              // Validate file size (200MB)
+                              const maxSize = 200 * 1024 * 1024;
+                              
+                              if (file.size > maxSize) {
+                                const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+                                e.target.value = "";
+                                setVideoSizeError(true);
+                                
+                                toast.error(
+                                  <div className="space-y-1">
+                                    <div className="text-base font-bold">⚠️ Video File Too Large!</div>
+                                    <div className="text-sm">
+                                      Your file size: <span className="font-semibold">{fileSizeMB}MB</span>
+                                    </div>
+                                    <div className="text-sm">
+                                      Maximum allowed: <span className="font-semibold">200MB</span>
+                                    </div>
+                                    <div className="pt-2 mt-2 text-xs border-t border-red-300">
+                                      Please compress your video and try again.
+                                    </div>
+                                  </div>,
+                                  {
+                                    duration: 8000,
+                                    position: 'top-center',
+                                    style: {
+                                      background: '#FEE2E2',
+                                      color: '#991B1B',
+                                      maxWidth: '500px',
+                                      padding: '16px',
+                                    },
+                                    icon: '🚫',
+                                  }
+                                );
+                                
+                                if (introVideoPreview) {
+                                  URL.revokeObjectURL(introVideoPreview);
+                                }
+                                setIntroVideoFile(null);
+                                setIntroVideoPreview("");
+                                return;
+                              }
+
+                              // File is valid
+                              setVideoSizeError(false);
                               if (introVideoPreview) {
                                 URL.revokeObjectURL(introVideoPreview);
                               }
                               setIntroVideoFile(file);
                               setIntroVideoPreview(URL.createObjectURL(file));
+                              
+                              toast.success(
+                                <div className="space-y-1">
+                                  <div className="font-bold">Video Uploaded!</div>
+                                  <div className="text-sm">{file.name} ({(file.size / (1024 * 1024)).toFixed(2)}MB)</div>
+                                </div>,
+                                {
+                                  duration: 3000,
+                                  position: 'top-center',
+                                }
+                              );
+                            }}
+                            onClick={(e) => {
+                              e.target.value = '';
                             }}
                           />
                           <label
@@ -2416,7 +2667,8 @@ const AdvisorDashboard = () => {
                               <p className="mb-1 text-sm text-gray-700">
                                 <span className="font-semibold">Click to {profile?.introVideoUrl ? 'change' : 'upload'}</span> intro video
                               </p>
-                              <p className="text-xs text-gray-500">MP4, MOV, or WEBM • up to 200MB</p>
+                              <p className="text-xs font-semibold text-primary">MP4, MOV, or WEBM (MAX. 200MB)</p>
+                              <p className="mt-1 text-xs text-gray-500">Recommended under 90 seconds</p>
                             </div>
                           </label>
 
@@ -2430,7 +2682,12 @@ const AdvisorDashboard = () => {
                               <div className="flex items-center justify-between p-3 border border-blue-200 rounded-lg bg-blue-50">
                                 <div className="flex items-center">
                                   <FaCheckCircle className="mr-2 text-blue-500" />
-                                  <span className="text-sm font-medium text-blue-800">{introVideoFile.name}</span>
+                                  <div className="flex flex-col">
+                                    <span className="text-sm font-medium text-blue-800">{introVideoFile.name}</span>
+                                    <span className="text-xs text-blue-600">
+                                      {(introVideoFile.size / (1024 * 1024)).toFixed(2)} MB
+                                    </span>
+                                  </div>
                                 </div>
                                 <button
                                   type="button"
@@ -2438,6 +2695,10 @@ const AdvisorDashboard = () => {
                                     if (introVideoPreview) URL.revokeObjectURL(introVideoPreview);
                                     setIntroVideoFile(null);
                                     setIntroVideoPreview('');
+                                    setVideoSizeError(false);
+                                    const input = document.getElementById("intro-video-upload");
+                                    if (input) input.value = "";
+                                    toast.success("Video removed");
                                   }}
                                   className="text-xs font-semibold text-blue-700 hover:text-blue-900"
                                 >
