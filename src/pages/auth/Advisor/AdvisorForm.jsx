@@ -535,6 +535,7 @@ const GeographyChooser = ({ selected, onChange, hasError }) => {
 export const AdvisorForm = () => {
   const [logoFile, setLogoFile] = useState(null);
   const [logoError, setLogoError] = useState(false);
+  const [logoSizeError, setLogoSizeError] = useState(false); // 👈 Add this state
   const [introVideoFile, setIntroVideoFile] = useState(null);
   const [introVideoPreview, setIntroVideoPreview] = useState("");
 
@@ -1204,18 +1205,150 @@ export const AdvisorForm = () => {
 
                 <div className="flex flex-col items-center justify-center">
                   <div className="w-full max-w-md">
+                    {/* File size warning banner - ONLY show when error occurs */}
+                    {logoSizeError && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="p-3 mb-4 border border-red-200 rounded-lg bg-red-50"
+                      >
+                        <div className="flex items-start">
+                          <FaExclamationTriangle className="flex-shrink-0 w-5 h-5 mr-2 text-red-600" />
+                          <div className="text-sm text-red-800">
+                            <p className="font-semibold">File Too Large!</p>
+                            <p className="text-xs">Maximum file size is 5MB. Please compress or resize your image.</p>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+
                     <div className="relative">
                       <input
                         type="file"
-                        accept="image/*"
+                        accept="image/png,image/jpeg,image/jpg"
                         onChange={(e) => {
-                          const file = e.target.files[0];
-                          if (file) {
-                            setLogoFile(file);
-                            setLogoError(false);
-                            // set Formik value as well
-                            setFieldValue("logoFile", file);
+                          console.log("=== FILE UPLOAD TRIGGERED ===");
+                          const file = e.target.files?.[0];
+                          
+                          console.log("File object:", file);
+                          console.log("File exists:", !!file);
+                          
+                          // Check if a file was actually selected
+                          if (!file) {
+                            console.log("No file selected - user cancelled");
+                            return;
                           }
+
+                          console.log("File details:");
+                          console.log("- Name:", file.name);
+                          console.log("- Type:", file.type);
+                          console.log("- Size:", file.size, "bytes");
+                          console.log("- Size in MB:", (file.size / (1024 * 1024)).toFixed(2), "MB");
+
+                          // Validate file size FIRST (5MB = 5 * 1024 * 1024 bytes)
+                          const maxSize = 5 * 1024 * 1024; // 5MB
+                          
+                          if (file.size > maxSize) {
+                            const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+                            console.log("❌ FILE TOO LARGE:", fileSizeMB, "MB");
+                            
+                            // Reset the input immediately
+                            e.target.value = "";
+                            
+                            // Show error banner
+                            setLogoSizeError(true);
+                            
+                            // Show error toast
+                            toast.error(
+                              <div className="space-y-1">
+                                <div className="text-base font-bold">⚠️ File Too Large!</div>
+                                <div className="text-sm">
+                                  Your file size: <span className="font-semibold">{fileSizeMB}MB</span>
+                                </div>
+                                <div className="text-sm">
+                                  Maximum allowed: <span className="font-semibold">5MB</span>
+                                </div>
+                                <div className="pt-2 mt-2 text-xs border-t border-red-300">
+                                  Please compress or resize your image and try again.
+                                </div>
+                              </div>,
+                              {
+                                duration: 8000,
+                                position: 'top-center',
+                                style: {
+                                  background: '#FEE2E2',
+                                  color: '#991B1B',
+                                  maxWidth: '500px',
+                                  padding: '16px',
+                                },
+                                icon: '🚫',
+                              }
+                            );
+                            
+                            // Clear any existing logo
+                            setLogoFile(null);
+                            setFieldValue("logoFile", null);
+                            setLogoError(true);
+                            return;
+                          }
+
+                          console.log("✅ File size OK");
+                          
+                          // Clear size error if it was showing
+                          setLogoSizeError(false);
+
+                          // Validate file type
+                          const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+                          const fileExtension = file.name.split('.').pop().toLowerCase();
+                          const allowedExtensions = ['png', 'jpg', 'jpeg'];
+                          
+                          const isValidType = allowedTypes.includes(file.type) || allowedExtensions.includes(fileExtension);
+                          
+                          if (!isValidType) {
+                            console.log("❌ Invalid file type");
+                            e.target.value = "";
+                            
+                            toast.error(
+                              <div className="space-y-1">
+                                <div className="font-bold">Invalid File Type!</div>
+                                <div className="text-sm">Please select a PNG, JPG, or JPEG image.</div>
+                              </div>,
+                              {
+                                duration: 5000,
+                                position: 'top-center',
+                                style: {
+                                  background: '#FEE2E2',
+                                  color: '#991B1B',
+                                },
+                              }
+                            );
+                            return;
+                          }
+
+                          console.log("✅ File type OK");
+
+                          // File is valid, set it
+                          console.log("✅ Setting valid file");
+                          setLogoFile(file);
+                          setLogoError(false);
+                          setFieldValue("logoFile", file);
+                          
+                          toast.success(
+                            <div className="space-y-1">
+                              <div className="font-bold">Logo Uploaded!</div>
+                              <div className="text-sm">{file.name} ({(file.size / (1024 * 1024)).toFixed(2)}MB)</div>
+                            </div>,
+                            {
+                              duration: 3000,
+                              position: 'top-center',
+                            }
+                          );
+                        }}
+                        onClick={(e) => {
+                          // This ensures onChange fires even if same file is selected
+                          e.target.value = '';
+                          console.log("File input clicked, ready for selection");
                         }}
                         className="hidden"
                         id="logo-upload"
@@ -1224,7 +1357,7 @@ export const AdvisorForm = () => {
                         htmlFor="logo-upload"
                         className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-white hover:bg-primary/5 transition-all duration-200 ${
                           (errors.logoFile && touched.logoFile) || logoError
-                            ? "border-red-500"
+                            ? "border-red-500 bg-red-50"
                             : "border-primary/30"
                         }`}
                       >
@@ -1236,7 +1369,7 @@ export const AdvisorForm = () => {
                             </span>{" "}
                             your company logo
                           </p>
-                          <p className="text-xs text-secondary/60">
+                          <p className="text-xs font-semibold text-primary">
                             PNG, JPG or JPEG (MAX. 5MB)
                           </p>
                         </div>
@@ -1253,11 +1386,33 @@ export const AdvisorForm = () => {
                           />
                         </div>
                         <div className="p-3 border border-green-200 rounded-lg bg-green-50">
-                          <div className="flex items-center">
-                            <FaCheckCircle className="mr-2 text-green-500" />
-                            <span className="text-sm font-medium text-green-700">
-                              {logoFile.name}
-                            </span>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center">
+                              <FaCheckCircle className="mr-2 text-green-500" />
+                              <div className="flex flex-col">
+                                <span className="text-sm font-medium text-green-700">
+                                  {logoFile.name}
+                                </span>
+                                <span className="text-xs text-green-600">
+                                  {(logoFile.size / (1024 * 1024)).toFixed(2)} MB
+                                </span>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setLogoFile(null);
+                                setFieldValue("logoFile", null);
+                                setLogoError(false);
+                                setLogoSizeError(false); // 👈 Clear error when removing
+                                const input = document.getElementById("logo-upload");
+                                if (input) input.value = "";
+                                toast.success("Logo removed");
+                              }}
+                              className="text-xs font-semibold text-green-700 hover:text-green-900"
+                            >
+                              Remove
+                            </button>
                           </div>
                         </div>
                       </div>
@@ -1267,7 +1422,7 @@ export const AdvisorForm = () => {
                     <ErrorMessage
                       name="logoFile"
                       component="div"
-                      className="mt-2 text-sm text-red-500"
+                      className="mt-2 text-sm font-semibold text-red-600"
                     />
                   </div>
                 </div>
