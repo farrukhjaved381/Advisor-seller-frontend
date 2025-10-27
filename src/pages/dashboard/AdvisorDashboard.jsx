@@ -116,7 +116,41 @@ const AdvisorDashboard = () => {
       ? 'text-green-600'
       : 'text-red-600'
     : 'text-gray-500';
-  const allLeads = leadOverview?.leads ?? [];
+  const rawLeads = leadOverview?.leads ?? [];
+
+  // Deduplicate leads to show only the latest of each type for each seller
+  const leadsBySeller = new Map();
+  for (const lead of rawLeads) {
+    const sellerId = lead.sellerId;
+    if (!sellerId) continue;
+
+    if (!leadsBySeller.has(sellerId)) {
+      leadsBySeller.set(sellerId, {
+        introduction: null,
+        'direct-list': null,
+      });
+    }
+
+    const sellerLeads = leadsBySeller.get(sellerId);
+    const leadType = (lead.type || 'introduction').toLowerCase();
+
+    if (leadType === 'introduction' || leadType === 'direct-list') {
+      if (!sellerLeads[leadType] || new Date(lead.createdAt) > new Date(sellerLeads[leadType].createdAt)) {
+        sellerLeads[leadType] = lead;
+      }
+    }
+  }
+
+  const allLeads = [];
+  for (const sellerLeads of leadsBySeller.values()) {
+    if (sellerLeads.introduction) {
+      allLeads.push(sellerLeads.introduction);
+    }
+    if (sellerLeads['direct-list']) {
+      allLeads.push(sellerLeads['direct-list']);
+    }
+  }
+
   // Filter leads based on selected filter
   const recentLeads = leadFilter === 'all' 
     ? allLeads 
@@ -221,6 +255,29 @@ const AdvisorDashboard = () => {
       });
       setLeadOverview(response.data);
       setHasLoadedLeads(true);
+    } catch (error) {
+      if (error?.response?.status === 402) {
+        // Check if user still has access despite canceled subscription
+        if (user?.subscription?.status === 'canceled' && user?.subscription?.currentPeriodEnd) {
+          const periodEnd = new Date(user.subscription.currentPeriodEnd);
+          const now = new Date();
+          if (periodEnd > now) {
+            // User still has access, show different error
+            setLeadError('Unable to load leads at this time. Please try again later.');
+            return;
+          }
+        }
+        
+        const hasPaymentMethod = error?.response?.data?.hasPaymentMethod || false;
+        handleSubscriptionExpired(hasPaymentMethod);
+        return;
+      }
+      console.error('Error fetching lead overview:', error);
+      setLeadError(error.response?.data?.message || 'Unable to load leads right now.');
+    } finally {
+      setLeadsLoading(false);
+    }
+  };
     } catch (error) {
       if (error?.response?.status === 402) {
         // Check if user still has access despite canceled subscription
