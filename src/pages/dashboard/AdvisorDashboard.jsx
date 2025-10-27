@@ -118,45 +118,43 @@ const AdvisorDashboard = () => {
     : 'text-gray-500';
   const rawLeads = leadOverview?.leads ?? [];
 
-  // Process leads to implement display rules:
-  // 1. No duplicates: Only the latest 'introduction' and 'direct-list' lead for each seller is considered.
-  // 2. First action priority: If a seller's first lead is 'direct-list', only 'direct-list' leads are shown for them.
-  //    If the first lead is 'introduction', both types can be shown.
+  // Process leads to prevent duplicates and apply display logic.
+  // Rules:
+  // 1. No duplicates: For each seller, only show one 'introduction' and one 'direct-list' lead.
+  //    The most recent lead of each type is used.
+  // 2. Show all available types: If a seller has both introduction and direct-list leads, show both.
   const sellerLeadGroups = new Map();
   for (const lead of rawLeads) {
     const sellerId = lead.sellerId;
     if (!sellerId) continue;
 
     if (!sellerLeadGroups.has(sellerId)) {
-      sellerLeadGroups.set(sellerId, []);
+      sellerLeadGroups.set(sellerId, { introduction: null, 'direct-list': null });
     }
-    sellerLeadGroups.get(sellerId).push(lead);
+
+    const group = sellerLeadGroups.get(sellerId);
+    const leadType = (lead.type || 'introduction').toLowerCase();
+
+    if (leadType === 'introduction' || leadType === 'direct-list') {
+      // If there's no lead of this type yet, or this one is newer, update it.
+      if (!group[leadType] || new Date(lead.createdAt) > new Date(group[leadType].createdAt)) {
+        group[leadType] = lead;
+      }
+    }
   }
 
   const allLeads = [];
-  for (const leads of sellerLeadGroups.values()) {
-    if (leads.length === 0) continue;
-
-    // Sort leads by creation date to find the first action and latest of each type
-    const sortedLeads = [...leads].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-    const firstLeadType = (sortedLeads[0].type || 'introduction').toLowerCase();
-
-    const latestIntroduction = sortedLeads
-      .filter(l => (l.type || 'introduction').toLowerCase() === 'introduction')
-      .pop();
-    const latestDirectList = sortedLeads
-      .filter(l => (l.type || 'introduction').toLowerCase() === 'direct-list')
-      .pop();
-
-    if (firstLeadType === 'introduction') {
-      // If first action was 'introduction', show latest of both types
-      if (latestIntroduction) allLeads.push(latestIntroduction);
-      if (latestDirectList) allLeads.push(latestDirectList);
-    } else { // firstLeadType === 'direct-list'
-      // If first action was 'direct-list', only show that type
-      if (latestDirectList) allLeads.push(latestDirectList);
+  for (const group of sellerLeadGroups.values()) {
+    if (group.introduction) {
+      allLeads.push(group.introduction);
+    }
+    if (group['direct-list']) {
+      allLeads.push(group['direct-list']);
     }
   }
+  
+  // Sort the final list of leads by date, newest first.
+  allLeads.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
   // Filter leads based on selected filter
   const recentLeads = leadFilter === 'all' 
