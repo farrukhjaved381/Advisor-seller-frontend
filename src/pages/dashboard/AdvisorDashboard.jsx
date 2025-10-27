@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import { Formik, Form, Field, ErrorMessage, useFormikContext } from 'formik';
 import * as Yup from 'yup';
-import { FaUser, FaBuilding, FaPhone, FaGlobe, FaCalendarAlt, FaQuoteLeft, FaFilePdf, FaChartLine, FaDollarSign, FaMapMarkerAlt, FaIndustry, FaCog, FaSignOutAlt, FaEdit, FaToggleOn, FaToggleOff, FaBars, FaTimes, FaChevronDown, FaChevronRight, FaFileAlt, FaSearch, FaCreditCard, FaInfoCircle, FaCheckCircle } from 'react-icons/fa';
+import { FaUser, FaBuilding, FaPhone, FaGlobe, FaCalendarAlt, FaQuoteLeft, FaFilePdf, FaChartLine, FaDollarSign, FaMapMarkerAlt, FaIndustry, FaCog, FaSignOutAlt, FaEdit, FaToggleOn, FaToggleOff, FaBars, FaTimes, FaChevronDown, FaChevronRight, FaFileAlt, FaSearch, FaCreditCard, FaInfoCircle, FaCheckCircle, FaExclamationTriangle } from 'react-icons/fa';
 import { getIndustryData } from '../../components/Static/newIndustryData';
 import { Country, State } from 'country-state-city';
 
@@ -179,91 +179,35 @@ const AdvisorDashboard = () => {
   }, [activeTab, hasLoadedLeads]);
 
   const fetchUserData = async () => {
-    try {
-      const token = localStorage.getItem('access_token');
-      if (!token) {
-        navigate('/advisor-login');
-        return;
-      }
+  try {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      navigate('/advisor-login');
+      return;
+    }
 
-      // Get user profile
-      const userRes = await axios.get(`${API_CONFIG.BACKEND_URL}/api/auth/profile`, {
+    // Get user profile
+    const userRes = await axios.get(`${API_CONFIG.BACKEND_URL}/api/auth/profile`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    setUser(userRes.data);
+
+    // Get advisor profile from database
+    try {
+      const profileRes = await axios.get(`${API_CONFIG.BACKEND_URL}/api/advisors/profile`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-
-      if (userRes.data.role !== 'advisor') {
-        navigate('/seller-login');
-        return;
-      }
-
-      setUser(userRes.data);
-
-      // Get advisor profile from database
-      try {
-        const profileRes = await axios.get(`${API_CONFIG.BACKEND_URL}/api/advisors/profile`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const p = profileRes.data || {};
-        // Normalize industries/geographies to arrays, including single-item comma payloads
-        const norm = (val) => {
-          if (Array.isArray(val)) {
-            if (val.length === 1 && typeof val[0] === 'string' && val[0].includes(',')) {
-              return val[0].split(',').map(s => s.trim()).filter(Boolean);
-            }
-            return val;
-          }
-          if (typeof val === 'string') {
-            return val.split(',').map(s => s.trim()).filter(Boolean);
-          }
-          return [];
-        };
-        p.industries = norm(p.industries);
-        p.geographies = norm(p.geographies);
-        // Ensure revenueRange numbers
-        if (p.revenueRange) {
-          if (p.revenueRange.min !== undefined) p.revenueRange.min = Number(p.revenueRange.min);
-          if (p.revenueRange.max !== undefined) p.revenueRange.max = Number(p.revenueRange.max);
-        }
-        setProfile(p);
-      } catch (error) {
-        console.error('Error fetching advisor profile:', error);
-        if (error.response?.status === 404) {
-          // Profile not found - set profile to null but don't redirect from dashboard
-          // Only redirect if user is not payment verified
-          setProfile(null);
-          // Check if user has active subscription or access until period end
-          let hasPayment = false;
-          
-          if (userRes.data.isPaymentVerified) {
-            hasPayment = true;
-          }
-          // Check if subscription is canceled but user has access until period end
-          else if (userRes.data.subscription?.status === 'canceled' && userRes.data.subscription?.currentPeriodEnd) {
-            const periodEnd = new Date(userRes.data.subscription.currentPeriodEnd);
-            const now = new Date();
-            hasPayment = periodEnd > now;
-          }
-          
-          if (!hasPayment) {
-            console.log('User not payment verified, redirecting to payments');
-            navigate('/advisor-payments');
-            return;
-          }
-          // If payment is verified but no profile, user can create profile from dashboard
-          console.log('Payment verified but no profile found - user can create profile from dashboard');
-        } else {
-          // Other errors - log but don't redirect
-          console.error('Unexpected error fetching profile:', error.response?.data || error.message);
-          setProfile(null);
-        }
-      }
+      setProfile(profileRes.data || {});
     } catch (error) {
-      console.error('Error fetching user data:', error);
-      navigate('/advisor-login');
-    } finally {
-      setLoading(false);
+      setProfile(null);
     }
-  };
+  } catch (error) {
+    navigate('/advisor-login');
+  } finally {
+    setLoading(false);
+  }
+};
 
   const fetchLeadOverview = async (force = false) => {
     if (leadsLoading && !force) return;
@@ -472,11 +416,11 @@ const AdvisorDashboard = () => {
           <FaSearch className="absolute w-4 h-4 text-gray-400 transform -translate-y-1/2 left-3 top-1/2" />
         </div>
 
-        {/* Selected chips row */}
+        {/* Selected chips row
         {selected && selected.length > 0 && (
           <div className="mb-3">
             {/* fixed box so long lists scroll instead of pushing layout */}
-            <div className="w-full p-2 overflow-auto bg-white border rounded-md max-h-28 border-primary/10">
+            {/* <div className="w-full p-2 overflow-auto bg-white border rounded-md max-h-28 border-primary/10">
               <div className="flex flex-wrap gap-2">
                 {selected.map((name) => (
                   <div
@@ -497,7 +441,7 @@ const AdvisorDashboard = () => {
               </div>
             </div>
           </div>
-        )}
+        )}  */}
 
         <div
           className={`bg-gray-50 border rounded-lg p-4 h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-gray-100 shadow-inner ${
@@ -774,9 +718,9 @@ const AdvisorDashboard = () => {
         </div>
 
         {/* Selected chips row */}
-        {selected && selected.length > 0 && (
+        {/* {selected && selected.length > 0 && (
           <div className="mb-3">
-            {/* fixed box so long lists scroll instead of pushing layout */}
+            fixed box so long lists scroll instead of pushing layout
             <div className="w-full p-2 overflow-auto bg-white border rounded-md max-h-28 border-primary/10">
               <div className="flex flex-wrap gap-2">
                 {selected.map((name) => (
@@ -798,7 +742,7 @@ const AdvisorDashboard = () => {
               </div>
             </div>
           </div>
-        )}
+        )} */}
 
         <div
           className={`bg-gray-50 border rounded-lg p-4 h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-gray-100 shadow-inner ${
@@ -848,8 +792,10 @@ const AdvisorDashboard = () => {
   });
 
   const [logoFile, setLogoFile] = useState(null);
+  const [logoSizeError, setLogoSizeError] = useState(false);
   const [introVideoFile, setIntroVideoFile] = useState(null);
   const [introVideoPreview, setIntroVideoPreview] = useState('');
+  const [videoSizeError, setVideoSizeError] = useState(false);
 
   // Show all validation errors after submit and scroll to first
   const ValidationEffects = () => {
@@ -1019,6 +965,10 @@ const AdvisorDashboard = () => {
     );
   }
 
+   const handleLogoClick = () => {
+  navigate("/");
+};
+
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Mobile backdrop */}
@@ -1041,6 +991,8 @@ const AdvisorDashboard = () => {
               src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=768,fit=crop,q=95/mk3JaNVZEltBD9g4/logo-transparency-mnlJLXr4jxIOR470.png"
               alt="Advisor Chooser"
               className="object-contain w-auto h-8"
+              onClick={handleLogoClick}
+              
             />
             <button
               onClick={() => setSidebarOpen(false)}
@@ -1159,26 +1111,31 @@ const AdvisorDashboard = () => {
             </button>
             <div className="flex items-center gap-3">
               <h1 className="text-xl font-bold text-gray-900 lg:text-2xl">Advisor Dashboard</h1>
-              {user?.subscription?.status === 'canceled' && user?.subscription?.currentPeriodEnd && (
-                <span className="inline-flex items-center gap-2 px-2 py-1 text-xs text-yellow-800 bg-yellow-100 border border-yellow-200 rounded-full">
-                  Canceled • access until {new Date(user.subscription.currentPeriodEnd).toLocaleDateString()}
-                  <button
-                    onClick={async (e) => {
-                      e.stopPropagation();
-                      try {
-                        const token = localStorage.getItem('access_token');
-                        await axios.post(`${API_CONFIG.BACKEND_URL}/api/payment/resume`, {}, { headers: { Authorization: `Bearer ${token}` }});
-                        toast.success('Subscription resumed');
-                        fetchUserData();
-                      } catch {
-                        toast.error('Could not resume subscription');
-                      }
-                    }}
-                    className="ml-1 underline hover:opacity-80"
-                  >
-                    Resume
-                  </button>
-                </span>
+              {user?.subscription?.cancelAtPeriodEnd && user?.subscription?.currentPeriodEnd && (
+  <span
+    className="flex flex-col items-center justify-center w-full max-w-xs px-3 py-2 mx-auto mt-2 text-xs text-yellow-800 bg-yellow-100 border border-yellow-200 shadow-sm rounded-xl sm:inline-flex sm:flex-row sm:items-center sm:justify-start sm:gap-2 sm:max-w-none sm:mt-0 sm:rounded-full sm:shadow-none"
+  >
+    <span className="text-center sm:text-left">
+      Canceled • access until {new Date(user.subscription.currentPeriodEnd).toLocaleDateString()}
+    </span>
+    <button
+      onClick={async (e) => {
+        e.stopPropagation();
+        try {
+          const token = localStorage.getItem('access_token');
+          await axios.post(`${API_CONFIG.BACKEND_URL}/api/payment/resume`, {}, { headers: { Authorization: `Bearer ${token}` }});
+          toast.success('Subscription resumed');
+          await fetchUserData();
+        } catch {
+          toast.error('Could not resume subscription');
+        }
+      }}
+      className="mt-2 text-xs underline hover:opacity-80 sm:mt-0"
+    >
+      Resume
+    </button>
+  </span>
+
               )}
             </div>
           </div>
@@ -1451,6 +1408,7 @@ const AdvisorDashboard = () => {
                       </div>
                     </div>
                   </motion.div>
+                  
                 </div>
               )}
 
@@ -1507,6 +1465,53 @@ const AdvisorDashboard = () => {
                   </motion.div>
                 </div>
               )}
+
+              {/* Introduction Video */}
+{profile?.introVideoUrl && (
+  <motion.div 
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: 0.65 }}
+    className="p-6 bg-white border border-gray-100 shadow-sm rounded-xl"
+  >
+    <h3 className="flex items-center mb-6 text-xl font-semibold text-gray-900">
+      <FaFileAlt className="mr-3 text-primary" />
+      Introduction Video
+    </h3>
+    <div className="overflow-hidden bg-black border border-gray-200 shadow-inner rounded-xl">
+      <video 
+        src={profile.introVideoUrl} 
+        controls 
+        className="object-contain w-full bg-black h-80"
+        onLoadStart={() => {
+          console.log('🎬 Video load started:', profile.introVideoUrl);
+        }}
+        onLoadedMetadata={() => {
+          console.log('✅ Video metadata loaded:', profile.introVideoUrl);
+        }}
+        onCanPlay={() => {
+          console.log('▶️ Video can play:', profile.introVideoUrl);
+        }}
+        onError={(e) => {
+          console.error('❌ Video error:', {
+            url: profile.introVideoUrl,
+            error: e.target.error,
+            errorCode: e.target.error?.code,
+            errorMessage: e.target.error?.message,
+            networkState: e.target.networkState,
+            readyState: e.target.readyState
+          });
+        }}
+        onStalled={() => {
+          console.warn('⏸️ Video stalled:', profile.introVideoUrl);
+        }}
+        onWaiting={() => {
+          console.warn('⏳ Video waiting/buffering:', profile.introVideoUrl);
+        }}
+      />
+    </div>
+  </motion.div>
+)}
 
               {/* Testimonials */}
               {profile?.testimonials && profile.testimonials.length > 0 && (
@@ -1985,7 +1990,8 @@ const AdvisorDashboard = () => {
                           />
                           <div className="ml-3 text-sm">
                             <label htmlFor="workedWithCimamplify-edit" className="font-bold text-blue-800">
-                              Have you ever posted a deal at our sister company, CIM Amplify (www.cimamplify.com)?
+                              Select if you have ever posted a deal at our sister company, CIM Amplify (www.cimamplify.com)?
+
                             </label>
                             <p className="text-blue-700">You can change this answer in the future once you have posted.</p>
                           </div>
@@ -2280,6 +2286,26 @@ const AdvisorDashboard = () => {
                       
                       <div className="flex flex-col items-center justify-center">
                         <div className="w-full max-w-md">
+                          {/* File size/format warning banner */}
+                          {logoSizeError && (
+                            <motion.div
+                              initial={{ opacity: 0, y: -10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -10 }}
+                              className="p-3 mb-4 border border-red-200 rounded-lg bg-red-50"
+                            >
+                              <div className="flex items-start">
+                                <FaExclamationTriangle className="flex-shrink-0 w-5 h-5 mr-2 text-red-600" />
+                                <div className="text-sm text-red-800">
+                                  <p className="font-semibold">Invalid File!</p>
+                                  <p className="text-xs">
+                                    Please ensure your file is PNG, JPG, or JPEG format and under 5MB.
+                                  </p>
+                                </div>
+                              </div>
+                            </motion.div>
+                          )}
+
                           {/* Show existing logo if available */}
                           {profile?.logoUrl && !logoFile && (
                             <div className="mb-4">
@@ -2296,12 +2322,108 @@ const AdvisorDashboard = () => {
                           
                           <input
                             type="file"
-                            accept="image/*"
+                            accept="image/png,image/jpeg,image/jpg"
                             onChange={(e) => {
-                              const file = e.target.files[0];
-                              if (file) {
-                                setLogoFile(file);
+                              const file = e.target.files?.[0];
+                              
+                              if (!file) {
+                                return;
                               }
+
+                              // Validate file type FIRST
+                              const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+                              const fileExtension = file.name.split('.').pop().toLowerCase();
+                              const allowedExtensions = ['png', 'jpg', 'jpeg'];
+                              
+                              const isValidType = allowedTypes.includes(file.type) || allowedExtensions.includes(fileExtension);
+                              
+                              if (!isValidType) {
+                                e.target.value = "";
+                                setLogoSizeError(true);
+                                
+                                toast.error(
+                                  <div className="space-y-1">
+                                    <div className="text-base font-bold">⚠️ Invalid File Format!</div>
+                                    <div className="text-sm">
+                                      File type: <span className="font-semibold">{file.type || 'Unknown'}</span>
+                                    </div>
+                                    <div className="text-sm">
+                                      Allowed formats: <span className="font-semibold">PNG, JPG, JPEG</span>
+                                    </div>
+                                    <div className="pt-2 mt-2 text-xs border-t border-red-300">
+                                      Please select a valid image file.
+                                    </div>
+                                  </div>,
+                                  {
+                                    duration: 8000,
+                                    position: 'top-center',
+                                    style: {
+                                      background: '#FEE2E2',
+                                      color: '#991B1B',
+                                      maxWidth: '500px',
+                                      padding: '16px',
+                                    },
+                                    icon: '🚫',
+                                  }
+                                );
+                                return;
+                              }
+
+                              // Validate file size (5MB)
+                              const maxSize = 5 * 1024 * 1024;
+                              
+                              if (file.size > maxSize) {
+                                const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+                                e.target.value = "";
+                                setLogoSizeError(true);
+                                
+                                toast.error(
+                                  <div className="space-y-1">
+                                    <div className="text-base font-bold">⚠️ File Too Large!</div>
+                                    <div className="text-sm">
+                                      Your file size: <span className="font-semibold">{fileSizeMB}MB</span>
+                                    </div>
+                                    <div className="text-sm">
+                                      Maximum allowed: <span className="font-semibold">5MB</span>
+                                    </div>
+                                    <div className="pt-2 mt-2 text-xs border-t border-red-300">
+                                      Please compress or resize your image and try again.
+                                    </div>
+                                  </div>,
+                                  {
+                                    duration: 8000,
+                                    position: 'top-center',
+                                    style: {
+                                      background: '#FEE2E2',
+                                      color: '#991B1B',
+                                      maxWidth: '500px',
+                                      padding: '16px',
+                                    },
+                                    icon: '🚫',
+                                  }
+                                );
+                                
+                                setLogoFile(null);
+                                return;
+                              }
+
+                              // File is valid
+                              setLogoSizeError(false);
+                              setLogoFile(file);
+                              
+                              toast.success(
+                                <div className="space-y-1">
+                                  <div className="font-bold">Logo Uploaded!</div>
+                                  <div className="text-sm">{file.name} ({(file.size / (1024 * 1024)).toFixed(2)}MB)</div>
+                                </div>,
+                                {
+                                  duration: 3000,
+                                  position: 'top-center',
+                                }
+                              );
+                            }}
+                            onClick={(e) => {
+                              e.target.value = '';
                             }}
                             className="hidden"
                             id="logo-upload"
@@ -2370,6 +2492,26 @@ const AdvisorDashboard = () => {
 
                       <div className="flex flex-col items-center justify-center">
                         <div className="w-full max-w-xl">
+                          {/* Video size/format warning banner */}
+                          {videoSizeError && (
+                            <motion.div
+                              initial={{ opacity: 0, y: -10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -10 }}
+                              className="p-3 mb-4 border border-red-200 rounded-lg bg-red-50"
+                            >
+                              <div className="flex items-start">
+                                <FaExclamationTriangle className="flex-shrink-0 w-5 h-5 mr-2 text-red-600" />
+                                <div className="text-sm text-red-800">
+                                  <p className="font-semibold">Invalid Video File!</p>
+                                  <p className="text-xs">
+                                    Please ensure your file is MP4, MOV, or WEBM format and under 200MB.
+                                  </p>
+                                </div>
+                              </div>
+                            </motion.div>
+                          )}
+
                           {/* Existing video preview if available and no new file */}
                           {profile?.introVideoUrl && !introVideoFile && (
                             <div className="mb-4">
@@ -2387,20 +2529,112 @@ const AdvisorDashboard = () => {
                             className="hidden"
                             onChange={(e) => {
                               const file = e.target.files?.[0];
-                              if (!file) return;
-                              if (!file.type.startsWith('video/')) {
-                                toast.error('Please select a valid video file (MP4, MOV, WEBM).');
+                              
+                              if (!file) {
                                 return;
                               }
-                              if (file.size > 200 * 1024 * 1024) {
-                                toast.error('Video must be 200MB or smaller.');
+
+                              // Validate file type FIRST
+                              const allowedTypes = ['video/mp4', 'video/quicktime', 'video/webm'];
+                              const fileExtension = file.name.split('.').pop().toLowerCase();
+                              const allowedExtensions = ['mp4', 'mov', 'webm'];
+                              
+                              const isValidType = allowedTypes.includes(file.type) || allowedExtensions.includes(fileExtension);
+                              
+                              if (!isValidType) {
+                                e.target.value = "";
+                                setVideoSizeError(true);
+                                
+                                toast.error(
+                                  <div className="space-y-1">
+                                    <div className="text-base font-bold">⚠️ Invalid Video Format!</div>
+                                    <div className="text-sm">
+                                      File type: <span className="font-semibold">{file.type || 'Unknown'}</span>
+                                    </div>
+                                    <div className="text-sm">
+                                      Allowed formats: <span className="font-semibold">MP4, MOV, WEBM</span>
+                                    </div>
+                                    <div className="pt-2 mt-2 text-xs border-t border-red-300">
+                                      Please select a valid video file.
+                                    </div>
+                                  </div>,
+                                  {
+                                    duration: 8000,
+                                    position: 'top-center',
+                                    style: {
+                                      background: '#FEE2E2',
+                                      color: '#991B1B',
+                                      maxWidth: '500px',
+                                      padding: '16px',
+                                    },
+                                    icon: '🚫',
+                                  }
+                                );
                                 return;
                               }
+
+                              // Validate file size (200MB)
+                              const maxSize = 200 * 1024 * 1024;
+                              
+                              if (file.size > maxSize) {
+                                const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+                                e.target.value = "";
+                                setVideoSizeError(true);
+                                
+                                toast.error(
+                                  <div className="space-y-1">
+                                    <div className="text-base font-bold">⚠️ Video File Too Large!</div>
+                                    <div className="text-sm">
+                                      Your file size: <span className="font-semibold">{fileSizeMB}MB</span>
+                                    </div>
+                                    <div className="text-sm">
+                                      Maximum allowed: <span className="font-semibold">200MB</span>
+                                    </div>
+                                    <div className="pt-2 mt-2 text-xs border-t border-red-300">
+                                      Please compress your video and try again.
+                                    </div>
+                                  </div>,
+                                  {
+                                    duration: 8000,
+                                    position: 'top-center',
+                                    style: {
+                                      background: '#FEE2E2',
+                                      color: '#991B1B',
+                                      maxWidth: '500px',
+                                      padding: '16px',
+                                    },
+                                    icon: '🚫',
+                                  }
+                                );
+                                
+                                setIntroVideoFile(null);
+                                setIntroVideoPreview('');
+                                return;
+                              }
+
+                              // File is valid
+                              setVideoSizeError(false);
+                              
                               if (introVideoPreview) {
                                 URL.revokeObjectURL(introVideoPreview);
                               }
+                              
                               setIntroVideoFile(file);
                               setIntroVideoPreview(URL.createObjectURL(file));
+                              
+                              toast.success(
+                                <div className="space-y-1">
+                                  <div className="font-bold">Video Uploaded!</div>
+                                  <div className="text-sm">{file.name} ({(file.size / (1024 * 1024)).toFixed(2)}MB)</div>
+                                </div>,
+                                {
+                                  duration: 3000,
+                                  position: 'top-center',
+                                }
+                              );
+                            }}
+                            onClick={(e) => {
+                              e.target.value = '';
                             }}
                           />
                           <label
