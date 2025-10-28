@@ -101,16 +101,7 @@ const AdvisorDashboard = () => {
 
     return base;
   };
-  const monthDelta = leadsLastMonth > 0
-    ? Math.round(((leadsThisMonth - leadsLastMonth) / leadsLastMonth) * 100)
-    : leadsThisMonth > 0
-      ? 100
-      : 0;
-  const monthDeltaLabel = leadsLastMonth > 0
-    ? `${monthDelta >= 0 ? '+' : ''}${monthDelta}% vs last month`
-    : leadsThisMonth > 0
-      ? 'First leads this month'
-      : 'No change from last month';
+
   const monthDeltaColor = leadsLastMonth > 0
     ? monthDelta >= 0
       ? 'text-green-600'
@@ -170,6 +161,77 @@ const AdvisorDashboard = () => {
     ? new Date(recentLeads[0].createdAt)
     : null;
   const topLeadTypeLabel = topLeadType ? formatTitleCase(topLeadType.label) : '';
+
+  const uniqueLeads = Array.from(sellerLeadGroups.values()).flatMap(group => {
+    const leads = [];
+    if (group.introduction) leads.push(group.introduction);
+    if (group['direct-list']) leads.push(group['direct-list']);
+    return leads;
+  });
+
+  const uniqueTotalLeads = sellerLeadGroups.size;
+
+  const now = new Date();
+  const thisMonth = now.getMonth();
+  const thisYear = now.getFullYear();
+  const lastMonth = thisMonth === 0 ? 11 : thisMonth - 1;
+  const lastMonthYear = thisMonth === 0 ? thisYear - 1 : thisYear;
+  const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
+
+  const uniqueLeadsThisMonth = Array.from(sellerLeadGroups.values()).filter(group => {
+    const lead = group.introduction || group['direct-list'];
+    const leadDate = new Date(lead.createdAt);
+    return leadDate.getMonth() === thisMonth && leadDate.getFullYear() === thisYear;
+  }).length;
+
+  const uniqueLeadsLastMonth = Array.from(sellerLeadGroups.values()).filter(group => {
+    const lead = group.introduction || group['direct-list'];
+    const leadDate = new Date(lead.createdAt);
+    return leadDate.getMonth() === lastMonth && leadDate.getFullYear() === lastMonthYear;
+  }).length;
+
+  const monthDelta = uniqueLeadsLastMonth > 0
+    ? Math.round(((uniqueLeadsThisMonth - uniqueLeadsLastMonth) / uniqueLeadsLastMonth) * 100)
+    : uniqueLeadsThisMonth > 0
+      ? 100
+      : 0;
+  const monthDeltaLabel = uniqueLeadsLastMonth > 0
+    ? `${monthDelta >= 0 ? '+' : ''}${monthDelta}% vs last month`
+    : uniqueLeadsThisMonth > 0
+      ? 'First leads this month'
+      : 'No change from last month';
+
+  const uniqueLeadsThisWeek = Array.from(sellerLeadGroups.values()).filter(group => {
+    const lead = group.introduction || group['direct-list'];
+    const leadDate = new Date(lead.createdAt);
+    return leadDate >= startOfWeek;
+  }).length;
+
+  const uniqueLeadsByType = uniqueLeads.reduce((acc, lead) => {
+    const leadType = (lead.type || 'introduction').toLowerCase();
+    acc[leadType] = (acc[leadType] || 0) + 1;
+    return acc;
+  }, {});
+
+  const uniqueTopLeadTypeEntry = Object.entries(uniqueLeadsByType).sort((a, b) => b[1] - a[1])[0];
+  const uniqueTopLeadType = uniqueTopLeadTypeEntry
+    ? { label: uniqueTopLeadTypeEntry[0], count: uniqueTopLeadTypeEntry[1] }
+    : null;
+
+  const uniqueMonthlyTrend = Array.from(sellerLeadGroups.values()).reduce((acc, group) => {
+    const lead = group.introduction || group['direct-list'];
+    const leadDate = new Date(lead.createdAt);
+    const month = leadDate.toLocaleString('default', { month: 'short' });
+    const year = leadDate.getFullYear();
+    const monthYear = `${month} ${year}`;
+    const existingEntry = acc.find(entry => entry.month === monthYear);
+    if (existingEntry) {
+      existingEntry.count++;
+    } else {
+      acc.push({ month: monthYear, count: 1 });
+    }
+    return acc;
+  }, []);
 
   const formatCurrencyValue = (amount, currency = 'USD') => {
     const numericAmount = typeof amount === 'number' ? amount : Number(amount);
@@ -275,29 +337,7 @@ const AdvisorDashboard = () => {
         
         const hasPaymentMethod = error?.response?.data?.hasPaymentMethod || false;
         handleSubscriptionExpired(hasPaymentMethod);
-        return;
-      }
-      console.error('Error fetching lead overview:', error);
-      setLeadError(error.response?.data?.message || 'Unable to load leads right now.');
-    } finally {
-      setLeadsLoading(false);
-    }
-  };
-    } catch (error) {
-      if (error?.response?.status === 402) {
-        // Check if user still has access despite canceled subscription
-        if (user?.subscription?.status === 'canceled' && user?.subscription?.currentPeriodEnd) {
-          const periodEnd = new Date(user.subscription.currentPeriodEnd);
-          const now = new Date();
-          if (periodEnd > now) {
-            // User still has access, show different error
-            setLeadError('Unable to load leads at this time. Please try again later.');
-            return;
-          }
-        }
-        
-        const hasPaymentMethod = error?.response?.data?.hasPaymentMethod || false;
-        handleSubscriptionExpired(hasPaymentMethod);
+
         return;
       }
       console.error('Error fetching lead overview:', error);
@@ -1710,65 +1750,64 @@ const AdvisorDashboard = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="mb-1 text-sm font-medium text-gray-500">Total Leads</p>
-                      <p className="text-3xl font-bold text-gray-900">{totalLeads}</p>
-                      <p className="mt-1 text-sm text-gray-500">
-                        {lastLeadDate ? `Last lead on ${lastLeadDate.toLocaleDateString()}` : 'Awaiting first lead'}
-                      </p>
-                    </div>
-                    <div className="flex items-center justify-center w-12 h-12 bg-blue-100 rounded-lg">
-                      <FaUser className="w-6 h-6 text-blue-600" />
-                    </div>
-                  </div>
-                </motion.div>
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 }}
-                  className="p-6 bg-white border border-gray-100 shadow-sm rounded-xl"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="mb-1 text-sm font-medium text-gray-500">This Month</p>
-                      <p className="text-3xl font-bold text-gray-900">{leadsThisMonth}</p>
-                      <p className={`text-sm mt-1 ${monthDeltaColor}`}>{monthDeltaLabel}</p>
-                    </div>
-                    <div className="flex items-center justify-center w-12 h-12 bg-green-100 rounded-lg">
-                      <FaChartLine className="w-6 h-6 text-green-600" />
-                    </div>
-                  </div>
-                </motion.div>
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="p-6 bg-white border border-gray-100 shadow-sm rounded-xl"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="mb-1 text-sm font-medium text-gray-500">This Week</p>
-                      <p className="text-3xl font-bold text-gray-900">{leadsThisWeek}</p>
-                      <p className="mt-1 text-sm text-gray-500">
-                        {topLeadType ? `${topLeadType.count} ${topLeadTypeLabel} leads overall` : 'No lead type data yet'}
-                      </p>
-                    </div>
-                    <div className="flex items-center justify-center w-12 h-12 bg-purple-100 rounded-lg">
-                      <FaDollarSign className="w-6 h-6 text-purple-600" />
-                    </div>
-                  </div>
-                </motion.div>
-              </div>
-              {monthlyTrend.length > 0 && (
-                <div className="p-6 bg-white border border-gray-100 shadow-sm rounded-xl">
-                  <h3 className="mb-4 text-lg font-semibold text-gray-900">Monthly Lead Trend</h3>
-                  <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-6">
-                    {monthlyTrend.map((entry, index) => (
-                      <div key={index} className="p-3 text-center border border-gray-200 rounded-lg bg-gray-50">
-                        <p className="mb-1 text-xs text-gray-500">{entry.month}</p>
-                        <p className="text-xl font-semibold text-gray-900">{entry.count}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                                        <p className="text-3xl font-bold text-gray-900">{uniqueTotalLeads}</p>
+                                        <p className="mt-1 text-sm text-gray-500">
+                                          {lastLeadDate ? `Last lead on ${lastLeadDate.toLocaleDateString()}` : 'Awaiting first lead'}
+                                        </p>
+                                      </div>
+                                      <div className="flex items-center justify-center w-12 h-12 bg-blue-100 rounded-lg">
+                                        <FaUser className="w-6 h-6 text-blue-600" />
+                                      </div>
+                                    </div>
+                                  </motion.div>
+                                  <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.1 }}
+                                    className="p-6 bg-white border border-gray-100 shadow-sm rounded-xl"
+                                  >
+                                    <div className="flex items-center justify-between">
+                                      <div>
+                                        <p className="mb-1 text-sm font-medium text-gray-500">This Month</p>
+                                        <p className="text-3xl font-bold text-gray-900">{uniqueLeadsThisMonth}</p>
+                                        <p className={`text-sm mt-1 ${monthDeltaColor}`}>{monthDeltaLabel}</p>
+                                      </div>
+                                      <div className="flex items-center justify-center w-12 h-12 bg-green-100 rounded-lg">
+                                        <FaChartLine className="w-6 h-6 text-green-600" />
+                                      </div>
+                                    </div>
+                                  </motion.div>
+                                  <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.2 }}
+                                    className="p-6 bg-white border border-gray-100 shadow-sm rounded-xl"
+                                  >
+                                    <div className="flex items-center justify-between">
+                                      <div>
+                                        <p className="mb-1 text-sm font-medium text-gray-500">This Week</p>
+                                        <p className="text-3xl font-bold text-gray-900">{uniqueLeadsThisWeek}</p>
+                                        <p className="mt-1 text-sm text-gray-500">
+                                          {uniqueTopLeadType ? `${uniqueTopLeadType.count} ${formatTitleCase(uniqueTopLeadType.label)} leads overall` : 'No lead type data yet'}
+                                        </p>
+                                      </div>
+                                      <div className="flex items-center justify-center w-12 h-12 bg-purple-100 rounded-lg">
+                                        <FaDollarSign className="w-6 h-6 text-purple-600" />
+                                      </div>
+                                    </div>
+                                  </motion.div>
+                                </div>
+                                {uniqueMonthlyTrend.length > 0 && (
+                                  <div className="p-6 bg-white border border-gray-100 shadow-sm rounded-xl">
+                                    <h3 className="mb-4 text-lg font-semibold text-gray-900">Monthly Lead Trend</h3>
+                                    <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-6">
+                                      {uniqueMonthlyTrend.map((entry, index) => (
+                                        <div key={index} className="p-3 text-center border border-gray-200 rounded-lg bg-gray-50">
+                                          <p className="mb-1 text-xs text-gray-500">{entry.month}</p>
+                                          <p className="text-xl font-semibold text-gray-900">{entry.count}</p>
+                                        </div>
+                                      ))}
+                                    </div>                </div>
               )}
               <div className="bg-white border border-gray-100 shadow-sm rounded-xl">
                 <div className="flex flex-col gap-3 p-6 border-b border-gray-100 md:flex-row md:items-center md:justify-between">
