@@ -176,8 +176,9 @@ export default function AdvisorProfile() {
       }
     }
   }
+  
   const handleLogoClick = () => {
-  navigate("/");
+    window.location.href = "https://www.advisorchooser.com";
 };
 
   const displayEnd = displayStart ? new Date(new Date(displayStart).setFullYear(displayStart.getFullYear() + 1)) : end;

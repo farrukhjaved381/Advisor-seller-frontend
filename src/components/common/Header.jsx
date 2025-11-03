@@ -21,6 +21,8 @@ const Header = () => {
   // Handle logo click
   const handleLogoClick = () => {
     // In your actual app, replace this with navigation to home
+    // navigate("/");
+    window.location.href = "https://www.advisorchooser.com";
     console.log("Logo clicked - navigate to home");
   };
 

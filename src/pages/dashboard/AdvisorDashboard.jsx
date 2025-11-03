@@ -1068,7 +1068,7 @@ const AdvisorDashboard = () => {
   }
 
    const handleLogoClick = () => {
-  navigate("/");
+    window.location.href = "https://www.advisorchooser.com";
 };
 
   return (
