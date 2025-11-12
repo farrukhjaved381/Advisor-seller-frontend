@@ -1068,7 +1068,7 @@ const AdvisorDashboard = () => {
   }
 
    const handleLogoClick = () => {
-    window.location.href = "https://www.advisorchooser.com";
+    window.location.href = "https://advisorchooser.com";
 };
 
   return (
@@ -1741,7 +1741,7 @@ const AdvisorDashboard = () => {
                   </div>
                 )}
               </div>
-              <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+              <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -1750,55 +1750,72 @@ const AdvisorDashboard = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="mb-1 text-sm font-medium text-gray-500">Total Leads</p>
-                                        <p className="text-3xl font-bold text-gray-900">{uniqueTotalLeads}</p>
-                                        <p className="mt-1 text-sm text-gray-500">
-                                          {lastLeadDate ? `Last lead on ${lastLeadDate.toLocaleDateString()}` : 'Awaiting first lead'}
-                                        </p>
-                                      </div>
-                                      <div className="flex items-center justify-center w-12 h-12 bg-blue-100 rounded-lg">
-                                        <FaUser className="w-6 h-6 text-blue-600" />
-                                      </div>
-                                    </div>
-                                  </motion.div>
-                                  <motion.div
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: 0.1 }}
-                                    className="p-6 bg-white border border-gray-100 shadow-sm rounded-xl"
-                                  >
-                                    <div className="flex items-center justify-between">
-                                      <div>
-                                        <p className="mb-1 text-sm font-medium text-gray-500">This Month</p>
-                                        <p className="text-3xl font-bold text-gray-900">{uniqueLeadsThisMonth}</p>
-                                        <p className={`text-sm mt-1 ${monthDeltaColor}`}>{monthDeltaLabel}</p>
-                                      </div>
-                                      <div className="flex items-center justify-center w-12 h-12 bg-green-100 rounded-lg">
-                                        <FaChartLine className="w-6 h-6 text-green-600" />
-                                      </div>
-                                    </div>
-                                  </motion.div>
-                                  <motion.div
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: 0.2 }}
-                                    className="p-6 bg-white border border-gray-100 shadow-sm rounded-xl"
-                                  >
-                                    <div className="flex items-center justify-between">
-                                      <div>
-                                        <p className="mb-1 text-sm font-medium text-gray-500">This Week</p>
-                                        <p className="text-3xl font-bold text-gray-900">{uniqueLeadsThisWeek}</p>
-                                        <p className="mt-1 text-sm text-gray-500">
-                                          {uniqueTopLeadType ? `${uniqueTopLeadType.count} ${formatTitleCase(uniqueTopLeadType.label)} leads overall` : 'No lead type data yet'}
-                                        </p>
-                                      </div>
-                                      <div className="flex items-center justify-center w-12 h-12 bg-purple-100 rounded-lg">
-                                        <FaDollarSign className="w-6 h-6 text-purple-600" />
-                                      </div>
-                                    </div>
-                                  </motion.div>
-                                </div>
-                                {uniqueMonthlyTrend.length > 0 && (
-                                  <div className="p-6 bg-white border border-gray-100 shadow-sm rounded-xl">
+                      <p className="text-3xl font-bold text-gray-900">{uniqueTotalLeads}</p>
+                      <p className="mt-1 text-sm text-gray-500">
+                        {lastLeadDate ? `Last lead on ${lastLeadDate.toLocaleDateString()}` : 'Awaiting first lead'}
+                      </p>
+                    </div>
+                    <div className="flex items-center justify-center w-12 h-12 bg-blue-100 rounded-lg">
+                      <FaUser className="w-6 h-6 text-blue-600" />
+                    </div>
+                  </div>
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="p-6 bg-white border border-gray-100 shadow-sm rounded-xl"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="mb-1 text-sm font-medium text-gray-500">This Month</p>
+                      <p className="text-3xl font-bold text-gray-900">{uniqueLeadsThisMonth}</p>
+                      <p className={`text-sm mt-1 ${monthDeltaColor}`}>{monthDeltaLabel}</p>
+                    </div>
+                    <div className="flex items-center justify-center w-12 h-12 bg-green-100 rounded-lg">
+                      <FaChartLine className="w-6 h-6 text-green-600" />
+                    </div>
+                  </div>
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="p-6 bg-white border border-gray-100 shadow-sm rounded-xl"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="mb-1 text-sm font-medium text-gray-500">This Week</p>
+                      <p className="text-3xl font-bold text-gray-900">{uniqueLeadsThisWeek}</p>
+                      <p className="mt-1 text-sm text-gray-500">
+                        {uniqueTopLeadType ? `${uniqueTopLeadType.count} ${formatTitleCase(uniqueTopLeadType.label)} leads overall` : 'No lead type data yet'}
+                      </p>
+                    </div>
+                    <div className="flex items-center justify-center w-12 h-12 bg-purple-100 rounded-lg">
+                      <FaDollarSign className="w-6 h-6 text-purple-600" />
+                    </div>
+                  </div>
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="p-6 bg-white border border-gray-100 shadow-sm rounded-xl"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="mb-1 text-sm font-medium text-gray-500">Impressions</p>
+                      <p className="text-3xl font-bold text-gray-900">{profile.impressions || 0}</p>
+                      <p className="mt-1 text-sm text-gray-500">Seller views</p>
+                    </div>
+                    <div className="flex items-center justify-center w-12 h-12 bg-indigo-100 rounded-lg">
+                      <FaChartLine className="w-6 h-6 text-indigo-600" />
+                    </div>
+                  </div>
+                </motion.div>
+              </div>
+                {uniqueMonthlyTrend.length > 0 && (
+                  <div className="p-6 bg-white border border-gray-100 shadow-sm rounded-xl">
                                     <h3 className="mb-4 text-lg font-semibold text-gray-900">Monthly Lead Trend</h3>
                                     <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-6">
                                       {uniqueMonthlyTrend.map((entry, index) => (

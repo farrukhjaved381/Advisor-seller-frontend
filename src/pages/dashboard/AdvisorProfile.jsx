@@ -178,7 +178,7 @@ export default function AdvisorProfile() {
   }
   
   const handleLogoClick = () => {
-    window.location.href = "https://www.advisorchooser.com";
+    window.location.href = "https://advisorchooser.com";
 };
 
   const displayEnd = displayStart ? new Date(new Date(displayStart).setFullYear(displayStart.getFullYear() + 1)) : end;

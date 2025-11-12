@@ -36,99 +36,96 @@ const AdvisorCard = ({ advisor, onSelect, isSelected }) => {
     <div className="w-full max-w-2xl mx-auto overflow-hidden transition-all duration-300 bg-white border border-gray-200 shadow-lg rounded-2xl hover:shadow-2xl">
       {/* Header Section */}
       <div className="relative p-6 border-b border-gray-100 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-        <div className="flex items-start justify-between gap-4">
-          {/* Left: Logo + Info */}
-          <div className="flex items-start flex-1 min-w-0 gap-4">
-            {/* Logo */}
-            <div className="relative flex-shrink-0">
-              {advisor.logoUrl ? (
-                <img 
-                  className="w-20 h-20 bg-white border-4 border-white shadow-lg object-fit rounded-2xl" 
-                  src={advisor.logoUrl} 
-                  alt={advisor.companyName}
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                    e.target.nextSibling.style.display = 'flex';
-                  }}
-                />
-              ) : null}
-              <div className={`w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-3xl shadow-lg ${advisor.logoUrl ? 'hidden' : 'flex'}`}>
-                {advisor.companyName?.charAt(0) || 'A'}
-              </div>
+        {/* Logo on Top - Centered */}
+        <div className="flex justify-center mb-6">
+          <div className="relative flex-shrink-0 w-32 h-32 sm:w-40 sm:h-40">
+            {advisor.logoUrl ? (
+              <img 
+                className="w-full h-full bg-white border-4 border-white shadow-lg object-contain rounded-2xl p-2" 
+                src={advisor.logoUrl} 
+                alt={advisor.companyName}
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  e.target.nextSibling.style.display = 'flex';
+                }}
+              />
+            ) : null}
+            <div className={`w-full h-full rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-4xl sm:text-5xl shadow-lg ${advisor.logoUrl ? 'hidden' : 'flex'}`}>
+              {advisor.companyName?.charAt(0) || 'A'}
             </div>
-
-            {/* Company Info */}
-            <div className="flex-1 min-w-0">
-              {/* Company Name - with proper wrapping */}
-              <h3 className="mb-2 text-2xl font-bold leading-tight text-gray-900 break-words">
-                {advisor.companyName}
-              </h3>
-              
-              {/* Advisor Name */}
-              <div className="flex items-center mb-3 text-gray-700">
-                <FaUser className="flex-shrink-0 w-4 h-4 mr-2 text-blue-600" />
-                <span className="text-base font-medium break-words">{advisor.advisorName}</span>
-              </div>
-
-              {/* Stats Row */}
-              <div className="flex flex-wrap items-center gap-4 mb-3">
-                <div className="flex items-center px-3 py-1 text-sm font-semibold text-yellow-700 bg-yellow-100 rounded-full">
-                  <FaAward className="w-4 h-4 mr-1.5" />
-                  <span>{advisor.yearsExperience} years</span>
-                </div>
-                <div className="flex items-center px-3 py-1 text-sm font-semibold text-green-700 bg-green-100 rounded-full">
-                  <FaChartLine className="w-4 h-4 mr-1.5" />
-                  <span>{advisor.numberOfTransactions} deals</span>
-                </div>
-              </div>
-
-              {/* Contact Info Grid */}
-              <div className="space-y-2 text-sm text-gray-600">
-                {advisor.phone && (
-                  <div className="flex items-center">
-                    <FaPhone className="flex-shrink-0 w-4 h-4 mr-2 text-blue-600" />
-                    <span className="break-all">{advisor.phone}</span>
-                  </div>
-                )}
-                {advisor.advisorEmail && (
-                  <div className="flex items-center">
-                    <FaEnvelope className="flex-shrink-0 w-4 h-4 mr-2 text-blue-600" />
-                    <span className="break-all">{advisor.advisorEmail}</span>
-                  </div>
-                )}
-                {advisor.website && (
-                  <div className="flex items-center">
-                    <FaGlobe className="flex-shrink-0 w-4 h-4 mr-2 text-blue-600" />
-                    <a 
-                      href={advisor.website} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="inline-flex items-center text-blue-600 break-all transition-colors hover:text-purple-600 hover:underline"
-                    >
-                      <span className="break-all">{advisor.website.replace(/^https?:\/\//, '')}</span>
-                      <FaExternalLinkAlt className="flex-shrink-0 w-3 h-3 ml-1" />
-                    </a>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Right: Checkbox */}
-          <div className="flex-shrink-0 pt-1">
-            <input
-              type="checkbox"
-              checked={isSelected}
-              onChange={onSelect}
-              className="w-6 h-6 text-blue-600 transition-colors border-gray-300 rounded cursor-pointer form-checkbox focus:ring-blue-500 focus:ring-2"
-            />
           </div>
         </div>
 
-        {/* CIM Amplify Badge */}
+        {/* Company Info - Below Logo */}
+        <div className="flex flex-col items-center text-center">
+          {/* Company Name */}
+          <h3 className="mb-2 text-2xl font-bold leading-tight text-gray-900">
+            {advisor.companyName}
+          </h3>
+          
+          {/* Advisor Name */}
+          <div className="flex items-center justify-center mb-3 text-gray-700">
+            <FaUser className="flex-shrink-0 w-4 h-4 mr-2 text-blue-600" />
+            <span className="text-base font-medium">{advisor.advisorName}</span>
+          </div>
+
+          {/* Stats Row */}
+          <div className="flex flex-wrap items-center justify-center gap-4 mb-4">
+            <div className="flex items-center px-3 py-1 text-sm font-semibold text-yellow-700 bg-yellow-100 rounded-full">
+              <FaAward className="w-4 h-4 mr-1.5" />
+              <span>{advisor.yearsExperience} years</span>
+            </div>
+            <div className="flex items-center px-3 py-1 text-sm font-semibold text-green-700 bg-green-100 rounded-full">
+              <FaChartLine className="w-4 h-4 mr-1.5" />
+              <span>{advisor.numberOfTransactions} deals</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Contact Info - Full Width Below Stats */}
+        <div className="space-y-2 text-sm text-gray-600 mb-4">
+          {advisor.phone && (
+            <div className="flex items-center justify-center">
+              <FaPhone className="flex-shrink-0 w-4 h-4 mr-2 text-blue-600" />
+              <span className="break-all">{advisor.phone}</span>
+            </div>
+          )}
+          {advisor.advisorEmail && (
+            <div className="flex items-center justify-center">
+              <FaEnvelope className="flex-shrink-0 w-4 h-4 mr-2 text-blue-600" />
+              <span className="break-all">{advisor.advisorEmail}</span>
+            </div>
+          )}
+          {advisor.website && (
+            <div className="flex items-center justify-center">
+              <FaGlobe className="flex-shrink-0 w-4 h-4 mr-2 text-blue-600" />
+              <a 
+                href={advisor.website} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="inline-flex items-center text-blue-600 break-all transition-colors hover:text-purple-600 hover:underline"
+              >
+                <span className="break-all">{advisor.website.replace(/^https?:\/\//, '')}</span>
+                <FaExternalLinkAlt className="flex-shrink-0 w-3 h-3 ml-1" />
+              </a>
+            </div>
+          )}
+        </div>
+
+        {/* Checkbox - Positioned at top right */}
+        <div className="absolute top-6 right-6 flex-shrink-0">
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={onSelect}
+            className="w-6 h-6 text-blue-600 transition-colors border-gray-300 rounded cursor-pointer form-checkbox focus:ring-blue-500 focus:ring-2"
+          />
+        </div>
+
+        {/* CIM Amplify Badge - Moved below header content */}
         {advisor.workedWithCimamplify && (
           <div className="inline-flex items-center gap-2 px-4 py-2 mt-4 text-sm font-semibold text-indigo-700 border-2 border-indigo-300 rounded-xl bg-indigo-50">
-                                 <img src="/logo.png" alt="Cimamplify Ventures Partner" className="w-5 h-5" title="Worked with Cimamplify Ventures" />
+            <img src="/logo.png" alt="Cimamplify Ventures Partner" className="w-5 h-5" title="Worked with Cimamplify Ventures" />
             <span>Uses CIM Amplify to find more buyers</span>
           </div>
         )}

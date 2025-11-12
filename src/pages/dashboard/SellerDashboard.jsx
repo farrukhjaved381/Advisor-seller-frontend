@@ -611,6 +611,21 @@ const handleBulkIntroduction = async () => {
 
       if (res.status === 200 && res.data) {
         setMatches(res.data);
+        
+        // Record impressions for each advisor
+        res.data.forEach(async (advisor) => {
+          try {
+            console.log(`Recording impression for advisor ID: ${advisor.id}`);
+              `https://api.advisorchooser.com/api/advisors/record-impression`,
+              { advisorId: advisor.id },
+              { headers: { Authorization: `Bearer ${token}` } }
+            );
+            console.log(`Impression recorded for advisor: ${advisor.id}`);
+          } catch (error) {
+            console.error(`Failed to record impression for advisor ${advisor.id}:`, error.response?.data || error.message);
+            // Don't show error to user, just log it
+          }
+        });
       } else {
         setMatches([]);
         toast.error(res.data?.message || "Failed to fetch matches");
@@ -631,7 +646,7 @@ const handleBulkIntroduction = async () => {
         toast.error("No token found, please log in again.");
         return;
       }
-
+https://api.advisorchooser.com
       const res = await axios.get(
         "https://api.advisorchooser.com/api/sellers/profile",
         {
@@ -893,7 +908,7 @@ const handleBulkIntroduction = async () => {
         currency: values.currency,
         description: values.description,
       };
-
+https://api.advisorchooser.com
       const res = await axios.patch(
         "https://api.advisorchooser.com/api/sellers/profile",
         payload,
@@ -972,7 +987,7 @@ const handleBulkIntroduction = async () => {
     }),
     onSubmit: async (values) => {
       try {
-        const token = localStorage.getItem("access_token");
+        conhttps://api.advisorchooser.comge.getItem("access_token");
         await axios.patch(
           "https://api.advisorchooser.com/api/sellers/profile",
           values,
