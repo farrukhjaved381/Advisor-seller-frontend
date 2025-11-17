@@ -371,7 +371,20 @@ const AdvisorDashboard = () => {
   const IndustryChooser = ({ selected, onChange, hasError }) => {
     const [query, setQuery] = useState("");
     const [expandedSectors, setExpandedSectors] = useState({});
+    const scrollContainerRef = React.useRef(null);
     const industryData = getIndustryData();
+
+    // Preserve scroll position when selected items change
+    const preserveScrollPosition = React.useCallback(() => {
+      if (scrollContainerRef.current) {
+        const scrollTop = scrollContainerRef.current.scrollTop;
+        requestAnimationFrame(() => {
+          if (scrollContainerRef.current) {
+            scrollContainerRef.current.scrollTop = scrollTop;
+          }
+        });
+      }
+    }, []);
 
     const filterSectors = (sectors, currentQuery) => {
       if (!currentQuery) return sectors;
@@ -389,6 +402,7 @@ const AdvisorDashboard = () => {
 
     // Handler for industry group checkbox
     const handleGroupToggle = (group) => {
+      preserveScrollPosition();
       const groupName = group.name;
       const isSelected = selected.includes(groupName);
 
@@ -403,6 +417,7 @@ const AdvisorDashboard = () => {
 
     // Handler for selecting/deselecting all groups in a sector
     const handleSectorToggle = (sector, checkAll) => {
+      preserveScrollPosition();
       const groupNames = sector.industryGroups.map((g) => g.name);
       let newSelected = [...selected];
       if (checkAll) {
@@ -546,6 +561,7 @@ const AdvisorDashboard = () => {
         )}  */}
 
         <div
+          ref={scrollContainerRef}
           className={`bg-gray-50 border rounded-lg p-4 h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-gray-100 shadow-inner ${
             hasError ? "border-red-500" : "border-primary/20"
           }`}
@@ -570,29 +586,46 @@ const AdvisorDashboard = () => {
   const GeographyChooser = ({ selected, onChange, hasError }) => {
     const [query, setQuery] = useState("");
     const [expandedCountries, setExpandedCountries] = useState({});
+    const scrollContainerRef = React.useRef(null);
 
-    // Get all countries and filter based on search
-    let allCountries = Country.getAllCountries().filter((country) => {
-      const countryMatch = country.name
-        .toLowerCase()
-        .includes(query.toLowerCase());
-      const states = State.getStatesOfCountry(country.isoCode);
-      const stateMatch = states.some((state) =>
-        state.name.toLowerCase().includes(query.toLowerCase())
+    // Memoize the sorted countries list to prevent re-sorting on every render
+    const allCountries = React.useMemo(() => {
+      // Get all countries and filter based on search
+      let filteredCountries = Country.getAllCountries().filter((country) => {
+        const countryMatch = country.name
+          .toLowerCase()
+          .includes(query.toLowerCase());
+        const states = State.getStatesOfCountry(country.isoCode);
+        const stateMatch = states.some((state) =>
+          state.name.toLowerCase().includes(query.toLowerCase())
+        );
+        return countryMatch || stateMatch;
+      });
+
+      // Priority countries (United States, Canada, Mexico)
+      const priorityCountries = ["United States", "Canada", "Mexico"];
+      const priority = filteredCountries.filter((c) =>
+        priorityCountries.includes(c.name)
       );
-      return countryMatch || stateMatch;
-    });
+      const rest = filteredCountries.filter((c) => !priorityCountries.includes(c.name));
+      return [...priority, ...rest];
+    }, [query]);
 
-    // Priority countries (United States, Canada, Mexico)
-    const priorityCountries = ["United States", "Canada", "Mexico"];
-    const priority = allCountries.filter((c) =>
-      priorityCountries.includes(c.name)
-    );
-    const rest = allCountries.filter((c) => !priorityCountries.includes(c.name));
-    allCountries = [...priority, ...rest];
+    // Preserve scroll position when selected items change
+    const preserveScrollPosition = React.useCallback(() => {
+      if (scrollContainerRef.current) {
+        const scrollTop = scrollContainerRef.current.scrollTop;
+        requestAnimationFrame(() => {
+          if (scrollContainerRef.current) {
+            scrollContainerRef.current.scrollTop = scrollTop;
+          }
+        });
+      }
+    }, []);
 
     // Handler for state checkbox
     const handleStateToggle = (country, state) => {
+      preserveScrollPosition();
       const stateName = `${country.name} > ${state.name}`;
       const isSelected = selected.includes(stateName);
 
@@ -607,6 +640,7 @@ const AdvisorDashboard = () => {
 
     // Handler for selecting/deselecting all states in a country
     const handleCountryToggle = (country, states, checkAll) => {
+      preserveScrollPosition();
       const names = states.map((s) => `${country.name} > ${s.name}`);
       let newSelected = [...selected];
       if (checkAll) {
@@ -619,6 +653,7 @@ const AdvisorDashboard = () => {
 
     // Handler for toggling a country that has no states (store as "Country Name")
     const handleCountrySingleToggle = (country) => {
+      preserveScrollPosition();
       const name = country.name;
       const isSelected = selected.includes(name);
       let newSelected;
@@ -847,6 +882,7 @@ const AdvisorDashboard = () => {
         )} */}
 
         <div
+          ref={scrollContainerRef}
           className={`bg-gray-50 border rounded-lg p-4 h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-gray-100 shadow-inner ${
             hasError ? "border-red-500" : "border-primary/20"
           }`}
