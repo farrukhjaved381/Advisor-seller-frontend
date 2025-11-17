@@ -616,6 +616,7 @@ const handleBulkIntroduction = async () => {
         res.data.forEach(async (advisor) => {
           try {
             console.log(`Recording impression for advisor ID: ${advisor.id}`);
+            await axios.post(
               `https://api.advisorchooser.com/api/advisors/record-impression`,
               { advisorId: advisor.id },
               { headers: { Authorization: `Bearer ${token}` } }
@@ -646,7 +647,7 @@ const handleBulkIntroduction = async () => {
         toast.error("No token found, please log in again.");
         return;
       }
-https://api.advisorchooser.com
+
       const res = await axios.get(
         "https://api.advisorchooser.com/api/sellers/profile",
         {
@@ -908,7 +909,7 @@ https://api.advisorchooser.com
         currency: values.currency,
         description: values.description,
       };
-https://api.advisorchooser.com
+
       const res = await axios.patch(
         "https://api.advisorchooser.com/api/sellers/profile",
         payload,
@@ -987,7 +988,7 @@ https://api.advisorchooser.com
     }),
     onSubmit: async (values) => {
       try {
-        conhttps://api.advisorchooser.comge.getItem("access_token");
+        const token = localStorage.getItem("access_token");
         await axios.patch(
           "https://api.advisorchooser.com/api/sellers/profile",
           values,
