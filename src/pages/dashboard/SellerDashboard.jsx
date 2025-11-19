@@ -1026,7 +1026,7 @@ const handleBulkIntroduction = async () => {
   };
 
   const handleLogoClick = () => {
-  navigate("/");
+  navigate("www.advisorchooser.com");
 };
 
   // Enhanced initial values with comprehensive autofill
@@ -1057,29 +1057,24 @@ const handleBulkIntroduction = async () => {
       {/* Mobile backdrop */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 z-20 bg-black bg-opacity-50 lg:hidden"
+          className="fixed inset-0 z-20 bg-black bg-opacity-50 md:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
       <aside
         className={`
-        ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
-        fixed lg:static inset-y-0 left-0 z-30 w-72 bg-white flex flex-col border-r border-gray-200 shadow-sm transition-transform duration-300 ease-in-out
+        ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
+        fixed md:static inset-y-0 left-0 z-30 w-72 bg-white flex flex-col border-r border-gray-200 shadow-sm transition-transform duration-300 ease-in-out
       `}
       >
         {/* Header */}
         <div className="px-6 py-6 border-b border-gray-100">
-          <div className="flex items-center justify-between mb-4 lg:justify-center">
-            <img
-              src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w-768,fit=crop,q=95/mk3JaNVZEltBD9g4/logo-transparency-mnlJLXr4jxIOR470.png"
-              alt="Advisor Chooser"
-              className="object-contain w-auto h-8"
-               onClick={handleLogoClick}
-            />
+          <div className="flex items-center justify-between mb-4 md:justify-center">
+           <Header/>
             <button
               onClick={() => setSidebarOpen(false)}
-              className="p-2 rounded-md lg:hidden hover:bg-gray-100"
+              className="p-2 rounded-md md:hidden hover:bg-gray-100"
             >
               <svg
                 className="w-5 h-5 text-gray-600"
@@ -1231,13 +1226,34 @@ const handleBulkIntroduction = async () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex flex-col flex-1">
-        {/* Reminder banner removed per request: show only on close/leave attempt */}
+      <main className="flex flex-col flex-1 min-w-0">
+        {/* Mobile menu button */}
+        <div className="flex items-center justify-between p-4 bg-white border-b border-gray-200 md:hidden">
+          <h1 className="text-lg font-semibold text-gray-900">Dashboard</h1>
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="p-2 rounded-md hover:bg-gray-100"
+          >
+            <svg
+              className="w-6 h-6 text-gray-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6h16M4 12h16M4 18h16"
+              />
+            </svg>
+          </button>
+        </div>
 
         {/* Tabs Content */}
-        <div className="flex-1 px-4 py-4 overflow-y-auto lg:px-6">
+        <div className="flex flex-col flex-1 px-4 py-4 lg:px-6">
           {activeTab === "pending" && (
-            <div className="p-4 border rounded-lg bg-gray-50">
+            <div className="flex flex-col h-full p-4 border rounded-lg bg-gray-50">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-4">
                   <h3 className="text-lg font-semibold">
@@ -1366,16 +1382,18 @@ const handleBulkIntroduction = async () => {
                   </button>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 lg:gap-6 xl:gap-3">
-    {matches.map((advisor) => (
-      <AdvisorCard
-        key={advisor.id}
-        advisor={advisor}
-        onSelect={() => handleSelectAdvisor(advisor.id)}
-        isSelected={selectedAdvisors.includes(advisor.id)}
-      />
-    ))}
-  </div>
+                <div className="flex-1 overflow-y-auto">
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 lg:gap-6 xl:gap-3 pb-4">
+                    {matches.map((advisor) => (
+                      <AdvisorCard
+                        key={advisor.id}
+                        advisor={advisor}
+                        onSelect={() => handleSelectAdvisor(advisor.id)}
+                        isSelected={selectedAdvisors.includes(advisor.id)}
+                      />
+                    ))}
+                  </div>
+                </div>
               )}
             </div>
           )}

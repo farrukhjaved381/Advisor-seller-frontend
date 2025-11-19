@@ -36,7 +36,7 @@ const Header = () => {
       }`}
     >
       <div className="container px-4 mx-auto sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between w-full h-16 sm:h-18 lg:h-20">
+        <div className="flex items-center justify-between w-full h-12 xs:h-13 sm:h-14 md:h-15 lg:h-16 xl:h-17 2xl:h-18">
           {/* Logo Section */}
           <div className="flex-shrink-0">
             <button
@@ -46,7 +46,7 @@ const Header = () => {
               <img
                 src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=768,fit=crop,q=95/mk3JaNVZEltBD9g4/logo-transparency-mnlJLXr4jxIOR470.png"
                 alt="Advisor Chooser logo"
-                className="object-contain w-auto h-8 transition-all duration-300 sm:h-10 lg:h-12 group-hover:scale-105"
+                className="object-contain w-auto h-4 transition-all duration-300 xs:h-5 sm:h-6 md:h-7 lg:h-8 xl:h-9 2xl:h-10 group-hover:scale-105"
               />
             </button>
           </div>
