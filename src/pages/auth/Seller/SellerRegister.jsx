@@ -26,7 +26,7 @@ const SellerRegister = () => {
         ...prev,
         [name]: value,
       }));
-      
+
       // Update password strength if password field changes
       if (name === 'password') {
         setPasswordStrength(checkPasswordStrength(value));
@@ -128,9 +128,9 @@ const SellerRegister = () => {
   };
 
   return (
-  <div className="w-screen min-h-screen bg-gradient-to-br from-gray-50 to-white flex flex-col overflow-x-hidden">
-      <ToastContainer 
-        position="top-center" 
+    <div className="w-screen min-h-screen bg-gradient-to-br from-gray-50 to-white flex flex-col overflow-x-hidden">
+      <ToastContainer
+        position="top-center"
         autoClose={3000}
         toastOptions={{
           style: {
@@ -148,12 +148,12 @@ const SellerRegister = () => {
         {/* Left Side - Image */}
         <div className="w-full md:w-[45%] relative overflow-hidden min-h-[260px] md:min-h-0 h-64 md:h-auto">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-third/30 z-10"></div>
-          <img 
+          <img
             src="https://images.unsplash.com/photo-1559526324-4b87b5e36e44?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
-            alt="Professional seller workspace with modern setup" 
-            className="object-cover h-full w-full transform hover:scale-105 transition-transform duration-700" 
+            alt="Professional seller workspace with modern setup"
+            className="object-cover h-full w-full transform hover:scale-105 transition-transform duration-700"
           />
-          
+
           {/* Floating Welcome Card */}
           <div className="absolute top-4 left-4 md:top-8 md:left-8 z-20 w-[90%] md:w-auto">
             <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 md:p-6 shadow-xl max-w-sm">
@@ -166,7 +166,7 @@ const SellerRegister = () => {
               </p>
             </div>
           </div>
-          
+
           {/* Features Badge */}
           <div className="absolute bottom-4 right-4 md:bottom-8 md:right-8 z-20">
             <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-2 md:p-4 shadow-xl">
@@ -178,11 +178,11 @@ const SellerRegister = () => {
               </div>
             </div>
           </div>
-          
+
           {/* Decorative Pattern */}
           <div className="absolute bottom-0 left-0 right-0 h-16 md:h-32 bg-gradient-to-t from-secondary/10 to-transparent z-10"></div>
         </div>
-        
+
         {/* Right Side - Form */}
         <div className="w-full md:w-[55%] flex justify-center items-center min-h-[340px] md:min-h-screen bg-gradient-to-bl from-white to-gray-50/50 relative">
           {/* Background Pattern */}
@@ -190,7 +190,7 @@ const SellerRegister = () => {
             <div className="absolute top-16 md:top-32 right-8 md:right-32 w-24 md:w-40 h-24 md:h-40 bg-primary rounded-full blur-3xl"></div>
             <div className="absolute bottom-16 md:bottom-32 left-8 md:left-20 w-32 md:w-56 h-32 md:h-56 bg-third rounded-full blur-3xl"></div>
           </div>
-          
+
           <form
             onSubmit={handleSubmit}
             className="relative z-10 w-full sm:w-[90%] md:w-[85%] max-w-2xl bg-white/70 backdrop-blur-sm rounded-3xl p-4 sm:p-6 md:p-8 shadow-2xl border border-white/20"
@@ -203,7 +203,7 @@ const SellerRegister = () => {
                 </svg>
                 New Seller Registration
               </div>
-              
+
               <h2 className="text-3xl font-black text-secondary mb-2">
                 Create Your Account
               </h2>
@@ -351,11 +351,10 @@ const SellerRegister = () => {
             <button
               type="submit"
               disabled={loading}
-              className={`w-full h-14 rounded-xl font-semibold text-white text-lg transition-all duration-300 flex items-center justify-center mb-6 ${
-                loading
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-primary to-third hover:shadow-2xl hover:shadow-primary/25 transform hover:scale-105 active:scale-95'
-              }`}
+              className={`w-full h-14 rounded-xl font-semibold text-white text-lg transition-all duration-300 flex items-center justify-center mb-6 ${loading
+                ? 'bg-gray-400 cursor-not-allowed'
+                : 'bg-gradient-to-r from-primary to-third hover:shadow-2xl hover:shadow-primary/25 transform hover:scale-105 active:scale-95'
+                }`}
             >
               {loading ? (
                 <div className="flex items-center space-x-2">
@@ -388,7 +387,7 @@ const SellerRegister = () => {
           </form>
         </div>
       </div>
-      
+
     </div>
   );
 };

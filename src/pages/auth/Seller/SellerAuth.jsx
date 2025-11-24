@@ -176,22 +176,21 @@ const SellerAuth = () => {
                   type="email"
                   value={email}
                   onChange={handleEmailChange}
-                  className={`w-full px-4 py-3 rounded-xl border ${
-                    emailError ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-primary'
-                  } focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200`}
+                  className={`w-full px-4 py-3 rounded-xl border ${emailError ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-primary'
+                    } focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200`}
                   placeholder="you@company.com"
                   disabled={loading}
                   autoComplete="email"
                 />
                 {emailError && <p className="mt-2 text-sm text-red-500">{emailError}</p>}
               </div>
-<button
-  type="submit"
-  disabled={loading}
-  className="w-full bg-gradient-to-r from-primary to-third text-white font-semibold py-3 rounded-xl hover:shadow-xl transition-transform duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
->
-  {loading ? 'Checking...' : 'Next Step → Your Company Details'}
-</button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-gradient-to-r from-primary to-third text-white font-semibold py-3 rounded-xl hover:shadow-xl transition-transform duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? 'Checking...' : 'Next Step → Your Company Details'}
+              </button>
             </form>
 
             {/* <div className="mt-6 p-4 bg-gray-50 rounded-xl text-sm text-gray-600">
@@ -201,7 +200,7 @@ const SellerAuth = () => {
         </div>
       </div>
 
-     
+
     </div>
   );
 };

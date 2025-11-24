@@ -106,9 +106,9 @@ const AdvisorRegister = () => {
   };
 
   return (
-  <div className="flex flex-col w-screen min-h-screen overflow-x-hidden bg-gradient-to-br from-gray-50 to-white">
-      <ToastContainer 
-        position="top-center" 
+    <div className="flex flex-col w-screen min-h-screen overflow-x-hidden bg-gradient-to-br from-gray-50 to-white">
+      <ToastContainer
+        position="top-center"
         autoClose={3000}
         toastOptions={{
           style: {
@@ -120,19 +120,19 @@ const AdvisorRegister = () => {
           },
         }}
       />
-     
-     <Header />
+
+      <Header />
       {/* Main Content */}
       <div className="flex flex-col items-stretch flex-grow w-full pt-10 md:flex-row md:pt-20">
         {/* Left Side - Image */}
         <div className="w-full md:w-[45%] relative overflow-hidden min-h-[260px] md:min-h-0 h-64 md:h-[100vh]">
           <div className="absolute inset-0 z-10 bg-gradient-to-br from-primary/20 to-third/30"></div>
-          <img 
+          <img
             src="/handshake.png"
-            alt="Professional advisor consultation workspace" 
-            className="object-cover w-full h-full transition-transform duration-700 transform hover:scale-105" 
+            alt="Professional advisor consultation workspace"
+            className="object-cover w-full h-full transition-transform duration-700 transform hover:scale-105"
           />
-          
+
           {/* Floating Welcome Card */}
           <div className="absolute top-4 left-4 md:top-8 md:left-8 z-20 w-[90%] md:w-auto">
             <div className="max-w-sm p-4 shadow-xl bg-white/90 backdrop-blur-sm rounded-2xl md:p-6">
@@ -145,7 +145,7 @@ const AdvisorRegister = () => {
               </p>
             </div>
           </div>
-          
+
           {/* Features Badge */}
           <div className="absolute z-20 bottom-4 right-4 md:bottom-8 md:right-8">
             <div className="p-2 shadow-xl bg-white/90 backdrop-blur-sm rounded-2xl md:p-4">
@@ -157,11 +157,11 @@ const AdvisorRegister = () => {
               </div>
             </div>
           </div>
-          
+
           {/* Decorative Pattern */}
           <div className="absolute bottom-0 left-0 right-0 z-10 h-16 md:h-32 bg-gradient-to-t from-secondary/10 to-transparent"></div>
         </div>
-        
+
         {/* Right Side - Form */}
         <div className="w-full md:w-[55%] flex justify-center items-center min-h-[340px] md:min-h-screen bg-gradient-to-bl from-white to-gray-50/50 relative">
           {/* Background Pattern */}
@@ -169,7 +169,7 @@ const AdvisorRegister = () => {
             <div className="absolute w-24 h-24 rounded-full top-16 md:top-32 right-8 md:right-32 md:w-40 md:h-40 bg-primary blur-3xl"></div>
             <div className="absolute w-32 h-32 rounded-full bottom-16 md:bottom-32 left-8 md:left-20 md:w-56 md:h-56 bg-third blur-3xl"></div>
           </div>
-          
+
           <form
             onSubmit={handleSubmit}
             className="relative z-10 w-full sm:w-[90%] md:w-[85%] max-w-2xl bg-white/70 backdrop-blur-sm rounded-3xl p-4 sm:p-6 md:p-8 shadow-2xl border border-white/20"
@@ -182,13 +182,13 @@ const AdvisorRegister = () => {
                 </svg>
                 Advisor Registration
               </div>
-              
+
               <h2 className="mb-2 text-3xl font-black text-secondary">
                 Join the Only M&A Advisor Matching Service
 
               </h2>
               <p className="font-medium text-gray-600">
-               Get matched with business owners actively seeking M&A representation
+                Get matched with business owners actively seeking M&A representation
               </p>
             </div>
 
@@ -331,11 +331,10 @@ const AdvisorRegister = () => {
             <button
               type="submit"
               disabled={loading}
-              className={`w-full h-14 rounded-xl font-semibold text-white text-lg transition-all duration-300 flex items-center justify-center mb-6 ${
-                loading
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-primary to-third hover:shadow-2xl hover:shadow-primary/25 transform hover:scale-105 active:scale-95'
-              }`}
+              className={`w-full h-14 rounded-xl font-semibold text-white text-lg transition-all duration-300 flex items-center justify-center mb-6 ${loading
+                ? 'bg-gray-400 cursor-not-allowed'
+                : 'bg-gradient-to-r from-primary to-third hover:shadow-2xl hover:shadow-primary/25 transform hover:scale-105 active:scale-95'
+                }`}
             >
               {loading ? (
                 <div className="flex items-center space-x-2">
@@ -368,7 +367,7 @@ const AdvisorRegister = () => {
           </form>
         </div>
       </div>
-      
+
     </div>
   );
 };

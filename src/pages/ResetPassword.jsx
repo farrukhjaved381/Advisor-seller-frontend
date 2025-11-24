@@ -63,9 +63,8 @@ const ResetPassword = () => {
       setToken(tokenFromUrl)
       params.delete("token")
       const newSearch = params.toString()
-      const newUrl = `${window.location.pathname}${
-        newSearch ? `?${newSearch}` : ""
-      }`
+      const newUrl = `${window.location.pathname}${newSearch ? `?${newSearch}` : ""
+        }`
       window.history.replaceState({}, "", newUrl)
       fetchProfile(tokenFromUrl)
     } else {
@@ -157,8 +156,8 @@ const ResetPassword = () => {
               {isSuccess
                 ? "Your password has been updated successfully. Redirecting you to login..."
                 : email
-                ? `Changing password for: ${email}`
-                : "Enter your new password below to reset your account password."}
+                  ? `Changing password for: ${email}`
+                  : "Enter your new password below to reset your account password."}
             </p>
           </div>
 
@@ -233,11 +232,10 @@ const ResetPassword = () => {
                   <button
                     type="submit"
                     disabled={isSubmitting || loading}
-                    className={`w-full py-3.5 px-4 rounded-lg font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-                      isSubmitting || loading
-                        ? "bg-slate-100 text-slate-400 cursor-not-allowed"
-                        : "bg-gradient-to-r from-primary to-third hover:opacity-90 text-white shadow-lg hover:shadow-xl focus:ring-indigo-500/50 transform hover:scale-[1.02] active:scale-[0.98]"
-                    }`}
+                    className={`w-full py-3.5 px-4 rounded-lg font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 ${isSubmitting || loading
+                      ? "bg-slate-100 text-slate-400 cursor-not-allowed"
+                      : "bg-gradient-to-r from-primary to-third hover:opacity-90 text-white shadow-lg hover:shadow-xl focus:ring-indigo-500/50 transform hover:scale-[1.02] active:scale-[0.98]"
+                      }`}
                   >
                     {loading ? (
                       <div className="flex items-center justify-center gap-2">

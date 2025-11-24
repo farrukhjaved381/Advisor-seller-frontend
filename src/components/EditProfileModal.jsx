@@ -310,7 +310,7 @@ const EditProfileModal = ({ isOpen, onClose, profile, onProfileUpdate }) => {
                                 <Form className="flex flex-col gap-4">
                                     {submitCount > 0 && Object.keys(errors || {}).length > 0 && (
                                         <div className="mb-2 p-2 rounded border border-red-200 bg-red-50 text-red-700 text-sm">
-                                            Please fix {Object.keys(errors).length} highlighted field{Object.keys(errors).length>1?'s':''}.
+                                            Please fix {Object.keys(errors).length} highlighted field{Object.keys(errors).length > 1 ? 's' : ''}.
                                         </div>
                                     )}
                                     <ValidationTouched submitCount={submitCount} errors={errors} setTouched={setTouched} />

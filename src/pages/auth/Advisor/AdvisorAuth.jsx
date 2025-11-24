@@ -59,75 +59,75 @@ const Auth = () => {
     setPasswordStrength(checkPasswordStrength(value));
   };
 
- const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  const emailValidation = validateEmail(email);
-  const passwordValidation = validatePassword(password);
+    const emailValidation = validateEmail(email);
+    const passwordValidation = validatePassword(password);
 
-  setEmailError(emailValidation);
-  setPasswordError(passwordValidation);
+    setEmailError(emailValidation);
+    setPasswordError(passwordValidation);
 
-  if (!emailValidation && !passwordValidation) {
-    setLoading(true);
-    try {
-      // Login request
-      const res = await axios.post(
-        "https://api.advisorchooser.com/api/auth/login",
-        { email, password },
-        { withCredentials: true, validateStatus: () => true }
-      );
+    if (!emailValidation && !passwordValidation) {
+      setLoading(true);
+      try {
+        // Login request
+        const res = await axios.post(
+          "https://api.advisorchooser.com/api/auth/login",
+          { email, password },
+          { withCredentials: true, validateStatus: () => true }
+        );
 
-      if (res.status === 200 || res.status === 201) {
-        const { access_token, refresh_token, user } = res.data;
-        localStorage.setItem("access_token", access_token);
-        localStorage.setItem("refresh_token", refresh_token);
-        localStorage.setItem("user", JSON.stringify(user));
-        toast.success("Login Successful! 🎉");
-        navigate("/advisor-dashboard");
-      } else if (res.status === 401) {
-        const msg = res.data?.message || 'Incorrect email or password';
-        
-        // Check if error is about unverified email
-        if (msg.includes('verification email')) {
-          toast.error(
-            <div className="text-sm">
-              We previously sent you a verification email, check your spam.{" "}
-              <button
-                onClick={async () => {
-                  try {
-                    await axios.post('https://api.advisorchooser.com/api/auth/resend-verification', {
-                      email,
-                    });
-                    toast.success('Verification email sent! Check your inbox and spam folder.');
-                  } catch (err) {
-                    toast.error('Failed to resend verification email. Please try again.');
-                  }
-                }}
-                className="font-semibold text-blue-600 underline hover:text-blue-800"
-              >
-                Request a new verification email (link)
-              </button>
-            </div>,
-            { duration: 10000 }
-          );
+        if (res.status === 200 || res.status === 201) {
+          const { access_token, refresh_token, user } = res.data;
+          localStorage.setItem("access_token", access_token);
+          localStorage.setItem("refresh_token", refresh_token);
+          localStorage.setItem("user", JSON.stringify(user));
+          toast.success("Login Successful! 🎉");
+          navigate("/advisor-dashboard");
+        } else if (res.status === 401) {
+          const msg = res.data?.message || 'Incorrect email or password';
+
+          // Check if error is about unverified email
+          if (msg.includes('verification email')) {
+            toast.error(
+              <div className="text-sm">
+                We previously sent you a verification email, check your spam.{" "}
+                <button
+                  onClick={async () => {
+                    try {
+                      await axios.post('https://api.advisorchooser.com/api/auth/resend-verification', {
+                        email,
+                      });
+                      toast.success('Verification email sent! Check your inbox and spam folder.');
+                    } catch (err) {
+                      toast.error('Failed to resend verification email. Please try again.');
+                    }
+                  }}
+                  className="font-semibold text-blue-600 underline hover:text-blue-800"
+                >
+                  Request a new verification email (link)
+                </button>
+              </div>,
+              { duration: 10000 }
+            );
+          } else {
+            toast.error(msg + " ❌");
+          }
         } else {
-          toast.error(msg + " ❌");
+          toast.error(res.data?.message || "Something went wrong");
         }
-      } else {
-        toast.error(res.data?.message || "Something went wrong");
+      } catch (err) {
+        console.error("Login error:", err);
+        toast.error("Network error. Please try again later.");
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      console.error("Login error:", err);
-      toast.error("Network error. Please try again later.");
-    } finally {
-      setLoading(false);
     }
-  }
-};
+  };
 
   return (
-  <div className="flex flex-col w-screen min-h-screen overflow-x-hidden bg-gradient-to-br from-gray-50 to-white">
+    <div className="flex flex-col w-screen min-h-screen overflow-x-hidden bg-gradient-to-br from-gray-50 to-white">
       <Toaster
         position="top-center"
         reverseOrder={false}
@@ -143,7 +143,7 @@ const Auth = () => {
           },
         }}
       />
-<Header />
+      <Header />
       {/* Main Content */}
       <div className="flex flex-col items-stretch flex-grow w-full pt-10 md:flex-row md:pt-20">
         {/* Left Side - Image */}
@@ -251,11 +251,10 @@ const Auth = () => {
                   onChange={handleEmailChange}
                   disabled={loading}
                   placeholder="Enter your email"
-                  className={`w-full h-12 rounded-xl px-4 pl-11 bg-white/80 backdrop-blur-sm border-2 focus:ring-2 outline-none transition-all duration-300 ${
-                    emailError
-                      ? "border-red-400 focus:border-red-500 focus:ring-red-200"
-                      : "border-gray-200 focus:border-primary focus:ring-primary/20 hover:border-gray-300"
-                  }`}
+                  className={`w-full h-12 rounded-xl px-4 pl-11 bg-white/80 backdrop-blur-sm border-2 focus:ring-2 outline-none transition-all duration-300 ${emailError
+                    ? "border-red-400 focus:border-red-500 focus:ring-red-200"
+                    : "border-gray-200 focus:border-primary focus:ring-primary/20 hover:border-gray-300"
+                    }`}
                 />
                 <svg
                   className="absolute w-5 h-5 text-gray-400 transform -translate-y-1/2 left-3 top-1/2"
@@ -305,11 +304,10 @@ const Auth = () => {
                   onChange={handlePasswordChange}
                   disabled={loading}
                   placeholder="Enter your password"
-                  className={`w-full h-12 rounded-xl px-4 pl-11 pr-12 bg-white/80 backdrop-blur-sm border-2 focus:ring-2 outline-none transition-all duration-300 ${
-                    passwordError
-                      ? "border-red-400 focus:border-red-500 focus:ring-red-200"
-                      : "border-gray-200 focus:border-primary focus:ring-primary/20 hover:border-gray-300"
-                  }`}
+                  className={`w-full h-12 rounded-xl px-4 pl-11 pr-12 bg-white/80 backdrop-blur-sm border-2 focus:ring-2 outline-none transition-all duration-300 ${passwordError
+                    ? "border-red-400 focus:border-red-500 focus:ring-red-200"
+                    : "border-gray-200 focus:border-primary focus:ring-primary/20 hover:border-gray-300"
+                    }`}
                 />
                 <svg
                   className="absolute w-5 h-5 text-gray-400 transform -translate-y-1/2 left-3 top-1/2"
@@ -405,11 +403,10 @@ const Auth = () => {
             <button
               type="submit"
               disabled={loading}
-              className={`w-full h-14 rounded-xl font-semibold text-white text-lg transition-all duration-300 flex items-center justify-center ${
-                loading
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-gradient-to-r from-primary to-third hover:shadow-2xl hover:shadow-primary/25 transform hover:scale-105 active:scale-95"
-              }`}
+              className={`w-full h-14 rounded-xl font-semibold text-white text-lg transition-all duration-300 flex items-center justify-center ${loading
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-gradient-to-r from-primary to-third hover:shadow-2xl hover:shadow-primary/25 transform hover:scale-105 active:scale-95"
+                }`}
             >
               {loading ? (
                 <div className="flex items-center space-x-2">

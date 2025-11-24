@@ -7,7 +7,7 @@ import * as Yup from "yup";
 import { motion } from "framer-motion";
 import { getIndustryData } from "../../../components/Static/newIndustryData";
 import { Country, State } from "country-state-city";
-import { FaChevronDown, FaChevronRight, FaSearch, FaBuilding, FaPhone, FaGlobe, FaDollarSign, FaFileAlt, FaUser, FaEnvelope, FaIndustry, FaMapMarkerAlt, FaChartLine, FaUserTie } from "react-icons/fa"; 
+import { FaChevronDown, FaChevronRight, FaSearch, FaBuilding, FaPhone, FaGlobe, FaDollarSign, FaFileAlt, FaUser, FaEnvelope, FaIndustry, FaMapMarkerAlt, FaChartLine, FaUserTie } from "react-icons/fa";
 import { HiOfficeBuilding, HiGlobeAlt, HiCurrencyDollar, HiDocumentText } from "react-icons/hi";
 
 // ✅ Validation schema
@@ -35,7 +35,7 @@ const SellerSchema = Yup.object().shape({
     .required("Phone is required"),
   website: Yup.string()
     .required("Website is required")
-    .test('url', 'Enter a valid website (e.g., www.example.com or https://example.com)', function(value) {
+    .test('url', 'Enter a valid website (e.g., www.example.com or https://example.com)', function (value) {
       if (!value) return false;
       const urlPattern = /^(https?:\/\/)?(www\.)?[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.[a-zA-Z]{2,}(\.[a-zA-Z]{2,})?(\/.*)?(\?.*)?(#.*)?$/;
       return urlPattern.test(value);
@@ -44,7 +44,7 @@ const SellerSchema = Yup.object().shape({
   geography: Yup.string().required("Please select a geography"),
   annualRevenue: Yup.string()
     .required("Annual revenue is required")
-    .test('is-number', 'Annual revenue must be a valid number', function(value) {
+    .test('is-number', 'Annual revenue must be a valid number', function (value) {
       if (!value) return false;
       const numValue = Number(value.replace(/,/g, ''));
       return !isNaN(numValue) && numValue >= 1000 && numValue <= 999999999;
@@ -85,12 +85,12 @@ const ValidationEffects = () => {
 
 const ErrorBanner = () => {
   const { submitCount, errors } = useFormikContext();
-  const count = (o) => { let c = 0; const walk = x => Object.values(x||{}).forEach(v=>{ if (v && typeof v==='object') walk(v); else c++; }); walk(o); return c; };
+  const count = (o) => { let c = 0; const walk = x => Object.values(x || {}).forEach(v => { if (v && typeof v === 'object') walk(v); else c++; }); walk(o); return c; };
   const ec = count(errors);
   if (submitCount > 0 && ec > 0) {
     return (
       <div className="p-3 mb-4 text-red-700 border border-red-200 rounded bg-red-50">
-        Please fix {ec} highlighted field{ec>1?'s':''}.
+        Please fix {ec} highlighted field{ec > 1 ? 's' : ''}.
       </div>
     );
   }
@@ -111,9 +111,8 @@ const SimpleInput = ({ name, type = "text", placeholder, label, icon }) => {
             type={type}
             {...field}
             placeholder={placeholder}
-            className={`w-full px-4 py-3 rounded-lg border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary ${
-              touched[name] && errors[name] ? 'border-red-500' : 'border-gray-300'
-            }`}
+            className={`w-full px-4 py-3 rounded-lg border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary ${touched[name] && errors[name] ? 'border-red-500' : 'border-gray-300'
+              }`}
           />
         )}
       </Field>
@@ -133,7 +132,7 @@ const IndustryRadioChooser = ({ selected, onChange, hasError }) => {
     const lowerCaseQuery = currentQuery.toLowerCase();
     return sectors.filter(sector => {
       const sectorMatches = sector.name.toLowerCase().includes(lowerCaseQuery);
-      const groupMatches = sector.industryGroups.some(group => 
+      const groupMatches = sector.industryGroups.some(group =>
         group.name.toLowerCase().includes(lowerCaseQuery)
       );
       return sectorMatches || groupMatches;
@@ -160,7 +159,7 @@ const IndustryRadioChooser = ({ selected, onChange, hasError }) => {
             {filteredSectors.map((sector) => (
               <div key={sector.id} className="pb-1 border-b border-gray-100">
                 <div className="flex items-center">
-                  
+
                   <div
                     className="flex items-center flex-1 cursor-pointer"
                     onClick={() =>
@@ -256,18 +255,18 @@ const GeographyRadioChooser = ({ selected, onChange, hasError }) => {
         <div className="space-y-2">
           {allCountries.map((country) => {
             let states = State.getStatesOfCountry(country.isoCode);
-            
+
             if (country.name === "United States") {
               const contiguous = [
-                "Alabama","Arizona","Arkansas","California","Colorado","Connecticut","Delaware","Florida","Georgia","Idaho","Illinois","Indiana","Iowa","Kansas","Kentucky","Louisiana","Maine","Maryland","Massachusetts","Michigan","Minnesota","Mississippi","Missouri","Montana","Nebraska","Nevada","New Hampshire","New Jersey","New Mexico","New York","North Carolina","North Dakota","Ohio","Oklahoma","Oregon","Pennsylvania","Rhode Island","South Carolina","South Dakota","Tennessee","Texas","Utah","Vermont","Virginia","Washington","West Virginia","Wisconsin","Wyoming"
+                "Alabama", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware", "Florida", "Georgia", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming"
               ];
-              states = states.filter(state => contiguous.includes(state.name) || ["Hawaii","Alaska"].includes(state.name));
+              states = states.filter(state => contiguous.includes(state.name) || ["Hawaii", "Alaska"].includes(state.name));
             }
-            
+
             return (
               <div key={country.isoCode} className="pb-1 border-b border-gray-100">
                 <div className="flex items-center">
-                 
+
                   <div
                     className="flex items-center flex-1 cursor-pointer"
                     onClick={() =>
@@ -331,7 +330,7 @@ export const SellerForm = () => {
   const navigate = useNavigate();
 
   const user = JSON.parse(localStorage.getItem('user') || '{}');
-  
+
   const initialValues = {
     contactName: "",
     contactTitle: "",
@@ -349,7 +348,7 @@ export const SellerForm = () => {
   const onSubmit = async (values, { setSubmitting, resetForm }) => {
     try {
       const token = localStorage.getItem("access_token");
-      
+
       const payload = {
         contactName: values.contactName,
         contactTitle: values.contactTitle,
@@ -363,14 +362,14 @@ export const SellerForm = () => {
         currency: values.currency,
         description: values.description,
       };
-      
+
       await axios.post("https://api.advisorchooser.com/api/sellers/profile", payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
       toast.success("Seller profile created successfully!");
       resetForm();
-      
+
       setTimeout(() => {
         localStorage.removeItem('user');
         sessionStorage.clear();
@@ -397,17 +396,17 @@ export const SellerForm = () => {
           <div className="w-24 h-1 mx-auto mt-4 rounded-full bg-gradient-to-r from-primary to-third"></div>
         </div>
 
-      <Formik
-        initialValues={initialValues}
-        validationSchema={SellerSchema}
-        onSubmit={onSubmit}
-      >
-        {({ isSubmitting, setFieldValue, values, errors, touched }) => (
-          <Form className="space-y-8">
-            <ValidationEffects />
-            <ErrorBanner />
+        <Formik
+          initialValues={initialValues}
+          validationSchema={SellerSchema}
+          onSubmit={onSubmit}
+        >
+          {({ isSubmitting, setFieldValue, values, errors, touched }) => (
+            <Form className="space-y-8">
+              <ValidationEffects />
+              <ErrorBanner />
               {/* Company Information */}
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.1 }}
@@ -422,7 +421,7 @@ export const SellerForm = () => {
                     <p className="text-sm text-gray-600">Tell us about your business</p>
                   </div>
                 </div>
-                
+
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                   <SimpleInput
                     name="contactName"
@@ -468,7 +467,7 @@ export const SellerForm = () => {
               </motion.div>
 
               {/* Industries & Geographies */}
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.2 }}
@@ -483,12 +482,12 @@ export const SellerForm = () => {
                     <p className="text-sm text-gray-600">Select your industry and location</p>
                   </div>
                 </div>
-                
+
                 <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
                   <div>
                     <label className="flex items-center block mb-3 text-sm font-medium text-secondary">
                       <FaIndustry className="mr-2 text-xs text-primary" />
-                      Industry 
+                      Industry
                     </label>
                     <IndustryRadioChooser
                       selected={values.industry}
@@ -514,7 +513,7 @@ export const SellerForm = () => {
               </motion.div>
 
               {/* Revenue Information */}
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.3 }}
@@ -561,7 +560,7 @@ export const SellerForm = () => {
                     </Field>
                   </div>
                 </div>
-                
+
                 <div>
                   <label className="flex items-center block mb-2 text-sm font-medium text-secondary">
                     <FaChartLine className="mr-2 text-xs text-primary" />
@@ -570,8 +569,8 @@ export const SellerForm = () => {
                   <div className="relative">
                     <span className="absolute text-gray-500 -translate-y-1/2 left-3 top-1/2">
                       {{
-                        USD: '$', EUR: '€', GBP: '£', JPY: '¥', CNY: '¥', AUD: '$', CAD: '$', CHF: 'CHF', 
-                        HKD: '$', SGD: '$', SEK: 'kr', NOK: 'kr', NZD: '$', MXN: '$', ZAR: 'R', 
+                        USD: '$', EUR: '€', GBP: '£', JPY: '¥', CNY: '¥', AUD: '$', CAD: '$', CHF: 'CHF',
+                        HKD: '$', SGD: '$', SEK: 'kr', NOK: 'kr', NZD: '$', MXN: '$', ZAR: 'R',
                         TRY: '₺', BRL: 'R$', KRW: '₩', INR: '₹', RUB: '₽'
                       }[values.currency] || values.currency}
                     </span>
@@ -597,7 +596,7 @@ export const SellerForm = () => {
               </motion.div>
 
               {/* Description */}
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.4 }}
@@ -612,7 +611,7 @@ export const SellerForm = () => {
                     <p className="text-sm text-gray-600">Describe what makes your business unique</p>
                   </div>
                 </div>
-                
+
                 <Field
                   as="textarea"
                   name="description"
@@ -624,7 +623,7 @@ export const SellerForm = () => {
               </motion.div>
 
               {/* Submit Button */}
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}

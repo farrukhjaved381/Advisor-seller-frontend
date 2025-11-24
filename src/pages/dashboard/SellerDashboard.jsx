@@ -42,7 +42,7 @@ const mapGeography = (selectedId) => {
 };
 
 // AnimatedInput component from seller form
-const AnimatedInput = ({ 
+const AnimatedInput = ({
   name,
   type = "text",
   placeholder,
@@ -126,7 +126,7 @@ const IndustryRadioChooser = ({ selected, onChange }) => {
             {filteredSectors.map((sector) => (
               <div key={sector.id} className="pb-1 border-b border-gray-100">
                 <div className="flex items-center">
-                  
+
                   <div
                     className="flex items-center flex-1 cursor-pointer"
                     onClick={() =>
@@ -283,7 +283,7 @@ const GeographyRadioChooser = ({ selected, onChange }) => {
                 "Wisconsin",
                 "Wyoming",
               ];
-                                                        states = states.filter((state) => contiguous.includes(state.name) || ["Hawaii", "Alaska"].includes(state.name)
+              states = states.filter((state) => contiguous.includes(state.name) || ["Hawaii", "Alaska"].includes(state.name)
               );
             }
 
@@ -293,7 +293,7 @@ const GeographyRadioChooser = ({ selected, onChange }) => {
                 className="pb-1 border-b border-gray-100"
               >
                 <div className="flex items-center">
-                  
+
                   <div
                     className="flex items-center flex-1 cursor-pointer"
                     onClick={() =>
@@ -320,11 +320,11 @@ const GeographyRadioChooser = ({ selected, onChange }) => {
                   <div className="mt-1 ml-6 space-y-1">
                     {states
                       .filter((state) =>
-                          query.trim() === "" ||
-                          country.name
-                            .toLowerCase()
-                            .includes(query.toLowerCase()) ||
-                          state.name.toLowerCase().includes(query.toLowerCase())
+                        query.trim() === "" ||
+                        country.name
+                          .toLowerCase()
+                          .includes(query.toLowerCase()) ||
+                        state.name.toLowerCase().includes(query.toLowerCase())
                       )
                       .map((state) => (
                         <div key={state.isoCode} className="pl-2">
@@ -446,32 +446,31 @@ const SellerDashboard = () => {
     });
   };
 
-const handleBulkIntroduction = async () => {
-  if (selectedAdvisors.length === 0) return;
+  const handleBulkIntroduction = async () => {
+    if (selectedAdvisors.length === 0) return;
 
-  try {
-    setIntroductionLoading(true);
-    const token = localStorage.getItem("access_token");
+    try {
+      setIntroductionLoading(true);
+      const token = localStorage.getItem("access_token");
 
-    const response = await axios.post(
-      "https://api.advisorchooser.com/api/connections/introduction",
-      { advisorIds: selectedAdvisors },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+      const response = await axios.post(
+        "https://api.advisorchooser.com/api/connections/introduction",
+        { advisorIds: selectedAdvisors },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-    toast.success(
-      `📧 Introduction emails sent to you and ${ 
-        selectedAdvisors.length
-      } selected advisor${selectedAdvisors.length > 1 ? "s" : ""}!`
-    );
-    setIntroductionRequests([...introductionRequests, ...selectedAdvisors]);
-    setSelectedAdvisors([]);
-  } catch (error) {
-    toast.error("Failed to send introduction requests");
-  } finally {
-    setIntroductionLoading(false);
-  }
-};
+      toast.success(
+        `📧 Introduction emails sent to you and ${selectedAdvisors.length
+        } selected advisor${selectedAdvisors.length > 1 ? "s" : ""}!`
+      );
+      setIntroductionRequests([...introductionRequests, ...selectedAdvisors]);
+      setSelectedAdvisors([]);
+    } catch (error) {
+      toast.error("Failed to send introduction requests");
+    } finally {
+      setIntroductionLoading(false);
+    }
+  };
 
   const handleGetDirectList = async () => {
     try {
@@ -487,7 +486,7 @@ const handleBulkIntroduction = async () => {
         const sellerEmail =
           userProfile?.email || profile?.email || "your email";
         toast.success(
-          `📧 ${msg}\nCheck your email (${sellerEmail}) for the contact list.`, { duration: 5000, id: "direct-list-success" } 
+          `📧 ${msg}\nCheck your email (${sellerEmail}) for the contact list.`, { duration: 5000, id: "direct-list-success" }
         );
       }
     } catch (error) {
@@ -611,7 +610,7 @@ const handleBulkIntroduction = async () => {
 
       if (res.status === 200 && res.data) {
         setMatches(res.data);
-        
+
         // Record impressions for each advisor
         res.data.forEach(async (advisor) => {
           try {
@@ -718,7 +717,7 @@ const handleBulkIntroduction = async () => {
         document.title,
         window.location.href
       );
-    } catch {}
+    } catch { }
 
     const onPopState = (e) => {
       if (!exitGuardEnabledRef.current) return;
@@ -729,7 +728,7 @@ const handleBulkIntroduction = async () => {
           document.title,
           window.location.href
         );
-      } catch {}
+      } catch { }
       alert(
         "Don't exit without deleting the profile. Please delete your profile to leave the dashboard."
       );
@@ -761,13 +760,13 @@ const handleBulkIntroduction = async () => {
     try {
       window.history.pushState = guardWrapper(originalPush);
       window.history.replaceState = guardWrapper(originalReplace);
-    } catch {}
+    } catch { }
 
     return () => {
       try {
         window.history.pushState = originalPush;
         window.history.replaceState = originalReplace;
-      } catch {}
+      } catch { }
     };
   }, []);
 
@@ -799,7 +798,7 @@ const handleBulkIntroduction = async () => {
         try {
           revertInProgressRef.current = true;
           navigate(-1);
-        } catch {}
+        } catch { }
         return;
       }
       // Allowed navigation (guard disabled)
@@ -1026,8 +1025,8 @@ const handleBulkIntroduction = async () => {
   };
 
   const handleLogoClick = () => {
-  navigate("www.advisorchooser.com");
-};
+    navigate("www.advisorchooser.com");
+  };
 
   // Enhanced initial values with comprehensive autofill
   const enhancedInitialValues = {
@@ -1071,7 +1070,7 @@ const handleBulkIntroduction = async () => {
         {/* Header */}
         <div className="px-6 py-6 border-b border-gray-100">
           <div className="flex items-center justify-between mb-4 md:justify-center">
-           <Header/>
+            <Header />
             <button
               onClick={() => setSidebarOpen(false)}
               className="p-2 rounded-md md:hidden hover:bg-gray-100"
@@ -1103,11 +1102,10 @@ const handleBulkIntroduction = async () => {
               </p>
 
               <button
-                className={`w-full text-left px-4 py-3 rounded-lg transition-all duration-200 flex items-center justify-between ${ 
-                  activeTab === "pending"
-                    ? "bg-gradient-to-r from-third to-primary text-white shadow-sm"
-                    : "text-gray-700 hover:bg-gray-100"
-                }`}
+                className={`w-full text-left px-4 py-3 rounded-lg transition-all duration-200 flex items-center justify-between ${activeTab === "pending"
+                  ? "bg-gradient-to-r from-third to-primary text-white shadow-sm"
+                  : "text-gray-700 hover:bg-gray-100"
+                  }`}
                 onClick={() => {
                   setActiveTab("pending");
                   setSidebarOpen(false);
@@ -1136,11 +1134,10 @@ const handleBulkIntroduction = async () => {
                 </div>
                 {matches.length > 0 && (
                   <span
-                    className={`px-2 py-1 text-xs font-semibold rounded-full ${ 
-                      activeTab === "pending"
-                        ? "bg-white/20"
-                        : "bg-gradient-to-r from-third to-primary text-white"
-                    }`}
+                    className={`px-2 py-1 text-xs font-semibold rounded-full ${activeTab === "pending"
+                      ? "bg-white/20"
+                      : "bg-gradient-to-r from-third to-primary text-white"
+                      }`}
                   >
                     {matches.length}
                   </span>
@@ -1155,11 +1152,10 @@ const handleBulkIntroduction = async () => {
               </p>
 
               <button
-                className={`w-full text-left px-4 py-3 rounded-lg transition-all duration-200 flex items-center space-x-3 ${ 
-                  activeTab === "company"
-                    ? "bg-gradient-to-r from-third to-primary text-white shadow-sm"
-                    : "text-gray-700 hover:bg-gray-100"
-                }`}
+                className={`w-full text-left px-4 py-3 rounded-lg transition-all duration-200 flex items-center space-x-3 ${activeTab === "company"
+                  ? "bg-gradient-to-r from-third to-primary text-white shadow-sm"
+                  : "text-gray-700 hover:bg-gray-100"
+                  }`}
                 onClick={() => {
                   setActiveTab("company");
                   setSidebarOpen(false);
@@ -1664,7 +1660,7 @@ const handleBulkIntroduction = async () => {
                             </label>
                             <div className="relative">
                               <span className="absolute text-gray-500 transform -translate-y-1/2 left-3 top-1/2">
-                                {{ 
+                                {{
                                   USD: "$",
                                   EUR: "€",
                                   GBP: "£",
@@ -1795,7 +1791,7 @@ const handleBulkIntroduction = async () => {
                                       );
                                       const formatted = digits.replace(
                                         /\B(?=(\d{3})+(?!\d))/g,
-                                        "," 
+                                        ","
                                       );
                                       form.setFieldValue(field.name, formatted);
                                     }}

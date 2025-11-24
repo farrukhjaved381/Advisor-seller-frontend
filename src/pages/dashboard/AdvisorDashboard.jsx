@@ -918,11 +918,14 @@ const AdvisorDashboard = () => {
     testimonials: Yup.array()
       .of(
         Yup.object().shape({
-          clientName: Yup.string().trim().required('Client name is required'),
-          testimonial: Yup.string().trim().required('Testimonial is required'),
-        }),
+          clientName: Yup.string(),
+          testimonial: Yup.string(),
+        })
       )
-      .length(5, 'Exactly 5 testimonials are required'),
+      .test('at-least-one', 'At least one testimonial is required', function(value) {
+        const completedTestimonials = value?.filter(t => t.clientName?.trim() && t.testimonial?.trim()) || [];
+        return completedTestimonials.length >= 1;
+      }),
     revenueRange: Yup.object().shape({
       min: Yup.number().required("Minimum revenue is required"),
       max: Yup.number().required("Maximum revenue is required"),
@@ -1048,21 +1051,29 @@ const AdvisorDashboard = () => {
         formData.append('introVideo', introVideoFile);
       }
       
-      const sanitizedTestimonials = (values.testimonials || []).map((testimonial) => ({
-        clientName: testimonial.clientName?.trim() || '',
-        testimonial: testimonial.testimonial?.trim() || '',
+      // Filter only completed testimonials
+      const completedTestimonials = (values.testimonials || []).filter(
+        (testimonial) => testimonial.clientName?.trim() && testimonial.testimonial?.trim()
+      );
+
+      if (completedTestimonials.length < 1) {
+        toast.error('At least one testimonial is required');
+        setSubmitting(false);
+        return;
+      }
+
+      const sanitizedTestimonials = completedTestimonials.map((testimonial) => ({
+        clientName: testimonial.clientName.trim(),
+        testimonial: testimonial.testimonial.trim(),
         pdfUrl: testimonial.existingPdfUrl || undefined,
       }));
 
-      if (
-        sanitizedTestimonials.length !== 5 ||
-        sanitizedTestimonials.some(
-          (testimonial) => !testimonial.clientName || !testimonial.testimonial,
-        )
-      ) {
-        toast.error('Please provide client name and testimonial text for all 5 testimonials');
-        setSubmitting(false);
-        return;
+      // Fill remaining slots with placeholder testimonials to maintain 5 total
+      while (sanitizedTestimonials.length < 5) {
+        sanitizedTestimonials.push({
+          clientName: 'Client Name',
+          testimonial: 'Testimonial text'
+        });
       }
 
       formData.append('testimonials', JSON.stringify(sanitizedTestimonials));
@@ -2844,13 +2855,28 @@ const AdvisorDashboard = () => {
                       <h3 className="flex items-center mb-6 text-xl font-semibold text-gray-900">
                         <FaQuoteLeft className="mr-3 text-primary" />
                         Client Testimonials
+                        <span className="ml-2 text-sm font-normal text-gray-500">
+                          (1 required, 4 optional)
+                        </span>
                       </h3>
                       
                       <div className="space-y-4">
                         {values.testimonials.map((testimonial, index) => (
                           <div key={index} className="p-4 border border-gray-200 rounded-lg">
                             <div className="flex items-center justify-between mb-3">
-                              <h4 className="text-sm font-semibold text-gray-700">Testimonial {index + 1}</h4>
+                              <h4 className="text-sm font-semibold text-gray-700">
+                                Testimonial {index + 1}
+                                {index === 0 && (
+                                  <span className="ml-2 text-xs font-bold text-red-600">
+                                    (Required)
+                                  </span>
+                                )}
+                                {index > 0 && (
+                                  <span className="ml-2 text-xs text-gray-500">
+                                    (Optional)
+                                  </span>
+                                )}
+                              </h4>
                             </div>
                             
                             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -2895,7 +2921,7 @@ const AdvisorDashboard = () => {
                       </div>
 
                       <p className="text-xs text-gray-500">
-                        Exactly 5 testimonials are required. Update the details in each card to reflect your latest client feedback.
+                        At least 1 testimonial is required, up to 4 additional testimonials are optional. Update the details in each card to reflect your latest client feedback.
                       </p>
                     </motion.div>
 

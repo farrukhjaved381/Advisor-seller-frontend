@@ -38,7 +38,7 @@ const AdvisorVerify = () => {
         setLoginStatus('error');
         toast.error(
           loginRes.data?.message ||
-            'We verified your email but could not sign you in automatically.',
+          'We verified your email but could not sign you in automatically.',
         );
         return false;
       } catch (error) {
@@ -225,9 +225,8 @@ const AdvisorVerify = () => {
                 type="button"
                 onClick={handleProceed}
                 disabled={loginStatus === 'pending'}
-                className={`inline-flex items-center justify-center px-6 py-3 rounded-full bg-white text-primary font-semibold shadow-lg shadow-black/20 transition ${
-                  loginStatus === 'pending' ? 'opacity-70 cursor-not-allowed' : 'hover:bg-white/90'
-                }`}
+                className={`inline-flex items-center justify-center px-6 py-3 rounded-full bg-white text-primary font-semibold shadow-lg shadow-black/20 transition ${loginStatus === 'pending' ? 'opacity-70 cursor-not-allowed' : 'hover:bg-white/90'
+                  }`}
               >
                 {loginStatus === 'pending'
                   ? 'Preparing your account…'

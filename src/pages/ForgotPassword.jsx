@@ -98,9 +98,8 @@ const ForgotPassword = () => {
 
         {/* Card */}
         <div
-          className={`bg-white rounded-2xl shadow-xl border border-slate-100 p-8 relative overflow-hidden transition-card hover:shadow-2xl ${
-            shake ? "input-error-shake" : ""
-          }`}
+          className={`bg-white rounded-2xl shadow-xl border border-slate-100 p-8 relative overflow-hidden transition-card hover:shadow-2xl ${shake ? "input-error-shake" : ""
+            }`}
         >
           {loading && (
             <div className="absolute top-0 left-0 right-0 h-1 bg-indigo-500 animate-pulse"></div>
@@ -138,13 +137,12 @@ const ForgotPassword = () => {
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <Mail
-                      className={`h-5 w-5 transition-colors duration-200 ${
-                        emailError && touched
-                          ? "text-red-400"
-                          : email && !emailError && touched
+                      className={`h-5 w-5 transition-colors duration-200 ${emailError && touched
+                        ? "text-red-400"
+                        : email && !emailError && touched
                           ? "text-emerald-500"
                           : "text-slate-400"
-                      }`}
+                        }`}
                     />
                   </div>
 
@@ -158,13 +156,12 @@ const ForgotPassword = () => {
                     disabled={loading}
                     autoComplete="email"
                     aria-describedby="email-feedback"
-                    className={`w-full pl-10 pr-10 py-3.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:bg-white transition-all duration-200 ${
-                      emailError && touched
-                        ? "border-red-300 focus:border-red-500 focus:ring-red-500/20"
-                        : email && !emailError && touched
+                    className={`w-full pl-10 pr-10 py-3.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:bg-white transition-all duration-200 ${emailError && touched
+                      ? "border-red-300 focus:border-red-500 focus:ring-red-500/20"
+                      : email && !emailError && touched
                         ? "border-emerald-300 focus:border-emerald-500 focus:ring-emerald-500/20"
                         : "focus:border-indigo-500 focus:ring-indigo-500/20"
-                    } ${loading ? "opacity-50 cursor-not-allowed" : "hover:border-slate-300"}`}
+                      } ${loading ? "opacity-50 cursor-not-allowed" : "hover:border-slate-300"}`}
                   />
 
                   {email && touched && (
@@ -195,11 +192,10 @@ const ForgotPassword = () => {
               <button
                 type="submit"
                 disabled={loading || emailError || !email}
-                className={`w-full py-3.5 px-4 rounded-lg font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-                  loading || emailError || !email
-                    ? "bg-slate-100 text-slate-400 cursor-not-allowed"
-                    : "bg-gradient-to-r from-primary to-third hover:opacity-90 text-white shadow-lg hover:shadow-xl focus:ring-indigo-500/50 transform hover:scale-[1.02] active:scale-[0.98]"
-                }`}
+                className={`w-full py-3.5 px-4 rounded-lg font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 ${loading || emailError || !email
+                  ? "bg-slate-100 text-slate-400 cursor-not-allowed"
+                  : "bg-gradient-to-r from-primary to-third hover:opacity-90 text-white shadow-lg hover:shadow-xl focus:ring-indigo-500/50 transform hover:scale-[1.02] active:scale-[0.98]"
+                  }`}
               >
                 {loading ? (
                   <div className="flex items-center justify-center gap-2">

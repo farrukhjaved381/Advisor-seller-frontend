@@ -274,7 +274,7 @@ const VerifyEmail = () => {
           // Note: This assumes your backend has an endpoint to log in with a verification token.
           // If not, you might need to prompt the user to log in manually.
           // For this example, we'll assume a hypothetical endpoint.
-          
+
           // Step 2: Log the user in by calling the login endpoint with the token
           const loginRes = await axios.post(
             "https://api.advisorchooser.com/api/auth/login-with-token",

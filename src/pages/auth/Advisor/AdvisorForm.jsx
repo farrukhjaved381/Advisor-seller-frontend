@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import {motion} from "framer-motion";
+import { motion } from "framer-motion";
 import {
   Formik,
   Form,
@@ -233,9 +233,8 @@ const IndustryChooser = ({ selected, onChange, hasError }) => {
 
       <div
         ref={scrollContainerRef}
-        className={`bg-brand-light border rounded-lg p-4 h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-gray-100 shadow-inner ${
-          hasError ? "border-red-500" : "border-primary/20"
-        }`}
+        className={`bg-brand-light border rounded-lg p-4 h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-gray-100 shadow-inner ${hasError ? "border-red-500" : "border-primary/20"
+          }`}
       >
         {filteredSectors.length > 0 ? (
           <div className="space-y-2">
@@ -340,7 +339,7 @@ const GeographyChooser = ({ selected, onChange, hasError }) => {
   const handleRemoveSelectedGeo = (name) => {
     onChange(selected.filter((s) => s !== name));
   };
-  
+
   // Small component to render a country with parent checkbox + indeterminate
   const CountryItem = ({ country }) => {
     let states = State.getStatesOfCountry(country.isoCode);
@@ -553,9 +552,8 @@ const GeographyChooser = ({ selected, onChange, hasError }) => {
 
       <div
         ref={scrollContainerRef}
-        className={`bg-brand-light border rounded-lg p-4 h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-gray-100 shadow-inner ${
-          hasError ? "border-red-500" : "border-primary/20"
-        }`}
+        className={`bg-brand-light border rounded-lg p-4 h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-gray-100 shadow-inner ${hasError ? "border-red-500" : "border-primary/20"
+          }`}
       >
         <div className="space-y-2">
           {allCountries.map((country) => (
@@ -639,11 +637,14 @@ export const AdvisorForm = () => {
     testimonials: Yup.array()
       .of(
         Yup.object().shape({
-          clientName: Yup.string().required("Client name is required"),
-          testimonial: Yup.string().required("Testimonial is required"),
+          clientName: Yup.string(),
+          testimonial: Yup.string(),
         })
       )
-      .length(5, "Exactly 5 testimonials are required"),
+      .test('at-least-one', 'At least one testimonial is required', function (value) {
+        const completedTestimonials = value?.filter(t => t.clientName?.trim() && t.testimonial?.trim()) || [];
+        return completedTestimonials.length >= 1;
+      }),
 
     revenueRange: Yup.object().shape({
       min: Yup.number().typeError("Required").required("Required"),
@@ -770,37 +771,40 @@ export const AdvisorForm = () => {
         );
       }
 
-      // Upload testimonial PDFs
+      // Upload testimonial PDFs - only for completed testimonials
+      const completedTestimonials = values.testimonials.filter(
+        (t) => t.clientName?.trim() && t.testimonial?.trim()
+      );
+
+      if (completedTestimonials.length < 1) {
+        toast.error("At least one testimonial is required");
+        setSubmitting(false);
+        return;
+      }
+
       const testimonials = await Promise.all(
-        values.testimonials.map(async (t) => {
-          if (t.clientName && t.testimonial) {
-            let pdfUrl = undefined;
-            if (t.pdfFile) {
-              pdfUrl = await handleFileUpload(
-                t.pdfFile,
-                "https://api.advisorchooser.com/api/upload/testimonial"
-              );
-            }
-            return {
-              clientName: t.clientName,
-              testimonial: t.testimonial,
-              ...(pdfUrl ? { pdfUrl } : {}),
-            };
+        completedTestimonials.map(async (t) => {
+          let pdfUrl = undefined;
+          if (t.pdfFile) {
+            pdfUrl = await handleFileUpload(
+              t.pdfFile,
+              "https://api.advisorchooser.com/api/upload/testimonial"
+            );
           }
-          return null;
+          return {
+            clientName: t.clientName.trim(),
+            testimonial: t.testimonial.trim(),
+            ...(pdfUrl ? { pdfUrl } : {}),
+          };
         })
       );
 
-      // Ensure exactly 5 testimonials, all complete
-      if (
-        testimonials.length !== 5 ||
-        testimonials.some((t) => !t.clientName || !t.testimonial)
-      ) {
-        toast.error(
-          "Exactly 5 testimonials with client name and text are required"
-        );
-        setSubmitting(false);
-        return;
+      // Fill remaining slots with empty testimonials to maintain 5 total
+      while (testimonials.length < 5) {
+        testimonials.push({
+          clientName: "Client Name",
+          testimonial: "Testimonial text"
+        });
       }
 
       const token = localStorage.getItem("access_token");
@@ -897,11 +901,10 @@ export const AdvisorForm = () => {
                     </label>
                     <Field
                       name="companyName"
-                      className={`w-full px-4 py-3 border rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary ${
-                        errors.companyName && touched.companyName
-                          ? "border-red-500"
-                          : "border-gray-300"
-                      }`}
+                      className={`w-full px-4 py-3 border rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary ${errors.companyName && touched.companyName
+                        ? "border-red-500"
+                        : "border-gray-300"
+                        }`}
                     />
                     <ErrorMessage
                       name="companyName"
@@ -917,11 +920,10 @@ export const AdvisorForm = () => {
                     </label>
                     <Field
                       name="phone"
-                      className={`w-full px-4 py-3 border rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary ${
-                        errors.phone && touched.phone
-                          ? "border-red-500"
-                          : "border-gray-300"
-                      }`}
+                      className={`w-full px-4 py-3 border rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary ${errors.phone && touched.phone
+                        ? "border-red-500"
+                        : "border-gray-300"
+                        }`}
                     />
                     <ErrorMessage
                       name="phone"
@@ -937,11 +939,10 @@ export const AdvisorForm = () => {
                     </label>
                     <Field
                       name="website"
-                      className={`w-full px-4 py-3 border rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary ${
-                        errors.website && touched.website
-                          ? "border-red-500"
-                          : "border-gray-300"
-                      }`}
+                      className={`w-full px-4 py-3 border rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary ${errors.website && touched.website
+                        ? "border-red-500"
+                        : "border-gray-300"
+                        }`}
                     />
                     <ErrorMessage
                       name="website"
@@ -1010,7 +1011,7 @@ export const AdvisorForm = () => {
                   Experience & Performance
                 </h3>
 
-                
+
 
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                   <div>
@@ -1025,11 +1026,10 @@ export const AdvisorForm = () => {
                       name="yearsExperience"
                       type="number"
                       min={5}
-                      className={`w-full px-4 py-3 border rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary ${
-                        errors.yearsExperience && touched.yearsExperience
-                          ? "border-red-500"
-                          : "border-gray-300"
-                      }`}
+                      className={`w-full px-4 py-3 border rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary ${errors.yearsExperience && touched.yearsExperience
+                        ? "border-red-500"
+                        : "border-gray-300"
+                        }`}
                     />
                     <ErrorMessage
                       name="yearsExperience"
@@ -1050,12 +1050,11 @@ export const AdvisorForm = () => {
                       type="number"
                       min={10}          // changed from 20 -> 10
                       step={1}          // enforce integer stepping
-                      className={`w-full px-4 py-3 border rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary ${
-                        errors.numberOfTransactions &&
+                      className={`w-full px-4 py-3 border rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary ${errors.numberOfTransactions &&
                         touched.numberOfTransactions
-                          ? "border-red-500"
-                          : "border-gray-300"
-                      }`}
+                        ? "border-red-500"
+                        : "border-gray-300"
+                        }`}
                     />
                     <ErrorMessage
                       name="numberOfTransactions"
@@ -1083,11 +1082,10 @@ export const AdvisorForm = () => {
                       {({ field, form }) => (
                         <select
                           {...field}
-                          className={`w-full px-2 py-2 border rounded-lg text-xs focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white text-secondary ${
-                            form.errors.currency && form.touched.currency
-                              ? "border-red-500"
-                              : "border-gray-300"
-                          }`}
+                          className={`w-full px-2 py-2 border rounded-lg text-xs focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white text-secondary ${form.errors.currency && form.touched.currency
+                            ? "border-red-500"
+                            : "border-gray-300"
+                            }`}
                         >
                           <option value="USD">USD</option>
                           <option value="EUR">EUR</option>
@@ -1126,12 +1124,11 @@ export const AdvisorForm = () => {
                           {...field}
                           type="text"
                           placeholder="Enter minimum amount"
-                          className={`w-full px-4 py-3 border rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary ${
-                            form.touched.revenueRange?.min &&
+                          className={`w-full px-4 py-3 border rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary ${form.touched.revenueRange?.min &&
                             form.errors.revenueRange?.min
-                              ? "border-red-500"
-                              : "border-gray-300"
-                          }`}
+                            ? "border-red-500"
+                            : "border-gray-300"
+                            }`}
                           onChange={(e) => {
                             const value = e.target.value.replace(/,/g, "");
                             if (value === "" || /^\d+$/.test(value)) {
@@ -1163,12 +1160,11 @@ export const AdvisorForm = () => {
                           {...field}
                           type="text"
                           placeholder="Enter maximum amount"
-                          className={`w-full px-4 py-3 border rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary ${
-                            form.touched.revenueRange?.max &&
+                          className={`w-full px-4 py-3 border rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary ${form.touched.revenueRange?.max &&
                             form.errors.revenueRange?.max
-                              ? "border-red-500"
-                              : "border-gray-300"
-                          }`}
+                            ? "border-red-500"
+                            : "border-gray-300"
+                            }`}
                           onChange={(e) => {
                             const value = e.target.value.replace(/,/g, "");
                             if (value === "" || /^\d+$/.test(value)) {
@@ -1214,11 +1210,10 @@ export const AdvisorForm = () => {
                       name="description"
                       rows={4}
                       placeholder="Describe your company, services, and expertise..."
-                      className={`w-full px-4 py-3 border rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary resize-none ${
-                        errors.description && touched.description
-                          ? "border-red-500"
-                          : "border-gray-300"
-                      }`}
+                      className={`w-full px-4 py-3 border rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-secondary resize-none ${errors.description && touched.description
+                        ? "border-red-500"
+                        : "border-gray-300"
+                        }`}
                     />
                     <ErrorMessage
                       name="description"
@@ -1229,7 +1224,7 @@ export const AdvisorForm = () => {
                 </div>
               </motion.div>
 
-             {/* Logo Upload */}
+              {/* Logo Upload */}
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -1268,7 +1263,7 @@ export const AdvisorForm = () => {
                         accept="image/png,image/jpeg,image/jpg"
                         onChange={(e) => {
                           const file = e.target.files?.[0];
-                          
+
                           if (!file) {
                             return;
                           }
@@ -1277,13 +1272,13 @@ export const AdvisorForm = () => {
                           const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg'];
                           const fileExtension = file.name.split('.').pop().toLowerCase();
                           const allowedExtensions = ['png', 'jpg', 'jpeg'];
-                          
+
                           const isValidType = allowedTypes.includes(file.type) || allowedExtensions.includes(fileExtension);
-                          
+
                           if (!isValidType) {
                             e.target.value = "";
                             setLogoSizeError(true);
-                            
+
                             toast.error(
                               <div className="space-y-1">
                                 <div className="text-base font-bold">⚠️ Invalid File Format!</div>
@@ -1314,12 +1309,12 @@ export const AdvisorForm = () => {
 
                           // Validate file size (5MB)
                           const maxSize = 5 * 1024 * 1024;
-                          
+
                           if (file.size > maxSize) {
                             const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
                             e.target.value = "";
                             setLogoSizeError(true);
-                            
+
                             toast.error(
                               <div className="space-y-1">
                                 <div className="text-base font-bold">⚠️ File Too Large!</div>
@@ -1345,7 +1340,7 @@ export const AdvisorForm = () => {
                                 icon: '🚫',
                               }
                             );
-                            
+
                             setLogoFile(null);
                             setFieldValue("logoFile", null);
                             setLogoError(true);
@@ -1357,7 +1352,7 @@ export const AdvisorForm = () => {
                           setLogoFile(file);
                           setLogoError(false);
                           setFieldValue("logoFile", file);
-                          
+
                           toast.success(
                             <div className="space-y-1">
                               <div className="font-bold">Logo Uploaded!</div>
@@ -1377,11 +1372,10 @@ export const AdvisorForm = () => {
                       />
                       <label
                         htmlFor="logo-upload"
-                        className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-white hover:bg-primary/5 transition-all duration-200 ${
-                          (errors.logoFile && touched.logoFile) || logoError
-                            ? "border-red-500 bg-red-50"
-                            : "border-primary/30"
-                        }`}
+                        className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-white hover:bg-primary/5 transition-all duration-200 ${(errors.logoFile && touched.logoFile) || logoError
+                          ? "border-red-500 bg-red-50"
+                          : "border-primary/30"
+                          }`}
                       >
                         <div className="flex flex-col items-center justify-center pt-5 pb-6">
                           <FaUpload className="w-8 h-8 mb-4 text-primary" />
@@ -1470,7 +1464,7 @@ export const AdvisorForm = () => {
                       <h3 className="text-sm font-bold">Video Instructions</h3>
                       <div className="mt-2 text-sm">
                         <p>
-                          When we present you to a seller this video will be attached. We suggest a quick 
+                          When we present you to a seller this video will be attached. We suggest a quick
                           introduction of your company followed by a story about your favorite company sale.
                         </p>
                       </div>
@@ -1508,7 +1502,7 @@ export const AdvisorForm = () => {
                         className="hidden"
                         onChange={(e) => {
                           const file = e.target.files?.[0];
-                          
+
                           if (!file) {
                             return;
                           }
@@ -1517,13 +1511,13 @@ export const AdvisorForm = () => {
                           const allowedTypes = ['video/mp4', 'video/quicktime', 'video/webm'];
                           const fileExtension = file.name.split('.').pop().toLowerCase();
                           const allowedExtensions = ['mp4', 'mov', 'webm'];
-                          
+
                           const isValidType = allowedTypes.includes(file.type) || allowedExtensions.includes(fileExtension);
-                          
+
                           if (!isValidType) {
                             e.target.value = "";
                             setVideoSizeError(true);
-                            
+
                             toast.error(
                               <div className="space-y-1">
                                 <div className="text-base font-bold">⚠️ Invalid Video Format!</div>
@@ -1554,12 +1548,12 @@ export const AdvisorForm = () => {
 
                           // Validate file size (200MB)
                           const maxSize = 200 * 1024 * 1024;
-                          
+
                           if (file.size > maxSize) {
                             const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
                             e.target.value = "";
                             setVideoSizeError(true);
-                            
+
                             toast.error(
                               <div className="space-y-1">
                                 <div className="text-base font-bold">⚠️ Video File Too Large!</div>
@@ -1585,7 +1579,7 @@ export const AdvisorForm = () => {
                                 icon: '🚫',
                               }
                             );
-                            
+
                             if (introVideoPreview) {
                               URL.revokeObjectURL(introVideoPreview);
                             }
@@ -1601,7 +1595,7 @@ export const AdvisorForm = () => {
                           }
                           setIntroVideoFile(file);
                           setIntroVideoPreview(URL.createObjectURL(file));
-                          
+
                           toast.success(
                             <div className="space-y-1">
                               <div className="font-bold">Video Uploaded!</div>
@@ -1731,10 +1725,13 @@ export const AdvisorForm = () => {
                           <h3 className="flex items-center text-xl font-semibold text-secondary">
                             <FaQuoteLeft className="mr-3 text-primary" />
                             Client Testimonials
+                            <span className="ml-2 text-sm font-normal text-secondary/70">
+                              (1 required, 4 optional)
+                            </span>
                           </h3>
-                          <div className="px-3 py-1 rounded-full bg-primary/10">
-                            <span className="text-sm font-medium text-primary">
-                              {completedTestimonials}/5 completed
+                          <div className={`px-3 py-1 rounded-full ${completedTestimonials >= 1 ? 'bg-green-100' : 'bg-red-100'}`}>
+                            <span className={`text-sm font-medium ${completedTestimonials >= 1 ? 'text-green-700' : 'text-red-700'}`}>
+                              {completedTestimonials}/5 completed {completedTestimonials >= 1 ? '✓' : '(min 1 required)'}
                             </span>
                           </div>
                         </div>
@@ -1750,16 +1747,25 @@ export const AdvisorForm = () => {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: index * 0.1 }}
-                                className={`p-4 rounded-xl border-2 transition-all duration-200 ${
-                                  isCompleted
-                                    ? "border-green-200 bg-green-50"
-                                    : "border-gray-200 bg-white hover:border-primary/30"
-                                }`}
+                                className={`p-4 rounded-xl border-2 transition-all duration-200 ${isCompleted
+                                  ? "border-green-200 bg-green-50"
+                                  : "border-gray-200 bg-white hover:border-primary/30"
+                                  }`}
                               >
                                 <div className="flex items-center justify-between mb-4">
                                   <h4 className="flex items-center text-sm font-semibold text-secondary">
                                     <FaUser className="mr-2 text-primary" />
                                     Testimonial {index + 1}
+                                    {index === 0 && (
+                                      <span className="ml-2 text-xs font-bold text-red-600">
+                                        (Required)
+                                      </span>
+                                    )}
+                                    {index > 0 && (
+                                      <span className="ml-2 text-xs text-secondary/60">
+                                        (Optional)
+                                      </span>
+                                    )}
                                   </h4>
                                   <div className="flex items-center space-x-2">
                                     {isCompleted && (
@@ -1772,26 +1778,24 @@ export const AdvisorForm = () => {
                                   <Field
                                     name={`testimonials[${index}].clientName`}
                                     placeholder="Client Name"
-                                    className={`w-full px-3 py-2 border rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 text-sm bg-white ${
-                                      errors.testimonials?.[index]
-                                        ?.clientName &&
+                                    className={`w-full px-3 py-2 border rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 text-sm bg-white ${errors.testimonials?.[index]
+                                      ?.clientName &&
                                       touched.testimonials?.[index]?.clientName
-                                        ? "border-red-500"
-                                        : "border-gray-300"
-                                    }`}
+                                      ? "border-red-500"
+                                      : "border-gray-300"
+                                      }`}
                                   />
                                   <Field
                                     as="textarea"
                                     name={`testimonials[${index}].testimonial`}
                                     placeholder="Write the testimonial here..."
                                     rows="3"
-                                    className={`w-full px-3 py-2 border rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 text-sm bg-white resize-none ${
-                                      errors.testimonials?.[index]
-                                        ?.testimonial &&
+                                    className={`w-full px-3 py-2 border rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 text-sm bg-white resize-none ${errors.testimonials?.[index]
+                                      ?.testimonial &&
                                       touched.testimonials?.[index]?.testimonial
-                                        ? "border-red-500"
-                                        : "border-gray-300"
-                                    }`}
+                                      ? "border-red-500"
+                                      : "border-gray-300"
+                                      }`}
                                   />
                                 </div>
                               </motion.div>
