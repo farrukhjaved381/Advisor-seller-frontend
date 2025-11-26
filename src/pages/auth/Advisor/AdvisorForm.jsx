@@ -799,13 +799,7 @@ export const AdvisorForm = () => {
         })
       );
 
-      // Fill remaining slots with empty testimonials to maintain 5 total
-      while (testimonials.length < 5) {
-        testimonials.push({
-          clientName: "Client Name",
-          testimonial: "Testimonial text"
-        });
-      }
+      // Don't send placeholder testimonials - only send what the user actually filled out
 
       const token = localStorage.getItem("access_token");
       const payload = {
@@ -819,7 +813,7 @@ export const AdvisorForm = () => {
         currency: values.currency,
         description: values.description,
         // licensing: values.licensing,
-        testimonials, // already validated as array of 5 objects
+        testimonials, // only completed testimonials (1-5)
         revenueRange: {
           min: Number(values.revenueRange.min),
           max: Number(values.revenueRange.max),

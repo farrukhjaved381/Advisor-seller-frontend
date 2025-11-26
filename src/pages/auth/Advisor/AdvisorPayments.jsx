@@ -171,7 +171,7 @@ const AdvisorPaymentForm = () => {
             }
           }
         }
-      } catch {}
+      } catch { }
     })();
   }, []);
 
@@ -384,7 +384,7 @@ const AdvisorPaymentForm = () => {
           console.error("Finalize subscription failed:", error);
           toast.error(
             error?.response?.data?.message ||
-              "Subscription payment completed, but we could not finalize your account. Please contact support."
+            "Subscription payment completed, but we could not finalize your account. Please contact support."
           );
           setSubmitting(false);
           return;
@@ -489,11 +489,10 @@ const AdvisorPaymentForm = () => {
                     First Name
                   </label>
                   <div
-                    className={`relative border-2 rounded-lg transition-colors ${
-                      errors.firstName && touched.firstName
+                    className={`relative border-2 rounded-lg transition-colors ${errors.firstName && touched.firstName
                         ? "border-red-300 bg-red-50"
                         : "border-gray-200 hover:border-blue-300 focus-within:border-blue-500"
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center px-4 py-3">
                       <FaUser className="mr-3 text-gray-400" />
@@ -519,11 +518,10 @@ const AdvisorPaymentForm = () => {
                     Last Name
                   </label>
                   <div
-                    className={`relative border-2 rounded-lg transition-colors ${
-                      errors.lastName && touched.lastName
+                    className={`relative border-2 rounded-lg transition-colors ${errors.lastName && touched.lastName
                         ? "border-red-300 bg-red-50"
                         : "border-gray-200 hover:border-blue-300 focus-within:border-blue-500"
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center px-4 py-3">
                       <FaUser className="mr-3 text-gray-400" />
@@ -559,41 +557,40 @@ const AdvisorPaymentForm = () => {
                     Country
                   </label>
                   <div
-                    className={`relative border-2 rounded-lg transition-colors ${
-                      errors.country && touched.country
+                    className={`relative border-2 rounded-lg transition-colors ${errors.country && touched.country
                         ? "border-red-300 bg-red-50"
                         : "border-gray-200 hover:border-blue-300 focus-within:border-blue-500"
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center w-full px-4 py-3">
                       <FaGlobe className="mr-3 text-gray-400" />
                       {/* Country Select */}
-<Field
-  as="select"
-  name="country"
-  className="w-full text-gray-800 bg-transparent outline-none"
->
-  <option value="">Select your country</option>
-  <option value="US">🇺🇸 United States</option>
-  <option value="CA">🇨🇦 Canada</option>
-  <option value="MX">🇲🇽 Mexico</option>
-  <option value="GB">🇬🇧 United Kingdom</option>
-  <option value="AU">🇦🇺 Australia</option>
-  <option value="BR">🇧🇷 Brazil</option>
-  <option value="CH">🇨🇭 Switzerland</option>
-  <option value="CN">🇨🇳 China</option>
-  <option value="HK">🇭🇰 Hong Kong</option>
-  <option value="IN">🇮🇳 India</option>
-  <option value="JP">🇯🇵 Japan</option>
-  <option value="KR">🇰🇷 South Korea</option>
-  <option value="NO">🇳🇴 Norway</option>
-  <option value="NZ">🇳🇿 New Zealand</option>
-  <option value="RU">🇷🇺 Russia</option>
-  <option value="SE">🇸🇪 Sweden</option>
-  <option value="SG">🇸🇬 Singapore</option>
-  <option value="TR">🇹🇷 Turkey</option>
-  <option value="ZA">🇿🇦 South Africa</option>
-</Field>
+                      <Field
+                        as="select"
+                        name="country"
+                        className="w-full text-gray-800 bg-transparent outline-none"
+                      >
+                        <option value="">Select your country</option>
+                        <option value="US">🇺🇸 United States</option>
+                        <option value="CA">🇨🇦 Canada</option>
+                        <option value="MX">🇲🇽 Mexico</option>
+                        <option value="GB">🇬🇧 United Kingdom</option>
+                        <option value="AU">🇦🇺 Australia</option>
+                        <option value="BR">🇧🇷 Brazil</option>
+                        <option value="CH">🇨🇭 Switzerland</option>
+                        <option value="CN">🇨🇳 China</option>
+                        <option value="HK">🇭🇰 Hong Kong</option>
+                        <option value="IN">🇮🇳 India</option>
+                        <option value="JP">🇯🇵 Japan</option>
+                        <option value="KR">🇰🇷 South Korea</option>
+                        <option value="NO">🇳🇴 Norway</option>
+                        <option value="NZ">🇳🇿 New Zealand</option>
+                        <option value="RU">🇷🇺 Russia</option>
+                        <option value="SE">🇸🇪 Sweden</option>
+                        <option value="SG">🇸🇬 Singapore</option>
+                        <option value="TR">🇹🇷 Turkey</option>
+                        <option value="ZA">🇿🇦 South Africa</option>
+                      </Field>
                     </div>
                   </div>
                   <ErrorMessage
@@ -904,19 +901,19 @@ const AdvisorPayments = () => {
             },
           }}
         />
-      <div className="w-full max-w-2xl px-4 mx-auto sm:px-6 md:px-8 lg:px-0">
-  {/* Requirements Modal */}
-  {showRequirementsModal && (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="requirements-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-opacity-50 bg-black/40 backdrop-blur-md sm:p-6 animate-fadeIn"
-      style={{
-        animation: 'fadeIn 0.3s ease-out'
-      }}
-    >
-      <style>{`
+        <div className="w-full max-w-2xl px-4 mx-auto sm:px-6 md:px-8 lg:px-0">
+          {/* Requirements Modal */}
+          {showRequirementsModal && (
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="requirements-title"
+              className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-opacity-50 bg-black/40 backdrop-blur-md sm:p-6 animate-fadeIn"
+              style={{
+                animation: 'fadeIn 0.3s ease-out'
+              }}
+            >
+              <style>{`
         @keyframes fadeIn {
           from { opacity: 0; }
           to { opacity: 1; }
@@ -957,95 +954,95 @@ const AdvisorPayments = () => {
         }
       `}</style>
 
-      <div className="w-full max-w-lg sm:max-w-xl md:max-w-2xl p-6 sm:p-8 md:p-10 text-left bg-white shadow-2xl modal-content rounded-3xl overflow-y-auto no-scrollbar smooth-scroll max-h-[90vh]">
-        {/* Header */}
-        <div className="flex flex-col items-center mb-6 text-center">
-          <div className="flex items-center justify-center mb-4 rounded-full shadow-lg w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-500 to-purple-600">
-            <FaShieldAlt className="text-xl text-white sm:text-2xl" />
-          </div>
-          <h2 id="requirements-title" className="text-xl font-bold text-gray-900 sm:text-2xl">
-            Advisor Requirements
-          </h2>
-          <p className="mt-2 text-sm text-gray-500 sm:text-base">
-            Please review the following qualifications
-          </p>
-        </div>
+              <div className="w-full max-w-lg sm:max-w-xl md:max-w-2xl p-6 sm:p-8 md:p-10 text-left bg-white shadow-2xl modal-content rounded-3xl overflow-y-auto no-scrollbar smooth-scroll max-h-[90vh]">
+                {/* Header */}
+                <div className="flex flex-col items-center mb-6 text-center">
+                  <div className="flex items-center justify-center mb-4 rounded-full shadow-lg w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-500 to-purple-600">
+                    <FaShieldAlt className="text-xl text-white sm:text-2xl" />
+                  </div>
+                  <h2 id="requirements-title" className="text-xl font-bold text-gray-900 sm:text-2xl">
+                    Advisor Requirements
+                  </h2>
+                  <p className="mt-2 text-sm text-gray-500 sm:text-base">
+                    Please review the following qualifications
+                  </p>
+                </div>
 
-        {/* Requirements */}
-<div className="mb-6 space-y-4">
-  {[
-    {
-      color: 'green',
-      title: 'Experience Required',
-      desc: 'Minimum ',
-      highlight: '5 years',
-      descEnd: ' of practicing as a M&A Advisor, Broker, or Investment Banker'
-    },
-    {
-      color: 'green',
-      title: 'Transaction History',
-      desc: 'Successfully completed at least ',
-      highlight: '10 company sale transactions',
-      descEnd: ''
-    },
-    {
-      color: 'green',
-      title: 'Client Testimonials',
-      desc: 'You will be required to provide ',
-      highlight: '5 customer testimonials',
-      descEnd: ' from previous customers'
-    }
-  ].map((req, i) => (
-    <div
-      key={i}
-      className={`flex flex-col sm:flex-row sm:items-start p-4 border-2 border-${req.color}-100 requirement-item rounded-xl bg-${req.color}-50 hover:bg-${req.color}-100 hover:border-${req.color}-200 transition-all duration-300`}
-    >
-      <div className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 mb-3 sm:mb-0 sm:mr-3 bg-green-500 rounded-full flex-shrink-0`}>
-        <FaCheckCircle className="text-sm text-white sm:text-base" />
-      </div>
-      <div>
-        <h3 className="text-sm font-semibold text-gray-900 sm:text-base md:text-lg">{req.title}</h3>
-        <p className="mt-1 text-xs leading-relaxed text-gray-700 sm:text-sm md:text-base">
-          {req.desc}
-          <span className={`font-bold text-${req.color}-600`}>{req.highlight}</span>
-          {req.descEnd}
-        </p>
-      </div>
-    </div>
-  ))}
-</div>
+                {/* Requirements */}
+                <div className="mb-6 space-y-4">
+                  {[
+                    {
+                      color: 'green',
+                      title: 'Experience Required',
+                      desc: 'Minimum ',
+                      highlight: '5 years',
+                      descEnd: ' of practicing as a M&A Advisor, Broker, or Investment Banker'
+                    },
+                    {
+                      color: 'green',
+                      title: 'Transaction History',
+                      desc: 'Successfully completed at least ',
+                      highlight: '10 company sale transactions',
+                      descEnd: ''
+                    },
+                    {
+                      color: 'green',
+                      title: 'Client Testimonials',
+                      desc: 'You will be required to provide ',
+                      highlight: '1 customer testimonials',
+                      descEnd: ' from previous customers'
+                    }
+                  ].map((req, i) => (
+                    <div
+                      key={i}
+                      className={`flex flex-col sm:flex-row sm:items-start p-4 border-2 border-${req.color}-100 requirement-item rounded-xl bg-${req.color}-50 hover:bg-${req.color}-100 hover:border-${req.color}-200 transition-all duration-300`}
+                    >
+                      <div className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 mb-3 sm:mb-0 sm:mr-3 bg-green-500 rounded-full flex-shrink-0`}>
+                        <FaCheckCircle className="text-sm text-white sm:text-base" />
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-semibold text-gray-900 sm:text-base md:text-lg">{req.title}</h3>
+                        <p className="mt-1 text-xs leading-relaxed text-gray-700 sm:text-sm md:text-base">
+                          {req.desc}
+                          <span className={`font-bold text-${req.color}-600`}>{req.highlight}</span>
+                          {req.descEnd}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
 
-        {/* Note */}
-        <div className="p-3 mb-6 border-l-4 border-blue-500 rounded-r-lg sm:p-4 bg-blue-50">
-          <p className="text-xs text-gray-700 sm:text-sm">
-            <span className="font-semibold text-blue-900">Important:</span> These requirements ensure we maintain the highest quality standards for our advisor network.
-          </p>
-        </div>
+                {/* Note */}
+                <div className="p-3 mb-6 border-l-4 border-blue-500 rounded-r-lg sm:p-4 bg-blue-50">
+                  <p className="text-xs text-gray-700 sm:text-sm">
+                    <span className="font-semibold text-blue-900">Important:</span> These requirements ensure we maintain the highest quality standards for our advisor network.
+                  </p>
+                </div>
 
-        {/* Button */}
-        <div className="flex justify-center">
-          <button
-            ref={modalCloseBtnRef}
-            onClick={() => setShowRequirementsModal(false)}
-            className="w-full px-6 py-3 text-sm font-semibold text-white transition-all duration-300 transform shadow-lg sm:w-auto sm:px-8 sm:py-4 sm:text-base bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-xl hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300"
+                {/* Button */}
+                <div className="flex justify-center">
+                  <button
+                    ref={modalCloseBtnRef}
+                    onClick={() => setShowRequirementsModal(false)}
+                    className="w-full px-6 py-3 text-sm font-semibold text-white transition-all duration-300 transform shadow-lg sm:w-auto sm:px-8 sm:py-4 sm:text-base bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-xl hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300"
+                  >
+                    I Understand & Agree to Continue
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Payment Form */}
+          <div
+            className="overflow-hidden bg-white shadow-2xl rounded-3xl"
+            aria-hidden={showRequirementsModal ? 'true' : 'false'}
           >
-            I Understand & Agree to Continue
-          </button>
+            <div className="px-4 py-8 sm:px-8 sm:py-10 md:py-12">
+              <AdvisorPaymentForm />
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-  )}
-
-  {/* Payment Form */}
-  <div
-    className="overflow-hidden bg-white shadow-2xl rounded-3xl"
-    aria-hidden={showRequirementsModal ? 'true' : 'false'}
-  >
-    <div className="px-4 py-8 sm:px-8 sm:py-10 md:py-12">
-      <AdvisorPaymentForm />
-    </div>
-  </div>
-</div>
 
 
       </div>
