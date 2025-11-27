@@ -604,6 +604,7 @@ export const AdvisorForm = () => {
     visibleTestimonials: 1, // 👈 added here
     workedWithCimamplify: false,
     logoFile: null, // <-- added to Formik
+    introVideoFile: null, // <-- added to Formik
   };
 
   const validationSchema = Yup.object().shape({
@@ -746,8 +747,17 @@ export const AdvisorForm = () => {
 
   const onSubmit = async (values, { setSubmitting, resetForm }) => {
     console.log("Form submitted:", values);
+    console.log("Logo file in values:", values.logoFile);
+    console.log("Video file in values:", values.introVideoFile);
+    console.log("Logo file in state:", logoFile);
+    console.log("Video file in state:", introVideoFile);
+
     try {
-      if (!values.logoFile) {
+      // Use logoFile from state if values.logoFile is null
+      const actualLogoFile = values.logoFile || logoFile;
+      const actualVideoFile = values.introVideoFile || introVideoFile;
+
+      if (!actualLogoFile) {
         toast.error("Company logo is required");
         setLogoError(true);
         setSubmitting(false);
@@ -756,19 +766,23 @@ export const AdvisorForm = () => {
       setLogoError(false);
 
       let logoUrl = "";
-      if (values.logoFile) {
+      if (actualLogoFile) {
+        console.log("Uploading logo:", actualLogoFile.name);
         logoUrl = await handleFileUpload(
-          values.logoFile,
+          actualLogoFile,
           "https://api.advisorchooser.com/api/upload/logo"
         );
+        console.log("Logo uploaded, URL:", logoUrl);
       }
 
       let introVideoUrl = "";
-      if (introVideoFile) {
+      if (actualVideoFile) {
+        console.log("Uploading video:", actualVideoFile.name);
         introVideoUrl = await handleFileUpload(
-          introVideoFile,
+          actualVideoFile,
           "https://api.advisorchooser.com/api/upload/video"
         );
+        console.log("Video uploaded, URL:", introVideoUrl);
       }
 
       // Upload testimonial PDFs - only for completed testimonials
@@ -791,9 +805,13 @@ export const AdvisorForm = () => {
               "https://api.advisorchooser.com/api/upload/testimonial"
             );
           }
+          const cleanTestimonial = t.testimonial.trim();
+          console.log("Original testimonial:", t.testimonial);
+          console.log("Cleaned testimonial:", cleanTestimonial);
+
           return {
             clientName: t.clientName.trim(),
-            testimonial: t.testimonial.trim(),
+            testimonial: cleanTestimonial,
             ...(pdfUrl ? { pdfUrl } : {}),
           };
         })
@@ -1589,6 +1607,7 @@ export const AdvisorForm = () => {
                           }
                           setIntroVideoFile(file);
                           setIntroVideoPreview(URL.createObjectURL(file));
+                          setFieldValue("introVideoFile", file);
 
                           toast.success(
                             <div className="space-y-1">
@@ -1656,6 +1675,7 @@ export const AdvisorForm = () => {
                               setIntroVideoFile(null);
                               setIntroVideoPreview("");
                               setVideoSizeError(false);
+                              setFieldValue("introVideoFile", null);
                               const input = document.getElementById("intro-video-upload");
                               if (input) input.value = "";
                               toast.success("Video removed");

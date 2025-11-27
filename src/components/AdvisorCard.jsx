@@ -187,7 +187,11 @@ const AdvisorCard = ({ advisor, onSelect, isSelected }) => {
                       </div>
                     </div>
                     <p className="text-base leading-relaxed text-gray-700">
-                      "{visible}"
+                      {(() => {
+                        const div = document.createElement('div');
+                        div.innerHTML = visible;
+                        return div.textContent || div.innerText || visible;
+                      })()}
                     </p>
                     {isLong && (
                       <button

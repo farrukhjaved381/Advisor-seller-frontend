@@ -1068,14 +1068,6 @@ const AdvisorDashboard = () => {
         pdfUrl: testimonial.existingPdfUrl || undefined,
       }));
 
-      // Fill remaining slots with placeholder testimonials to maintain 5 total
-      while (sanitizedTestimonials.length < 5) {
-        sanitizedTestimonials.push({
-          clientName: 'Client Name',
-          testimonial: 'Testimonial text'
-        });
-      }
-
       formData.append('testimonials', JSON.stringify(sanitizedTestimonials));
       
       // Use POST for creating new profile, PATCH for updating existing
@@ -1090,9 +1082,9 @@ const AdvisorDashboard = () => {
       });
 
       toast.success('Profile updated successfully!');
-      // Refresh profile data and redirect to overview
+      // Refresh profile data and redirect to advisor profile overview
       await fetchUserData();
-      navigate('/advisor-dashboard?tab=overview');
+      setActiveTab('overview');
       if (introVideoPreview) {
         URL.revokeObjectURL(introVideoPreview);
         setIntroVideoPreview('');
@@ -1683,7 +1675,11 @@ const AdvisorDashboard = () => {
                           </div>
                           <div className="flex-1">
                             <h4 className="mb-2 font-semibold text-gray-900">{testimonial.clientName}</h4>
-                            <p className="mb-3 text-sm italic text-gray-600">"{testimonial.testimonial}"</p>
+                            <p className="mb-3 text-sm italic text-gray-600">{(() => {
+                              const div = document.createElement('div');
+                              div.innerHTML = testimonial.testimonial;
+                              return div.textContent || div.innerText || testimonial.testimonial;
+                            })()}</p>
                             {testimonial.pdfUrl && (
                               <a 
                                 href={testimonial.pdfUrl} 
@@ -2903,6 +2899,7 @@ const AdvisorDashboard = () => {
                                   as="textarea"
                                   name={`testimonials[${index}].testimonial`}
                                   rows={3}
+                                  placeholder="Write the testimonial here ..."
                                   className={`w-full px-3 py-2 border rounded-lg resize-none focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-white text-gray-700 ${
                                     errors.testimonials?.[index]?.testimonial && touched.testimonials?.[index]?.testimonial
                                       ? "border-red-500"

@@ -490,8 +490,8 @@ const AdvisorPaymentForm = () => {
                   </label>
                   <div
                     className={`relative border-2 rounded-lg transition-colors ${errors.firstName && touched.firstName
-                        ? "border-red-300 bg-red-50"
-                        : "border-gray-200 hover:border-blue-300 focus-within:border-blue-500"
+                      ? "border-red-300 bg-red-50"
+                      : "border-gray-200 hover:border-blue-300 focus-within:border-blue-500"
                       }`}
                   >
                     <div className="flex items-center px-4 py-3">
@@ -519,8 +519,8 @@ const AdvisorPaymentForm = () => {
                   </label>
                   <div
                     className={`relative border-2 rounded-lg transition-colors ${errors.lastName && touched.lastName
-                        ? "border-red-300 bg-red-50"
-                        : "border-gray-200 hover:border-blue-300 focus-within:border-blue-500"
+                      ? "border-red-300 bg-red-50"
+                      : "border-gray-200 hover:border-blue-300 focus-within:border-blue-500"
                       }`}
                   >
                     <div className="flex items-center px-4 py-3">
@@ -558,8 +558,8 @@ const AdvisorPaymentForm = () => {
                   </label>
                   <div
                     className={`relative border-2 rounded-lg transition-colors ${errors.country && touched.country
-                        ? "border-red-300 bg-red-50"
-                        : "border-gray-200 hover:border-blue-300 focus-within:border-blue-500"
+                      ? "border-red-300 bg-red-50"
+                      : "border-gray-200 hover:border-blue-300 focus-within:border-blue-500"
                       }`}
                   >
                     <div className="flex items-center w-full px-4 py-3">
@@ -585,6 +585,7 @@ const AdvisorPaymentForm = () => {
                         <option value="KR">🇰🇷 South Korea</option>
                         <option value="NO">🇳🇴 Norway</option>
                         <option value="NZ">🇳🇿 New Zealand</option>
+                        <option value="PK">🇵🇰 Pakistan</option>
                         <option value="RU">🇷🇺 Russia</option>
                         <option value="SE">🇸🇪 Sweden</option>
                         <option value="SG">🇸🇬 Singapore</option>
