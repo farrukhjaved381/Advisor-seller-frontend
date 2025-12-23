@@ -573,6 +573,7 @@ export const AdvisorForm = () => {
   const [videoSizeError, setVideoSizeError] = useState(false);
   const [introVideoFile, setIntroVideoFile] = useState(null);
   const [introVideoPreview, setIntroVideoPreview] = useState("");
+  const [isUploading, setIsUploading] = useState(false); // Track upload state
 
   useEffect(() => {
     return () => {
@@ -753,39 +754,25 @@ export const AdvisorForm = () => {
     console.log("Video file in state:", introVideoFile);
 
     try {
-      // Use logoFile from state if values.logoFile is null
+      // Use logoFile from state if values.logoFile is null (fallback for sync issues)
       const actualLogoFile = values.logoFile || logoFile;
       const actualVideoFile = values.introVideoFile || introVideoFile;
 
+      // Validate logo is required
       if (!actualLogoFile) {
         toast.error("Company logo is required");
         setLogoError(true);
+        // Scroll to logo section
+        const logoSection = document.getElementById("logo-upload");
+        if (logoSection) {
+          logoSection.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
         setSubmitting(false);
         return;
       }
       setLogoError(false);
 
-      let logoUrl = "";
-      if (actualLogoFile) {
-        console.log("Uploading logo:", actualLogoFile.name);
-        logoUrl = await handleFileUpload(
-          actualLogoFile,
-          "https://api.advisorchooser.com/api/upload/logo"
-        );
-        console.log("Logo uploaded, URL:", logoUrl);
-      }
-
-      let introVideoUrl = "";
-      if (actualVideoFile) {
-        console.log("Uploading video:", actualVideoFile.name);
-        introVideoUrl = await handleFileUpload(
-          actualVideoFile,
-          "https://api.advisorchooser.com/api/upload/video"
-        );
-        console.log("Video uploaded, URL:", introVideoUrl);
-      }
-
-      // Upload testimonial PDFs - only for completed testimonials
+      // Validate testimonials before starting uploads
       const completedTestimonials = values.testimonials.filter(
         (t) => t.clientName?.trim() && t.testimonial?.trim()
       );
@@ -796,18 +783,75 @@ export const AdvisorForm = () => {
         return;
       }
 
+      // Start uploading - show loading state
+      setIsUploading(true);
+      toast.loading("Uploading files...", { id: "upload-progress" });
+
+      let logoUrl = "";
+      if (actualLogoFile) {
+        console.log("Uploading logo:", actualLogoFile.name);
+        try {
+          logoUrl = await handleFileUpload(
+            actualLogoFile,
+            "https://api.advisorchooser.com/api/upload/logo"
+          );
+          console.log("Logo uploaded, URL:", logoUrl);
+        } catch (uploadError) {
+          console.error("Logo upload failed:", uploadError);
+          toast.dismiss("upload-progress");
+          toast.error("Failed to upload logo. Please try again.");
+          setIsUploading(false);
+          setSubmitting(false);
+          return;
+        }
+      }
+
+      // Verify logo was uploaded successfully
+      if (!logoUrl) {
+        toast.dismiss("upload-progress");
+        toast.error("Logo upload failed. Please try again.");
+        setIsUploading(false);
+        setSubmitting(false);
+        return;
+      }
+
+      let introVideoUrl = "";
+      if (actualVideoFile) {
+        console.log("Uploading video:", actualVideoFile.name);
+        toast.loading("Uploading video...", { id: "upload-progress" });
+        try {
+          introVideoUrl = await handleFileUpload(
+            actualVideoFile,
+            "https://api.advisorchooser.com/api/upload/video"
+          );
+          console.log("Video uploaded, URL:", introVideoUrl);
+        } catch (uploadError) {
+          console.error("Video upload failed:", uploadError);
+          toast.dismiss("upload-progress");
+          toast.error("Failed to upload video. Please try again.");
+          setIsUploading(false);
+          setSubmitting(false);
+          return;
+        }
+      }
+
+      toast.loading("Saving profile...", { id: "upload-progress" });
+
       const testimonials = await Promise.all(
         completedTestimonials.map(async (t) => {
           let pdfUrl = undefined;
           if (t.pdfFile) {
-            pdfUrl = await handleFileUpload(
-              t.pdfFile,
-              "https://api.advisorchooser.com/api/upload/testimonial"
-            );
+            try {
+              pdfUrl = await handleFileUpload(
+                t.pdfFile,
+                "https://api.advisorchooser.com/api/upload/testimonial"
+              );
+            } catch (pdfError) {
+              console.error("PDF upload failed:", pdfError);
+              // Continue without PDF - it's optional
+            }
           }
           const cleanTestimonial = t.testimonial.trim();
-          console.log("Original testimonial:", t.testimonial);
-          console.log("Cleaned testimonial:", cleanTestimonial);
 
           return {
             clientName: t.clientName.trim(),
@@ -817,21 +861,18 @@ export const AdvisorForm = () => {
         })
       );
 
-      // Don't send placeholder testimonials - only send what the user actually filled out
-
       const token = localStorage.getItem("access_token");
       const payload = {
         companyName: values.companyName,
         phone: values.phone,
         website: values.website,
-        industries: values.industries, // array of strings
-        geographies: values.geographies, // array of strings
+        industries: values.industries,
+        geographies: values.geographies,
         yearsExperience: Number(values.yearsExperience),
         numberOfTransactions: Number(values.numberOfTransactions),
         currency: values.currency,
         description: values.description,
-        // licensing: values.licensing,
-        testimonials, // only completed testimonials (1-5)
+        testimonials,
         revenueRange: {
           min: Number(values.revenueRange.min),
           max: Number(values.revenueRange.max),
@@ -851,6 +892,7 @@ export const AdvisorForm = () => {
         }
       );
 
+      toast.dismiss("upload-progress");
       toast.success("Advisor profile created successfully!");
       resetForm();
       setLogoFile(null);
@@ -865,9 +907,11 @@ export const AdvisorForm = () => {
       }, 1000);
     } catch (error) {
       console.error("Form submission error:", error.response?.data || error);
-      toast.error("Error submitting form");
+      toast.dismiss("upload-progress");
+      toast.error("Error submitting form. Please try again.");
     } finally {
       setSubmitting(false);
+      setIsUploading(false);
     }
   };
 
@@ -1831,11 +1875,11 @@ export const AdvisorForm = () => {
               >
                 <button
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || isUploading}
                   className="px-8 py-4 font-semibold text-white transition-all duration-300 transform shadow-lg bg-gradient-to-r from-primary to-third rounded-xl hover:shadow-xl hover:scale-105 focus:outline-none focus:ring-4 focus:ring-primary/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                 >
-                  {isSubmitting
-                    ? "Creating Profile..."
+                  {isSubmitting || isUploading
+                    ? "Uploading & Creating Profile..."
                     : "Submit Profile"}
                 </button>
               </motion.div>

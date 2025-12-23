@@ -897,6 +897,16 @@ const AdvisorDashboard = () => {
     );
   };
 
+  // Track if logo is required (no existing logo URL)
+  const [logoRequired, setLogoRequired] = useState(false);
+
+  // Update logoRequired when profile loads
+  useEffect(() => {
+    if (profile !== null) {
+      setLogoRequired(!profile?.logoUrl);
+    }
+  }, [profile]);
+
   const validationSchema = Yup.object().shape({
     name: Yup.string().required("Name is required"),
     companyName: Yup.string().required("Company name is required"),
@@ -911,8 +921,15 @@ const AdvisorDashboard = () => {
       }),
     industries: Yup.array().min(1, "Select at least one industry"),
     geographies: Yup.array().min(1, "Select at least one geography"),
-    yearsExperience: Yup.number().min(1).required("Years of experience is required"),
-    numberOfTransactions: Yup.number().min(0).required("Number of transactions is required"),
+    yearsExperience: Yup.number()
+      .typeError("Must be a number")
+      .min(5, "Must be at least 5 years")
+      .required("Years of experience is required"),
+    numberOfTransactions: Yup.number()
+      .typeError("Must be a number")
+      .integer("Must be an integer")
+      .min(10, "Must be at least 10")
+      .required("Number of transactions is required"),
     currency: Yup.string().required("Currency is required"),
     description: Yup.string().required("Description is required"),
     testimonials: Yup.array()
@@ -927,16 +944,18 @@ const AdvisorDashboard = () => {
         return completedTestimonials.length >= 1;
       }),
     revenueRange: Yup.object().shape({
-      min: Yup.number().required("Minimum revenue is required"),
-      max: Yup.number().required("Maximum revenue is required"),
+      min: Yup.number().typeError("Required").required("Minimum revenue is required"),
+      max: Yup.number().typeError("Required").required("Maximum revenue is required"),
     }),
   });
 
   const [logoFile, setLogoFile] = useState(null);
   const [logoSizeError, setLogoSizeError] = useState(false);
+  const [logoError, setLogoError] = useState(false); // Track logo validation error
   const [introVideoFile, setIntroVideoFile] = useState(null);
   const [introVideoPreview, setIntroVideoPreview] = useState('');
   const [videoSizeError, setVideoSizeError] = useState(false);
+  const [isUploading, setIsUploading] = useState(false); // Track upload in progress
 
   // Show all validation errors after submit and scroll to first
   const ValidationEffects = () => {
@@ -1002,11 +1021,12 @@ const AdvisorDashboard = () => {
       walk(o);
       return c;
     };
-    const ec = count(errors);
+    const ec = count(errors) + (logoError ? 1 : 0);
     if (submitCount > 0 && ec > 0) {
       return (
         <div className="p-3 mb-4 text-red-700 border border-red-200 rounded bg-red-50">
           Please fix {ec} highlighted field{ec > 1 ? "s" : ""}.
+          {logoError && <div className="mt-1 font-semibold">Company logo is required.</div>}
         </div>
       );
     }
@@ -1016,7 +1036,34 @@ const AdvisorDashboard = () => {
   const onSubmit = async (values, { setSubmitting }) => {
     try {
       const token = localStorage.getItem('access_token');
-      
+
+      // Validate logo - required if no existing logo
+      if (!logoFile && !profile?.logoUrl) {
+        setLogoError(true);
+        toast.error('Company logo is required');
+        // Scroll to logo section
+        const logoSection = document.getElementById('logo-upload-section');
+        if (logoSection) {
+          logoSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        setSubmitting(false);
+        return;
+      }
+      setLogoError(false);
+
+      // Filter only completed testimonials
+      const completedTestimonials = (values.testimonials || []).filter(
+        (testimonial) => testimonial.clientName?.trim() && testimonial.testimonial?.trim()
+      );
+
+      if (completedTestimonials.length < 1) {
+        toast.error('At least one testimonial is required');
+        setSubmitting(false);
+        return;
+      }
+
+      setIsUploading(true);
+
       const formData = new FormData();
       formData.append('name', values.name || '');
       formData.append('companyName', values.companyName || '');
@@ -1037,29 +1084,13 @@ const AdvisorDashboard = () => {
         }));
       }
       formData.append('workedWithCimamplify', values.workedWithCimamplify);
-      
-      if (!logoFile && !profile?.logoUrl) {
-        toast.error('Company logo is required');
-        setSubmitting(false);
-        return;
-      }
+
       if (logoFile) {
         formData.append('logo', logoFile);
       }
 
       if (introVideoFile) {
         formData.append('introVideo', introVideoFile);
-      }
-      
-      // Filter only completed testimonials
-      const completedTestimonials = (values.testimonials || []).filter(
-        (testimonial) => testimonial.clientName?.trim() && testimonial.testimonial?.trim()
-      );
-
-      if (completedTestimonials.length < 1) {
-        toast.error('At least one testimonial is required');
-        setSubmitting(false);
-        return;
       }
 
       const sanitizedTestimonials = completedTestimonials.map((testimonial) => ({
@@ -1069,13 +1100,13 @@ const AdvisorDashboard = () => {
       }));
 
       formData.append('testimonials', JSON.stringify(sanitizedTestimonials));
-      
+
       // Use POST for creating new profile, PATCH for updating existing
       const method = profile ? 'patch' : 'post';
       const url = `${API_CONFIG.BACKEND_URL}/api/advisors/profile`;
-      
+
       await axios[method](url, formData, {
-        headers: { 
+        headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data'
         }
@@ -1090,11 +1121,14 @@ const AdvisorDashboard = () => {
         setIntroVideoPreview('');
       }
       setIntroVideoFile(null);
+      setLogoFile(null);
+      setLogoError(false);
     } catch (error) {
       console.error('Error updating profile:', error);
       toast.error('Failed to update profile');
     } finally {
       setSubmitting(false);
+      setIsUploading(false);
     }
   };
 
@@ -2435,14 +2469,18 @@ const AdvisorDashboard = () => {
 
                     {/* Logo Upload */}
                     <motion.div
+                      id="logo-upload-section"
                       initial={{ opacity: 0, x: 20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.6 }}
-                      className="p-6 bg-white border border-gray-200 shadow-sm rounded-2xl"
+                      className={`p-6 bg-white border shadow-sm rounded-2xl ${logoError ? 'border-red-500 border-2' : 'border-gray-200'}`}
                     >
                       <h3 className="flex items-center mb-6 text-xl font-semibold text-gray-900">
                         <FaFileAlt className="mr-3 text-primary" />
                         Company Logo
+                        {!profile?.logoUrl && !logoFile && (
+                          <span className="ml-2 text-sm font-bold text-red-600">(Required)</span>
+                        )}
                       </h3>
                       
                       <div className="flex flex-col items-center justify-center">
@@ -2570,8 +2608,9 @@ const AdvisorDashboard = () => {
 
                               // File is valid
                               setLogoSizeError(false);
+                              setLogoError(false); // Clear validation error when logo is uploaded
                               setLogoFile(file);
-                              
+
                               toast.success(
                                 <div className="space-y-1">
                                   <div className="font-bold">Logo Uploaded!</div>
@@ -2591,7 +2630,7 @@ const AdvisorDashboard = () => {
                           />
                           <label
                             htmlFor="logo-upload"
-                            className="flex flex-col items-center justify-center w-full h-32 transition-all duration-200 bg-white border-2 border-dashed rounded-lg cursor-pointer border-primary/30 hover:bg-primary/5"
+                            className={`flex flex-col items-center justify-center w-full h-32 transition-all duration-200 bg-white border-2 border-dashed rounded-lg cursor-pointer hover:bg-primary/5 ${logoError ? 'border-red-500' : 'border-primary/30'}`}
                           >
                             <div className="flex flex-col items-center justify-center pt-5 pb-6">
                               <FaFileAlt className="w-8 h-8 mb-4 text-primary" />
@@ -2602,6 +2641,13 @@ const AdvisorDashboard = () => {
                             </div>
                           </label>
                           
+                          {/* Logo validation error message */}
+                          {logoError && (
+                            <div className="mt-2 text-sm font-semibold text-red-600">
+                              Company logo is required. Please upload a logo.
+                            </div>
+                          )}
+
                           {logoFile && (
                             <div className="mt-4 space-y-3">
                               <div className="flex justify-center">
@@ -2612,11 +2658,25 @@ const AdvisorDashboard = () => {
                                 />
                               </div>
                               <div className="p-3 border border-green-200 rounded-lg bg-green-50">
-                                <div className="flex items-center">
-                                  <FaCheckCircle className="mr-2 text-green-500" />
-                                  <span className="text-sm font-medium text-green-700">
-                                    {logoFile.name}
-                                  </span>
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center">
+                                    <FaCheckCircle className="mr-2 text-green-500" />
+                                    <span className="text-sm font-medium text-green-700">
+                                      {logoFile.name}
+                                    </span>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setLogoFile(null);
+                                      setLogoSizeError(false);
+                                      const input = document.getElementById("logo-upload");
+                                      if (input) input.value = "";
+                                    }}
+                                    className="text-xs font-semibold text-green-700 hover:text-green-900"
+                                  >
+                                    Remove
+                                  </button>
                                 </div>
                               </div>
                             </div>
@@ -2931,10 +2991,10 @@ const AdvisorDashboard = () => {
                     >
                       <button
                         type="submit"
-                        disabled={isSubmitting}
+                        disabled={isSubmitting || isUploading}
                         className="px-8 py-4 font-semibold text-white transition-all duration-300 transform shadow-lg bg-gradient-to-r from-primary to-third rounded-xl hover:shadow-xl hover:scale-105 focus:outline-none focus:ring-4 focus:ring-primary/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                       >
-                        {isSubmitting ? "Updating..." : "Update Profile"}
+                        {isSubmitting || isUploading ? "Uploading & Saving..." : "Update Profile"}
                       </button>
                     </motion.div>
                   </Form>
